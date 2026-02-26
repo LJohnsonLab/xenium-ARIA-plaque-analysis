@@ -1,0 +1,454 @@
+---
+title: "Gene-to-distance-to-plaque correlation — microglia only"
+subtitle: "Microglia object provided by Kai Saito with  Akhil HALO annotations"
+date: last-modified
+execute:
+  echo: true
+  warning: false
+embed-resources: true
+format: html
+code-fold: true
+tags: [xenium, coregistration, halo, correlation, microglia]
+---
+
+# Gene-distance correlation functions
+
+**does a gene change systematically as the cell sits closer to (or farther from) a plaque?**
+
+# Rationale
+
+ **Cell-type composition**: certain cell types cluster spatially near plaques, 
+ so their marker genes appear "enriched near plaque" even if no single cell changed its transcription.
+
+By restricting the analysis to **microglia only**, we remove the composition
+confound. If a gene still correlates with distance within a single cell type,
+the association more likely reflects a genuine distance-dependent
+transcriptional programme rather than the fact that microglia are (or are not)
+concentrated near plaques.
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+library(readxl)
+library(tidyverse)
+library(kableExtra)
+library(Seurat)
+library(RANN)
+library(ggrepel)
+library(patchwork)
+library(ggVennDiagram)
+library(DESeq2)
+library(EnhancedVolcano)
+library(gridExtra)
+options(scipen = 999)
+```
+
+```{r}
+#| label: load-halo
+# ── CAA labels ────────────────────────────────────────────────────────────────
+caa_path <- "HALO_thioS_Akhil/20260217_CAAquant_AP.xlsx"
+
+caa_akhil <- excel_sheets(caa_path) |>
+  set_names() |>
+  map(\(sheet) read_excel(caa_path, sheet = sheet)) |>
+  bind_rows(.id = "sheet") |>
+  mutate(
+    brain = str_remove(sheet, "_AP"),
+    index = paste0(tolower(brain), "_", Id)
+  ) |>
+  pull(index)
+
+# ── Sample dictionary ─────────────────────────────────────────────────────────
+sample_dict <- tribble(
+  ~brain,   ~sample,   ~treatment, ~slide,
+  "Brain1", "KK4_465", "IgG",      1L,
+  "Brain2", "KK4_492", "Adu",      1L,
+  "Brain3", "KK4_504", "IgG",      1L,
+  "brain4", "KK4_496", "IgG",      2L,
+  "brain5", "KK4_502", "Adu",      2L,
+  "brain6", "KK4_464", "Adu",      2L
+)
+
+# ── HALO plaque CSVs ─────────────────────────────────────────────────────────
+thios_all <- list.files(
+  "HALO_thioS_Akhil",
+  pattern    = "^20260220.*AP\\.csv$",
+  full.names = TRUE
+) |>
+  map(\(x) read_csv(x, locale = locale(encoding = "latin1"))) |>
+  bind_rows() |>
+  rename_with(\(x) str_remove(x, "\\s*\\(.*\\)$")) |>
+  dplyr::rename(brain = "Analysis Region", objectID = "Object Id") |>
+  mutate(
+    index       = paste0(tolower(brain), "_", objectID),
+    plaque_type = if_else(index %in% caa_akhil, "CAA", "Parenchymal")
+  ) |>
+  left_join(sample_dict, by = "brain")
+
+thios_1 <- thios_all |> filter(slide == 1)
+thios_2 <- thios_all |> filter(slide == 2)
+```
+
+```{r}
+#| label: load-seurat
+path <- "/Users/arbones/Dropbox/SyncBriefcase/LAB/UK/Xenium/ARIA_Akhil/aria_analysis/seurat_objects/"
+
+# mg <- qs2::qs_read(paste0(path, "20260225-mg_kai.qs2"))
+# mg <- UpdateSeuratObject(mg)
+# mg_slide1 <- subset(mg, subset = Slide == "Slide1")
+# mg_slide2 <- subset(mg, subset = Slide == "Slide2")
+# qs2::qs_save(mg_slide1, paste0(path, "20260225-mg_kai_slide1.qs2"))
+# qs2::qs_save(mg_slide2, paste0(path, "20260225-mg_kai_slide2.qs2"))
+
+
+slide1_mg <- qs2::qs_read(paste0(path, "20260225-mg_kai_slide1.qs2"))
+slide2_mg <- qs2::qs_read(paste0(path, "20260225-mg_kai_slide2.qs2"))
+
+message(sprintf(
+  "Microglia: slide 1 = %d cells, slide 2 = %d cells (total = %d)",
+  ncol(slide1_mg), ncol(slide2_mg), ncol(slide1_mg) + ncol(slide2_mg)
+))
+```
+
+```{r}
+#| label: centroids-and-distances
+make_centroids <- function(thios) {
+  thios |>
+    mutate(
+      x_plaque = ((XMin + XMax) / 2) * 0.2125,
+      y_plaque = ((YMin + YMax) / 2) * 0.2125,
+      plaque_id = index
+    ) |>
+    select(plaque_id, brain, sample, treatment, plaque_type, x_plaque, y_plaque)
+}
+
+plaque_centroids_1 <- make_centroids(thios_1)
+plaque_centroids_2 <- make_centroids(thios_2)
+
+caa_coords_1   <- plaque_centroids_1 |> filter(plaque_type == "CAA")
+caa_coords_2   <- plaque_centroids_2 |> filter(plaque_type == "CAA")
+paren_coords_1 <- plaque_centroids_1 |> filter(plaque_type == "Parenchymal")
+paren_coords_2 <- plaque_centroids_2 |> filter(plaque_type == "Parenchymal")
+
+compute_cell_distances <- function(seurat_obj, caa_coords, paren_coords) {
+  coords_df <- GetTissueCoordinates(seurat_obj) |>
+    as.data.frame() |>
+    dplyr::select(cell, x, y)
+
+  cell_mat  <- coords_df |> dplyr::select(x, y) |> as.matrix()
+  caa_mat   <- caa_coords   |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+  paren_mat <- paren_coords |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+
+  caa_nn   <- nn2(data = caa_mat,   query = cell_mat, k = 1)
+  paren_nn <- nn2(data = paren_mat, query = cell_mat, k = 1)
+
+  coords_df |>
+    mutate(
+      dist_caa         = caa_nn$nn.dist[, 1],
+      nearest_caa_id   = caa_coords$plaque_id[caa_nn$nn.idx[, 1]],
+      dist_paren       = paren_nn$nn.dist[, 1],
+      nearest_paren_id = paren_coords$plaque_id[paren_nn$nn.idx[, 1]]
+    )
+}
+
+# Compute distances for microglia only
+cell_distances_1 <- compute_cell_distances(slide1_mg, caa_coords_1, paren_coords_1)
+cell_distances_2 <- compute_cell_distances(slide2_mg, caa_coords_2, paren_coords_2)
+```
+
+```{r}
+#| label: pool-distances
+cell_distances_all <- bind_rows(
+  cell_distances_1 |> mutate(slide = 1L),
+  cell_distances_2 |> mutate(slide = 2L)
+) |>
+  mutate(dist_any = pmin(dist_caa, dist_paren))
+```
+
+```{r}
+#| label: add-proximity-metadata
+# Add proximity labels (50 um threshold) — needed for treatment DE later
+add_proximity <- function(seurat_obj, cell_distances) {
+  prox <- cell_distances |>
+    mutate(
+      prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+      prox_paren = if_else(dist_paren < 50,  "proximal", "distal"),
+      prox_any   = if_else(pmin(dist_caa, dist_paren) < 50, "proximal", "distal")
+    ) |>
+    column_to_rownames("cell") |>
+    select(dist_caa, dist_paren, prox_caa, prox_paren, prox_any)
+
+  AddMetaData(seurat_obj, prox)
+}
+
+slide1_mg <- add_proximity(slide1_mg, cell_distances_1)
+slide2_mg <- add_proximity(slide2_mg, cell_distances_2)
+
+cell_distances_all <- cell_distances_all |>
+  mutate(
+    prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+    prox_paren = if_else(dist_paren < 50,  "proximal", "distal"),
+    prox_any   = if_else(dist_any < 50,    "proximal", "distal")
+  )
+```
+
+## Cell counts per group
+
+```{r}
+#| label: cell-counts
+# Add treatment info from Seurat metadata
+treatment_lookup <- bind_rows(
+  slide1_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group),
+  slide2_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group)
+)
+
+cell_distances_all <- cell_distances_all |>
+  left_join(treatment_lookup, by = "cell")
+
+cell_distances_all |>
+  group_by(sample_ID, Treatment.Group, prox_any) |>
+  summarise(n = n(), .groups = "drop") |>
+  pivot_wider(names_from = prox_any, values_from = n, values_fill = 0) |>
+  mutate(total = proximal + distal) |>
+  kbl(caption = "Microglia per sample — proximity to any plaque (50 um threshold)") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+
+# Correlation function and plot
+
+For each gene we compute a **Spearman rank correlation (rho)** between two vectors that share one entry per cell:
+
+1. The cell's raw transcript count for that gene.
+2. The cell's Euclidean distance (in um) to its nearest plaque of the specified type.
+
+**Spearman correlation** operates on ranks rather than raw values, so it captures any monotonic relationship (not just linear) and is robust to the extreme zero-inflation typical of spatial transcriptomics count data. We set `exact = FALSE` because the large number of tied zeros makes an exact permutation p-value computationally infeasible.
+
+A gene that is highly expressed *near* plaques (short distance) and lowly expressed *far away* (long distance) will have a **negative** rho (high expression co-occurs with low distance). Conversely, a gene expressed preferentially *far from* plaques will have a **positive** rho.
+
+To make the results more intuitive,so that "plaque-enriched" genes appear at the *top* of a ranked list rather than the bottom, we multiply rho by -1 to obtain `rho_flip`. After flipping, positive values mean "enriched near plaques" and negative values mean "enriched far from plaques".
+
+ We apply the Benjamini-Hochberg (BH) procedure to control the false discovery rate, producing an adjusted p-value (`padj`). A gene is called significant at `padj < 0.05`.
+
+**Final classification.** Each gene is labelled as:
+
+- **enriched_near** — `padj < 0.05` and `rho_flip > 0` (upregulated close to plaques)
+- **enriched_far** — `padj < 0.05` and `rho_flip < 0` (upregulated far from plaques)
+- **ns** — not significant
+```{r}
+
+#| label: define-compute-correlation
+compute_gene_distance_correlation <- function(
+    seurat_list,
+    cell_distances,
+    distance_col = "dist_any",
+    min_expressing_cells = 100
+) {
+  # ── 1. Pool raw count matrices across slides ────────────────────────────────
+  # Use the RNA assay counts layer (Seurat v5 sparse matrices)
+  count_list <- map(seurat_list, \(obj) {
+    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
+  })
+
+  # Ensure same gene set, then column-bind
+  shared_genes <- Reduce(intersect, map(count_list, rownames))
+  counts <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
+
+  # ── 2. Align cells with distance table ──────────────────────────────────────
+  shared_cells <- intersect(colnames(counts), cell_distances$cell)
+  counts <- counts[, shared_cells]
+  dist_vec <- cell_distances |>
+    filter(cell %in% shared_cells) |>
+    arrange(match(cell, shared_cells)) |>
+    pull(!!sym(distance_col))
+
+  # ── 3. Filter low-expressed genes ───────────────────────────────────────────
+  n_expressing <- Matrix::rowSums(counts > 0)
+  keep <- n_expressing >= min_expressing_cells
+  counts <- counts[keep, ]
+  message(
+    sprintf(
+      "Kept %d / %d genes (≥%d expressing cells)",
+      sum(keep), length(keep), min_expressing_cells
+    )
+  )
+
+  # ── 4. Per-gene Spearman correlation ────────────────────────────────────────
+  # exact = FALSE to handle tied ranks from sparse zeros efficiently
+  results <- map(seq_len(nrow(counts)), \(i) {
+    gene_expr <- counts[i, ]
+    ct <- cor.test(as.numeric(gene_expr), dist_vec,
+                   method = "spearman", exact = FALSE)
+    tibble(
+      gene = rownames(counts)[i],
+      rho  = ct$estimate,
+      pval = ct$p.value
+    )
+  }, .progress = "Spearman correlations") |>
+    bind_rows()
+
+  # ── 5. BH-correct, flip sign, rank ─────────────────────────────────────────
+  # Flip rho so that genes enriched near plaques (negative rho) become positive
+  results |>
+    mutate(
+      padj      = p.adjust(pval, method = "BH"),
+      rho_flip  = -rho,
+      rank      = rank(-rho_flip, ties.method = "first"),
+      sig       = case_when(
+        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
+        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
+        TRUE                        ~ "ns"
+      )
+    ) |>
+    arrange(rank)
+}
+```
+
+```{r}
+#| label: define-plot-correlation
+plot_gene_distance_correlation <- function(
+    results,
+    title          = "Gene-distance correlation",
+    n_top          = 5,
+    genes_to_label = NULL
+) {
+  top_pos <- results |> filter(sig == "enriched_near") |> slice_min(rank, n = n_top)
+  top_neg <- results |> filter(sig == "enriched_far")  |> slice_max(rank, n = n_top)
+  auto_label <- bind_rows(top_pos, top_neg)
+
+  if (!is.null(genes_to_label)) {
+    user_genes <- results |> filter(gene %in% genes_to_label)
+    auto_label <- bind_rows(auto_label, user_genes) |> distinct(gene, .keep_all = TRUE)
+  }
+
+  colour_map <- c(
+    "enriched_near" = "#E07B39",
+    "enriched_far"  = "#7B68AE",
+    "ns"            = "grey70"
+  )
+
+  ggplot(results, aes(x = rank, y = rho_flip)) +
+    geom_point(aes(colour = sig), size = 2, alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+    geom_text_repel(
+      data          = auto_label,
+      aes(label = gene, colour = sig),
+      size          = 5,
+      fontface      = "italic",
+      box.padding   = 0.4,
+      max.overlaps  = 20,
+      show.legend   = FALSE,
+      seed = 23
+    ) +
+    scale_colour_manual(
+      values = colour_map,
+      labels = c(
+        "enriched_near" = "Enriched near plaque (padj < 0.05)",
+        "enriched_far"  = "Enriched far from plaque (padj < 0.05)",
+        "ns"            = "Not significant"
+      )
+    ) +
+    labs(
+      title  = title,
+      x      = "Gene rank",
+      y      = "Spearman rho (flipped)",
+      colour = NULL
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      legend.position = "bottom",
+      panel.grid.minor = element_blank(),
+      panel.grid.major.x = element_blank())
+}
+```
+
+# Run analysis — microglia only
+
+```{r}
+#| label: run-correlations
+seurat_list <- list(slide1_mg, slide2_mg)
+
+cor_caa <- compute_gene_distance_correlation(
+  seurat_list, cell_distances_all, distance_col = "dist_caa"
+)
+
+cor_paren <- compute_gene_distance_correlation(
+  seurat_list, cell_distances_all, distance_col = "dist_paren"
+)
+
+cor_any <- compute_gene_distance_correlation(
+  seurat_list, cell_distances_all, distance_col = "dist_any"
+)
+```
+
+## Rank plots
+
+
+```{r}
+#| label: plot-caa-paren-combined
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+#| fig-cap: "For each gene, Spearman’s rank correlation coefficient (ρ) was calculated between per-cell gene expression levels (raw count data) and the minimum distance to the nearest amyloid plaque. To facilitate interpretation, correlation coefficients were sign-inverted such that positive values indicate higher gene expression in cells located closer to plaques, whereas negative values indicate higher expression at increasing distances from plaques. Genes were ranked by the inverted correlation coefficient. Statistical significance was assessed using two-sided Spearman correlation tests followed by Benjamini–Hochberg false discovery rate correction. Genes were classified as plaque-enriched, plaque-distal, or not significant based on adjusted P values. The five most positive and five most negative correlations are labeled"
+
+p_caa   <- plot_gene_distance_correlation(cor_caa,   title = "CAA plaque")
+p_paren <- plot_gene_distance_correlation(cor_paren, title = "Parenchymal plaque")
+
+(p_caa | p_paren) +
+  plot_annotation( title = "Plaque proximity differential expression")+
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+```{r}
+#| label: venn-enriched-near
+#| fig-height: 4
+#| fig-width: 6
+#| fig-cap: "Overlap of genes significantly enriched near plaques (padj < 0.05, positive rho_flip) between CAA and parenchymal analyses."
+
+near_caa   <- cor_caa   |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+near_paren <- cor_paren |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+
+ggVennDiagram(
+  list(CAA = near_caa, Parenchymal = near_paren),
+  label_alpha = 0, label = "count", shape_id = "201") +
+  labs(title = "Enriched-near genes (padj < 0.05)") +
+  theme(legend.position = "none")+
+  scale_fill_distiller(palette = "RdBu")
+
+cat("Common enriched-near genes in both CAA and parenchymal analyses: \n",
+  intersect(near_caa, near_paren), sep= ", ")
+
+```
+
+```{r}
+#| label: plot-any
+#| fig-height: 5
+#| fig-width: 6
+plot_gene_distance_correlation(cor_any, title = "Microglia — distance to nearest plaque (any type)")
+```
+
+## Top genes
+
+```{r}
+#| label: tables
+show_top <- function(results, label) {
+  top <- bind_rows(
+    results |> filter(sig == "enriched_near") |> slice_min(rank, n = 10),
+    results |> filter(sig == "enriched_far")  |> slice_max(rank, n = 10)
+  ) |>
+    select(gene, rho, rho_flip, pval, padj, rank, sig) |>
+    mutate(across(c(rho, rho_flip), \(x) round(x, 4)),
+           across(c(pval, padj), \(x) signif(x, 3)))
+
+  top |>
+    kbl(caption = label) |>
+    kable_styling("striped", full_width = FALSE)
+}
+
+show_top(cor_caa,   "Top genes — microglia, distance to CAA")
+show_top(cor_paren, "Top genes — microglia, distance to parenchymal")
+show_top(cor_any,   "Top genes — microglia, distance to any plaque")
+```
+

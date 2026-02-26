@@ -1,0 +1,537 @@
+---
+title: "Microglia proximal vs distal to plaques "
+subtitle: "Differential expression (pseudobulk DE) within microglia stratified by plaque proximity"
+date: last-modified
+execute:
+  echo: true
+  warning: false
+embed-resources: true
+format: html
+code-fold: true
+tags: [xenium, coregistration, halo, microglia, DE]
+---
+
+# Rationale
+
+Instead of treating distance as a continuous variable,
+we **dichotomize** microglia into proximal (< 50 um from a plaque) and distal
+(>= 50 um) groups, then run **pseudobulk differential expression** (DESeq2)
+comparing the two.
+
+By aggregating counts per biological replicate (sample/brain) before testing, we
+respect the experimental design (pseudobulk). Each mouse is the true unit of replication
+(n = 6 brains, 3 per treatment).
+
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+library(readxl)
+library(tidyverse)
+library(kableExtra)
+library(Seurat)
+library(RANN)
+library(DESeq2)
+library(EnhancedVolcano)
+library(patchwork)
+library(gridExtra)
+library(ggridges)
+options(scipen = 999)
+```
+
+```{r}
+#| label: load-halo
+# Read CAA plaque IDs from all sheets (one per brain) in Akhil's Excel file
+caa_path <- "HALO_thioS_Akhil/20260217_CAAquant_AP.xlsx"
+
+caa_akhil <- excel_sheets(caa_path) |>
+  set_names() |>
+  map(\(sheet) read_excel(caa_path, sheet = sheet)) |>
+  bind_rows(.id = "sheet") |>
+  mutate(
+    brain = str_remove(sheet, "_AP"),
+    index = paste0(tolower(brain), "_", Id)
+  ) |>
+  pull(index)
+
+# Brain-to-sample mapping (treatment and slide assignment)
+sample_dict <- tribble(
+  ~brain,   ~sample,   ~treatment, ~slide,
+  "Brain1", "KK4_465", "IgG",      1L,
+  "Brain2", "KK4_492", "Adu",      1L,
+  "Brain3", "KK4_504", "IgG",      1L,
+  "brain4", "KK4_496", "IgG",      2L,
+  "brain5", "KK4_502", "Adu",      2L,
+  "brain6", "KK4_464", "Adu",      2L
+)
+
+# Read HALO plaque segmentation CSVs, classify each plaque as CAA or Parenchymal
+thios_all <- list.files(
+  "HALO_thioS_Akhil",
+  pattern    = "^20260220.*AP\\.csv$",
+  full.names = TRUE
+) |>
+  map(\(x) read_csv(x, locale = locale(encoding = "latin1"))) |>
+  bind_rows() |>
+  rename_with(\(x) str_remove(x, "\\s*\\(.*\\)$")) |>
+  dplyr::rename(brain = "Analysis Region", objectID = "Object Id") |>
+  mutate(
+    index       = paste0(tolower(brain), "_", objectID),
+    plaque_type = if_else(index %in% caa_akhil, "CAA", "Parenchymal")
+  ) |>
+  left_join(sample_dict, by = "brain")
+
+thios_1 <- thios_all |> filter(slide == 1)
+thios_2 <- thios_all |> filter(slide == 2)
+```
+
+```{r}
+#| label: load-seurat
+# Load pre-saved microglia Seurat objects (one per slide)
+path <- "/Users/arbones/Dropbox/SyncBriefcase/LAB/UK/Xenium/ARIA_Akhil/aria_analysis/seurat_objects/"
+
+slide1_mg <- qs2::qs_read(paste0(path, "20260225-mg_kai_slide1.qs2"))
+slide2_mg <- qs2::qs_read(paste0(path, "20260225-mg_kai_slide2.qs2"))
+```
+
+## Compute distances
+
+```{r}
+#| label: compute-distances
+# Convert HALO pixel coords to um centroids (factor = 0.2125)
+make_centroids <- function(thios) {
+  thios |>
+    mutate(
+      x_plaque = ((XMin + XMax) / 2) * 0.2125,
+      y_plaque = ((YMin + YMax) / 2) * 0.2125,
+      plaque_id = index
+    ) |>
+    select(plaque_id, brain, sample, treatment, plaque_type, x_plaque, y_plaque)
+}
+
+plaque_centroids_1 <- make_centroids(thios_1)
+plaque_centroids_2 <- make_centroids(thios_2)
+
+# Split centroids by plaque type
+caa_coords_1   <- plaque_centroids_1 |> filter(plaque_type == "CAA")
+caa_coords_2   <- plaque_centroids_2 |> filter(plaque_type == "CAA")
+paren_coords_1 <- plaque_centroids_1 |> filter(plaque_type == "Parenchymal")
+paren_coords_2 <- plaque_centroids_2 |> filter(plaque_type == "Parenchymal")
+
+# k-d tree nearest-neighbour distance from each cell to nearest CAA and parenchymal plaque
+compute_cell_distances <- function(seurat_obj, caa_coords, paren_coords) {
+  coords_df <- GetTissueCoordinates(seurat_obj) |>
+    as.data.frame() |>
+    dplyr::select(cell, x, y)
+
+  cell_mat  <- coords_df |> dplyr::select(x, y) |> as.matrix()
+  caa_mat   <- caa_coords   |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+  paren_mat <- paren_coords |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+
+  caa_nn   <- nn2(data = caa_mat,   query = cell_mat, k = 1)
+  paren_nn <- nn2(data = paren_mat, query = cell_mat, k = 1)
+
+  coords_df |>
+    mutate(
+      dist_caa         = caa_nn$nn.dist[, 1],
+      nearest_caa_id   = caa_coords$plaque_id[caa_nn$nn.idx[, 1]],
+      dist_paren       = paren_nn$nn.dist[, 1],
+      nearest_paren_id = paren_coords$plaque_id[paren_nn$nn.idx[, 1]]
+    )
+}
+
+cell_distances_1 <- compute_cell_distances(slide1_mg, caa_coords_1, paren_coords_1)
+cell_distances_2 <- compute_cell_distances(slide2_mg, caa_coords_2, paren_coords_2)
+```
+
+## Classify microglia as proximal or distal
+
+ Microglia were classified as plaque-proximal (< 50 µm) or distal (≥ 50 µm) relative to CAA and     parenchymal plaques separately.
+
+```{r}
+#| label: add-proximity-metadata
+# Add prox_caa, prox_paren, prox_any columns to Seurat metadata
+add_proximity <- function(seurat_obj, cell_distances) {
+  prox <- cell_distances |>
+    mutate(
+      prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+      prox_paren = if_else(dist_paren < 50,  "proximal", "distal"),
+      prox_any   = if_else(pmin(dist_caa, dist_paren) < 50, "proximal", "distal")
+    ) |>
+    column_to_rownames("cell") |>
+    select(dist_caa, dist_paren, prox_caa, prox_paren, prox_any)
+
+  AddMetaData(seurat_obj, prox)
+}
+
+slide1_mg <- add_proximity(slide1_mg, cell_distances_1)
+slide2_mg <- add_proximity(slide2_mg, cell_distances_2)
+```
+
+## Cell counts per group
+
+```{r}
+#| label: cell-counts
+# Proximal/distal counts per sample
+bind_rows(slide1_mg@meta.data, slide2_mg@meta.data) |>
+  group_by(sample_ID, prox_any) |>
+  summarise(n = n(), .groups = "drop") |>
+  pivot_wider(names_from = prox_any, values_from = n, values_fill = 0) |>
+  mutate(total = proximal + distal) |>
+  kbl(caption = "Microglia per sample — proximity to any plaque (50 um threshold)") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+```{r}
+#| label: pool-distances
+# Pool per-slide distances into a single table with treatment annotation
+cell_distances_all <- bind_rows(
+  cell_distances_1 |> mutate(slide = 1L),
+  cell_distances_2 |> mutate(slide = 2L)
+) |>
+  mutate(
+    dist_any   = pmin(dist_caa, dist_paren),
+    prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+    prox_paren = if_else(dist_paren < 50,  "proximal", "distal"),
+    prox_any   = if_else(dist_any < 50,    "proximal", "distal")
+  )
+
+# Join treatment info from Seurat metadata
+treatment_lookup <- bind_rows(
+  slide1_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group),
+  slide2_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group)
+)
+
+cell_distances_all <- cell_distances_all |>
+  left_join(treatment_lookup, by = "cell")
+```
+
+```{r}
+#| label: ridge-distances-treatment
+#| fig-width: 12
+#| fig-height: 5
+#| fig-cap: "Distribution of microglia-to-plaque distances by treatment group. Distances are capped at 500 um for visualization."
+
+# Reshape to long format for faceted ridge plot
+ridge_df <- cell_distances_all |>
+  select(cell, Treatment.Group, dist_caa, dist_paren) |>
+  pivot_longer(cols = c(dist_caa, dist_paren),
+               names_to = "plaque_type", values_to = "distance") |>
+  mutate(
+    plaque_type  = recode(plaque_type, dist_caa = "CAA", dist_paren = "Parenchymal"),
+    distance_cap = pmin(distance, 500)
+  )
+
+ggplot(ridge_df, aes(x = distance_cap, y = Treatment.Group, fill = Treatment.Group)) +
+  geom_density_ridges(alpha = 0.6, scale = 1.2, rel_min_height = 0.01) +
+  geom_vline(xintercept = 50, linetype = "dashed", colour = "grey30") +
+  facet_wrap(~ plaque_type) +
+  scale_fill_manual(values = c("IgG" = "#4DAF4A", "Adu" = "#E41A1C")) +
+  labs(
+    x = "Distance to nearest plaque (um)",
+    y = NULL,
+    fill = "Treatment"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "bottom",
+    strip.text = element_text(size = 18))
+```
+
+Ridge density plots of microglia-to-plaque distances revealed a treatment-dependent shift for CAA but not parenchymal plaques: in aducanumab-treated brains, microglia were distributed further from CAA plaques compared to IgG controls. In contrast, microglia-to-parenchymal plaque distance distributions were nearly identical across treatment groups, with a sharp peak within 50 µm reflecting dense plaque-associated microglia clustering. 
+
+# Pseudobulk DE: Adu vs IgG in plaque-proximal microglia
+
+Within microglia that sit < 50 um from a plaque, we test which genes differ
+between aducanumab-treated (Adu, n = 3) and IgG-treated (n = 3) brains.
+Pseudobulk counts are aggregated per brain, then DESeq2 tests Adu vs IgG.
+This is run separately for CAA-proximal and parenchymal-proximal microglia.
+
+```{r}
+#| label: define-pseudobulk-builder
+# Aggregate single-cell counts into pseudobulk profiles via sparse indicator matrix
+build_pseudobulk <- function(slide_list, group_col) {
+  # Extract raw count matrices from each slide
+  all_counts <- map(slide_list, \(obj) {
+    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
+  })
+
+  # Build metadata with grouping column
+  all_meta <- map(slide_list, \(obj) {
+    obj@meta.data |>
+      rownames_to_column("cell") |>
+      mutate(pb_group = .data[[group_col]])
+  })
+
+  # Keep only genes shared across slides, then column-bind
+  shared_genes <- Reduce(intersect, map(all_counts, rownames))
+  counts <- do.call(cbind, map(all_counts, \(m) m[shared_genes, ]))
+  meta   <- bind_rows(all_meta)
+
+  # Sparse indicator matrix: cells x groups, multiplied to sum counts per group
+  groups <- unique(meta$pb_group)
+  indicator <- Matrix::sparseMatrix(
+    i = match(meta$cell, colnames(counts)),
+    j = match(meta$pb_group, groups),
+    x = 1,
+    dims = c(ncol(counts), length(groups)),
+    dimnames = list(colnames(counts), groups)
+  )
+
+  list(
+    pb_counts = as.matrix(counts %*% indicator),
+    meta      = meta,
+    groups    = groups
+  )
+}
+```
+
+
+```{r}
+#| label: define-de-function
+# DESeq2 runner: fits model, extracts results, builds volcano + sig table
+run_deseq2 <- function(
+    pb_counts,
+    col_data,
+    design_formula,
+    contrast,
+    plot_title    = "DE results",
+    plot_subtitle = "",
+    pval_threshold = 0.01
+) {
+  # Build DESeq2 dataset and filter lowly-expressed genes (< 10 total counts)
+  dds <- DESeqDataSetFromMatrix(
+    countData = pb_counts,
+    colData   = col_data,
+    design    = design_formula
+  )
+  keep <- rowSums(counts(dds)) >= 10
+  dds  <- dds[keep, ]
+
+  # Fit DESeq2 model and extract results for the specified contrast
+  dds <- DESeq(dds)
+  res <- results(dds, contrast = contrast)
+
+  # Tidy results table
+  res_df <- as.data.frame(res) |>
+    rownames_to_column("gene") |>
+    as_tibble() |>
+    dplyr::rename(
+      p_val      = pvalue,
+      p_val_adj  = padj,
+      avg_log2FC = log2FoldChange
+    ) |>
+    arrange(p_val_adj)
+
+  # Significant genes based on raw p-value threshold
+  sig_df    <- res_df |> filter(p_val < pval_threshold)
+  ev_df     <- res_df |> column_to_rownames("gene")
+  sig_genes <- sig_df$gene
+
+  # Colour significant genes red, rest grey
+  keyvals <- rep("grey60", nrow(ev_df))
+  names(keyvals) <- rownames(ev_df)
+  keyvals[sig_genes] <- "red2"
+
+  fc_range  <- range(ev_df$avg_log2FC, na.rm = TRUE)
+  xlim_vals <- c(floor(fc_range[1]), ceiling(fc_range[2]))
+
+  # Build volcano plot (EnhancedVolcano built-in cutoffs disabled)
+  volcano <- EnhancedVolcano(
+    ev_df,
+    lab            = rownames(ev_df),
+    selectLab      = sig_genes,
+    x              = "avg_log2FC",
+    y              = "p_val",
+    ylim           = c(0, 3),
+    title          = plot_title,
+    subtitle       = plot_subtitle,
+    labFace        = "italic",
+    labSize        = 6,
+    caption        = "",
+    pCutoff        = 1,
+    FCcutoff       = 0.001,
+    colCustom      = keyvals,
+    legendPosition = "none",
+    drawConnectors = TRUE,
+    directionConnectors = "both",
+    max.overlaps   = Inf,
+    xlim           = xlim_vals
+  )
+
+  # Add dashed line at the raw p-value of the least-significant DEG
+  if (length(sig_genes) > 0) {
+    raw_boundary <- max(ev_df[sig_genes, "p_val"], na.rm = TRUE)
+    volcano <- volcano +
+      geom_hline(yintercept = -log10(raw_boundary),
+                 linetype = "dashed", colour = "black")
+  }
+
+  list(
+    all_results         = ev_df,
+    significant_results = sig_df |> column_to_rownames("gene"),
+    volcano_plot        = volcano,
+    sig_genes           = sig_genes,
+    summary = list(
+      total_genes       = nrow(ev_df),
+      significant_genes = nrow(sig_df)
+    )
+  )
+}
+```
+
+```{r}
+#| label: define-treatment-de
+# Subset to proximal (or distal) cells, pseudobulk by sample, test Adu vs IgG
+run_treatment_de <- function(
+    slide_list,
+    proximity_col,
+    proximity_value,
+    plot_title
+) {
+  # Keep only cells matching the requested proximity group
+  slide_list_sub <- map(slide_list, \(obj) {
+    subset(obj, cells = colnames(obj)[obj[[proximity_col, drop = TRUE]] == proximity_value])
+  })
+
+  # Pseudobulk aggregation: one profile per sample (brain)
+  pb <- build_pseudobulk(slide_list_sub, "sample_ID")
+
+  # Map sample_ID to treatment group
+  treatment_map <- bind_rows(
+    map(slide_list, \(obj) {
+      obj@meta.data |> distinct(sample_ID, Treatment.Group)
+    })
+  ) |> distinct()
+
+  col_data <- data.frame(
+    treatment = factor(
+      treatment_map$Treatment.Group[match(pb$groups, treatment_map$sample_ID)],
+      levels = c("IgG", "Adu")
+    ),
+    row.names = pb$groups
+  )
+
+  run_deseq2(pb$pb_counts, col_data,
+             design_formula = ~ treatment,
+             contrast       = c("treatment", "Adu", "IgG"),
+             plot_title     = plot_title,
+             plot_subtitle  = "Adu vs IgG")
+}
+```
+
+
+The Xenium panel is small (480 genes) and not all genes are expressed in
+microglia. After subsetting to proximal cells and pseudobulk aggregation across
+only 6 samples (3 Adu + 3 IgG), many genes have near-zero total counts and are
+dropped by the `rowSums >= 10` filter. The table below traces the number of
+genes at each step.
+
+
+Given the limited biological replication (n = 3 per group) and the restricted gene panel, no genes reached significance after BH correction. **We report genes with nominal p < 0.01** as exploratory candidates requiring validation.
+```{r}
+#| label: gene-funnel
+# Step 1: genes in the Xenium panel (shared across slides)
+panel_genes <- intersect(
+  rownames(LayerData(slide1_mg, layer = "counts")),
+  rownames(LayerData(slide2_mg, layer = "counts"))
+)
+
+# Step 2: genes detected in at least 1 microglia cell (any proximity)
+all_counts <- cbind(
+  LayerData(slide1_mg, layer = "counts")[panel_genes, ],
+  LayerData(slide2_mg, layer = "counts")[panel_genes, ]
+)
+detected_in_mg <- sum(Matrix::rowSums(all_counts > 0) > 0)
+
+# Step 3–4: genes surviving pseudobulk count filter per proximity group
+count_after_pb <- function(slide_list, proximity_col, proximity_value) {
+  sub <- map(slide_list, \(obj) {
+    subset(obj, cells = colnames(obj)[obj[[proximity_col, drop = TRUE]] == proximity_value])
+  })
+  pb <- build_pseudobulk(sub, "sample_ID")
+  n_cells <- sum(map_int(sub, ncol))
+  n_genes_before <- nrow(pb$pb_counts)
+  n_genes_after  <- sum(rowSums(pb$pb_counts) >= 10)
+  tibble(n_cells = n_cells, genes_in_pb = n_genes_before, genes_after_filter = n_genes_after)
+}
+
+caa_stats   <- count_after_pb(list(slide1_mg, slide2_mg), "prox_caa",   "proximal")
+paren_stats <- count_after_pb(list(slide1_mg, slide2_mg), "prox_paren", "proximal")
+
+tibble(
+  step = c(
+    "Xenium panel (shared across slides)",
+    "Detected in >=1 microglia cell",
+    "CAA-proximal: cells in pseudobulk",
+    "CAA-proximal: genes in pseudobulk",
+    "CAA-proximal: genes after >=10 counts filter",
+    "Paren-proximal: cells in pseudobulk",
+    "Paren-proximal: genes in pseudobulk",
+    "Paren-proximal: genes after >=10 counts filter"
+  ),
+  count = c(
+    length(panel_genes),
+    detected_in_mg,
+    caa_stats$n_cells,
+    caa_stats$genes_in_pb,
+    caa_stats$genes_after_filter,
+    paren_stats$n_cells,
+    paren_stats$genes_in_pb,
+    paren_stats$genes_after_filter
+  )
+) |>
+  kbl(caption = "Gene filtering funnel — from Xenium panel to testable genes in DESeq2") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+## CAA — treatment DE
+
+```{r}
+#| label: trt-caa-proximal
+#| fig-width: 14
+#| fig-height: 6
+trt_caa_prox <- run_treatment_de(
+  list(slide1_mg, slide2_mg), "prox_caa", "proximal",
+  "Microglia proximal to CAA — Adu vs IgG"
+)
+
+# Significant genes table (or placeholder if none)
+sig_tbl <- if (nrow(trt_caa_prox$significant_results) > 0) {
+  trt_caa_prox$significant_results |>
+    dplyr::select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_caa_prox$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+## Parenchymal — treatment DE
+
+```{r}
+#| label: trt-paren-proximal
+#| fig-width: 14
+#| fig-height: 6
+trt_paren_prox <- run_treatment_de(
+  list(slide1_mg, slide2_mg), "prox_paren", "proximal",
+  "Microglia proximal to parenchymal — Adu vs IgG"
+)
+
+sig_tbl <- if (nrow(trt_paren_prox$significant_results) > 0) {
+  trt_paren_prox$significant_results |>
+    dplyr::select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_paren_prox$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+Aducanumab promotes a plaque-proximal microglial state marked by chemokine and inflammasome priming (_Ccl12, Ifitm3, Nlrp3_) and selective metabolic remodeling (Hk3↑, Pfkm↓, Ldhb↓), without engagement of the canonical _Itgax_⁺ DAM transcriptional program

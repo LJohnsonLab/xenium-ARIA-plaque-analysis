@@ -1,0 +1,39 @@
+# Rendered output
+*.html
+*.pdf
+
+# R
+.Rproj.user/
+.Rhistory
+.RData
+.Rdata
+.httr-oauth
+*.Rproj
+
+# Quarto
+_site/
+_freeze/
+.quarto/
+
+# Data files
+*.qs2
+*.h5
+*.h5ad
+*.h5seurat
+*.rds
+*.RDS
+*.xlsx
+*.csv
+!HALO_thioS_Akhil/*
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+CLAUDE.md
+

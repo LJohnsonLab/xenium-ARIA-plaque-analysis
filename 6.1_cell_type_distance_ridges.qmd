@@ -1,0 +1,244 @@
+---
+title: "Cell-type distance to plaque — ridge plots"
+subtitle: "Distance distributions per annotated cell type, faceted by plaque type and treatment"
+date: last-modified
+execute:
+  echo: true
+  warning: false
+embed-resources: true
+format: html
+code-fold: true
+tags: [xenium, coregistration, halo, ridge, cell-types]
+---
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+library(readxl)
+library(tidyverse)
+library(kableExtra)
+library(Seurat)
+library(RANN)
+library(ggridges)
+library(patchwork)
+options(scipen = 999)
+```
+
+```{r}
+#| label: load-halo
+# Read CAA plaque IDs from Akhil's Excel file (all 6 brains)
+caa_path <- "HALO_thioS_Akhil/20260217_CAAquant_AP.xlsx"
+
+caa_akhil <- excel_sheets(caa_path) |>
+  set_names() |>
+  map(\(sheet) read_excel(caa_path, sheet = sheet)) |>
+  bind_rows(.id = "sheet") |>
+  mutate(
+    brain = str_remove(sheet, "_AP"),
+    index = paste0(tolower(brain), "_", Id)
+  ) |>
+  pull(index)
+
+# Brain-to-sample mapping
+sample_dict <- tribble(
+  ~brain,   ~sample,   ~treatment, ~slide,
+  "Brain1", "KK4_465", "IgG",      1L,
+  "Brain2", "KK4_492", "Adu",      1L,
+  "Brain3", "KK4_504", "IgG",      1L,
+  "brain4", "KK4_496", "IgG",      2L,
+  "brain5", "KK4_502", "Adu",      2L,
+  "brain6", "KK4_464", "Adu",      2L
+)
+
+# Read HALO plaque CSVs, classify as CAA or Parenchymal
+thios_all <- list.files(
+  "HALO_thioS_Akhil",
+  pattern    = "^20260220.*AP\\.csv$",
+  full.names = TRUE
+) |>
+  map(\(x) read_csv(x, locale = locale(encoding = "latin1"))) |>
+  bind_rows() |>
+  rename_with(\(x) str_remove(x, "\\s*\\(.*\\)$")) |>
+  dplyr::rename(brain = "Analysis Region", objectID = "Object Id") |>
+  mutate(
+    index       = paste0(tolower(brain), "_", objectID),
+    plaque_type = if_else(index %in% caa_akhil, "CAA", "Parenchymal")
+  ) |>
+  left_join(sample_dict, by = "brain")
+
+thios_1 <- thios_all |> filter(slide == 1)
+thios_2 <- thios_all |> filter(slide == 2)
+```
+
+```{r}
+#| label: load-seurat
+# Load full Seurat objects (all cell types)
+path <- "/Users/arbones/Dropbox/SyncBriefcase/LAB/UK/Xenium/ARIA_Akhil/aria_analysis/seurat_objects/"
+
+slide1 <- qs2::qs_read(paste0(path, "20260217_Part2_fullobj_slide1.qs2"))
+slide2 <- qs2::qs_read(paste0(path, "20260217_Part2_fullobj_slide2.qs2"))
+
+message(sprintf("Cell types: %s",
+  paste(sort(unique(slide1$annotatedclusters)), collapse = ", ")))
+```
+
+# Compute cell-to-plaque distances
+
+```{r}
+#| label: compute-distances
+# Convert HALO pixel coords to um centroids (factor = 0.2125)
+make_centroids <- function(thios) {
+  thios |>
+    mutate(
+      x_plaque = ((XMin + XMax) / 2) * 0.2125,
+      y_plaque = ((YMin + YMax) / 2) * 0.2125,
+      plaque_id = index
+    ) |>
+    select(plaque_id, brain, sample, treatment, plaque_type, x_plaque, y_plaque)
+}
+
+plaque_centroids_1 <- make_centroids(thios_1)
+plaque_centroids_2 <- make_centroids(thios_2)
+
+caa_coords_1   <- plaque_centroids_1 |> filter(plaque_type == "CAA")
+caa_coords_2   <- plaque_centroids_2 |> filter(plaque_type == "CAA")
+paren_coords_1 <- plaque_centroids_1 |> filter(plaque_type == "Parenchymal")
+paren_coords_2 <- plaque_centroids_2 |> filter(plaque_type == "Parenchymal")
+
+# k-d tree nearest-neighbour distance from each cell to nearest CAA and parenchymal plaque
+compute_cell_distances <- function(seurat_obj, caa_coords, paren_coords) {
+  coords_df <- GetTissueCoordinates(seurat_obj) |>
+    as.data.frame() |>
+    dplyr::select(cell, x, y)
+
+  cell_mat  <- coords_df |> dplyr::select(x, y) |> as.matrix()
+  caa_mat   <- caa_coords   |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+  paren_mat <- paren_coords |> dplyr::select(x_plaque, y_plaque) |> as.matrix()
+
+  caa_nn   <- nn2(data = caa_mat,   query = cell_mat, k = 1)
+  paren_nn <- nn2(data = paren_mat, query = cell_mat, k = 1)
+
+  coords_df |>
+    mutate(
+      dist_caa   = caa_nn$nn.dist[, 1],
+      dist_paren = paren_nn$nn.dist[, 1]
+    )
+}
+
+cell_distances_1 <- compute_cell_distances(slide1, caa_coords_1, paren_coords_1)
+cell_distances_2 <- compute_cell_distances(slide2, caa_coords_2, paren_coords_2)
+```
+
+```{r}
+#| label: build-ridge-df
+# Join cell type and treatment from Seurat metadata
+meta_lookup <- bind_rows(
+  slide1@meta.data |> as_tibble(rownames = "cell") |>
+    select(cell, annotatedclusters, Treatment.Group),
+  slide2@meta.data |> as_tibble(rownames = "cell") |>
+    select(cell, annotatedclusters, Treatment.Group)
+)
+
+# Pool distances and join metadata
+cell_distances_all <- bind_rows(
+  cell_distances_1 |> mutate(slide = 1L),
+  cell_distances_2 |> mutate(slide = 2L)
+) |>
+  left_join(meta_lookup, by = "cell")
+
+# Reshape to long format: one row per cell per plaque type
+ridge_df <- cell_distances_all |>
+  pivot_longer(cols = c(dist_caa, dist_paren),
+               names_to = "plaque_type", values_to = "distance") |>
+  mutate(
+    plaque_type  = recode(plaque_type, dist_caa = "CAA", dist_paren = "Parenchymal"),
+    distance_cap = pmin(distance, 500)
+  )
+
+# Cell counts per cell type
+cell_distances_all |>
+  count(annotatedclusters, Treatment.Group, name = "n_cells") |>
+  pivot_wider(names_from = Treatment.Group, values_from = n_cells, values_fill = 0) |>
+  mutate(total = Adu + IgG) |>
+  arrange(desc(total)) |>
+  kbl(caption = "Cell counts per annotated cluster and treatment") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+# Ridge plots — all cell types
+
+Distance distributions for each cell type to the nearest CAA and parenchymal
+plaque, split by treatment group. Distances capped at 500 um for visualisation.
+The dashed line marks the 50 um proximity threshold.
+
+```{r}
+#| label: ridge-all-celltypes
+#| fig-height: 25
+#| fig-cap: "Distance from each cell to its nearest plaque, stratified by annotated cell type and treatment. Faceted by plaque type (CAA vs Parenchymal)."
+
+# Drop cells without annotation, then order by median distance to parenchymal plaques
+ridge_df <- ridge_df |> filter(!is.na(annotatedclusters))
+
+ct_order <- cell_distances_all |>
+  filter(!is.na(annotatedclusters)) |>
+  group_by(annotatedclusters) |>
+  summarise(med_dist = median(dist_paren), .groups = "drop") |>
+  arrange(med_dist) |>
+  pull(annotatedclusters)
+
+ridge_df <- ridge_df |>
+  mutate(annotatedclusters = factor(annotatedclusters, levels = ct_order))
+
+ggplot(ridge_df, aes(x = distance_cap, y = annotatedclusters, fill = Treatment.Group)) +
+  geom_density_ridges(alpha = 0.5, scale = 1.2, rel_min_height = 0.01) +
+  geom_vline(xintercept = 50, linetype = "dashed", colour = "grey30") +
+  facet_wrap(~ plaque_type) +
+  scale_fill_manual(values = c("IgG" = "#4DAF4A", "Adu" = "#E41A1C")) +
+  labs(
+    x = "Distance to nearest plaque (um, capped at 500)",
+    y = NULL,
+    fill = "Treatment"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    strip.text = element_text(size = 14, face = "bold")
+  )
+```
+
+```{r}
+#| label: ridge-per-celltype
+#| fig-width: 12
+#| fig-height: 5
+#| results: asis
+#| fig-cap: "Per-cell-type ridge plots of distance to nearest plaque by treatment."
+
+# Individual ridge plots per cell type for closer inspection
+for (ct in ct_order) {
+  sub_df <- ridge_df |> filter(annotatedclusters == ct)
+  if (nrow(sub_df) == 0) next
+  cat(sprintf("\n## %s\n\n", ct))
+
+  p <- sub_df |>
+    ggplot(aes(x = distance_cap, y = Treatment.Group, fill = Treatment.Group)) +
+    geom_density_ridges(alpha = 0.6, scale = 1.2, rel_min_height = 0.01) +
+    geom_vline(xintercept = 50, linetype = "dashed", colour = "grey30") +
+    facet_wrap(~ plaque_type) +
+    scale_fill_manual(values = c("IgG" = "#4DAF4A", "Adu" = "#E41A1C")) +
+    labs(
+      title = ct,
+      x = "Distance to nearest plaque (um, capped at 500)",
+      y = NULL,
+      fill = "Treatment"
+    ) +
+    theme_minimal(base_size = 15) +
+    theme(legend.position = "bottom",
+    panel.grid = element_blank())
+
+  print(p)
+  cat("\n\n")
+}
+```
