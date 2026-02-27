@@ -200,9 +200,9 @@ classify_proximity <- function(dist_data) {
         dist_caa < 50  ~ "<50um",
         dist_caa >= 50 ~ "≥50um"),
       parenchymal = case_when(
-        dist_paren < 50                    ~ "<50um",
-        between(dist_paren, 50, 150)       ~ "50-150um",
-        dist_paren >= 150                  ~ "≥150um"),
+        dist_paren < 50                        ~ "<50um",
+        dist_paren >= 50 & dist_paren < 150   ~ "50-150um",
+        dist_paren >= 150                      ~ "≥150um"),
       classification = if_else(dist_caa < dist_paren, "CAA", "Parenchymal")
     ) |>
     select(dist_caa:classification)
@@ -219,11 +219,11 @@ c1 <- compareGroups(sample_ID ~ caa + parenchymal + classification, data = md, m
 export2md(createTable(c1, show.p.overall = FALSE), caption = "")
 ```
 
-At the treatment-group level, statistically significant differences in spatial proximity were detected between Aducanumab-treated (n=179,686 cells) and IgG-control (n=178,713 cells) animals. A higher proportion of IgG cells were in close proximity (<50 µm) to parenchymal plaques compared to Aducanumab-treated animals (48.0% vs. 42.5%; p<0.001), while Aducanumab-treated animals had a greater fraction of cells at intermediate-to-distal parenchymal distances (50–150 µm: 45.7% vs. 42.5%; >150 µm: 11.8% vs. 9.54%). The proportion of cells classified as CAA-proximal was modestly but significantly higher in the IgG group (9.53% vs. 9.01%; p<0.001). These findings suggest that Aducanumab treatment is associated with a subtle but statistically detectable reorganisation of the cellular microenvironment around amyloid deposits. Note that the large cell counts (n > 100k per group) confer high statistical power to detect even small differences; effect sizes should be interpreted accordingly, and downstream analyses using vascular gene expression scores will be essential to determine whether these spatial shifts are biologically meaningful.
+**Caveat — pseudoreplication.** The cell-level p-values in the table below treat each cell as an independent observation, but cells from the same brain are not independent. The true experimental unit is the brain (n = 3 Adu vs 3 IgG), so these p-values are inflated by pseudoreplication and should be treated as descriptive summaries only. Formal treatment comparisons use pseudobulk aggregation (see notebooks 7 and 8). Consult the computed table for exact numbers.
 
 ```{r}
 c2 <- compareGroups(Treatment.Group ~ caa + parenchymal + classification, data = md)
 export2md(createTable(c2), caption = "")
 ```
 
-_Note that the large cell counts (n > 100k per group) confer high statistical power to detect even small differences. Effect sizes should be interpreted accordingly._
+_**Pseudoreplication warning:** these cell-level statistics treat each cell as independent, but the true unit of replication is the brain (n = 3 per group). P-values are therefore inflated and should not be used for formal inference. See pseudobulk DE in notebooks 7 and 8 for properly replicated treatment comparisons._

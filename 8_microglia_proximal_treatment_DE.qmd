@@ -421,7 +421,7 @@ run_treatment_de <- function(
 ```
 
 
-The Xenium panel is small (480 genes) and not all genes are expressed in
+The Xenium panel is small (~480 genes in total) and not all genes are expressed in
 microglia. After subsetting to proximal cells and pseudobulk aggregation across
 only 6 samples (3 Adu + 3 IgG), many genes have near-zero total counts and are
 dropped by the `rowSums >= 10` filter. The table below traces the number of
@@ -534,4 +534,4 @@ sig_tbl <- if (nrow(trt_paren_prox$significant_results) > 0) {
 trt_paren_prox$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
 ```
 
-Aducanumab promotes a plaque-proximal microglial state marked by chemokine and inflammasome priming (_Ccl12, Ifitm3, Nlrp3_) and selective metabolic remodeling (Hk3↑, Pfkm↓, Ldhb↓), without engagement of the canonical _Itgax_⁺ DAM transcriptional program
+Among nominally significant genes (p < 0.01, uncorrected; no genes passed BH correction at n = 3 vs 3), aducanumab-treated microglia near parenchymal plaques show exploratory signals of chemokine and inflammasome priming (_Ccl12, Ifitm3, Nlrp3_) and selective metabolic remodeling (Hk3↑, Pfkm↓, Ldhb↓), without engagement of the canonical _Itgax_⁺ DAM transcriptional program. These patterns are exploratory and require validation in larger cohorts.

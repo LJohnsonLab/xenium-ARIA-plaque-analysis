@@ -217,9 +217,9 @@ ggplot(ridge_df, aes(x = distance_cap, y = annotatedclusters, fill = Treatment.G
 #| fig-cap: "Per-cell-type ridge plots of distance to nearest plaque by treatment."
 
 # Individual ridge plots per cell type for closer inspection
-for (ct in ct_order) {
+walk(ct_order, \(ct) {
   sub_df <- ridge_df |> filter(annotatedclusters == ct)
-  if (nrow(sub_df) == 0) next
+  if (nrow(sub_df) == 0) return(invisible(NULL))
   cat(sprintf("\n## %s\n\n", ct))
 
   p <- sub_df |>
@@ -240,5 +240,5 @@ for (ct in ct_order) {
 
   print(p)
   cat("\n\n")
-}
+})
 ```

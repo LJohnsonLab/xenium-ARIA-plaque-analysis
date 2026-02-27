@@ -364,7 +364,7 @@ show_top <- function(results, label) {
   ) |>
     select(gene, rho, rho_flip, pval, padj, rank, sig) |>
     mutate(across(c(rho, rho_flip), \(x) round(x, 4)),
-           across(c(pval, padj), \(x) signif(x, 3)))
+           across(c(pval, padj), \(x) ifelse(x < 1e-300, "< 1e-300", formatC(x, format = "e", digits = 2))))
 
   top |>
     kbl(caption = label) |>

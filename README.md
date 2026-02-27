@@ -9,8 +9,8 @@ This project co-registers HALO-segmented ThioS-positive amyloid plaques with 10x
 - **Plaque burden** is comparable between Adu and IgG groups (no significant difference in total plaque area, CAA area, or parenchymal area).
 - **Gene-distance correlations** (all cell types) show neuronal markers (Lamp5, Stard8, Cux2) enriched near CAA plaques and immune/microglial markers (Cst7, Trem2, Cd68, Lyz2) enriched near parenchymal plaques.
 - **Microglia-specific correlations** confirm immune activation genes (Cst7, Cd68, Bcl2a1b) are upregulated in microglia proximal to both plaque types, consistent with disease-associated microglia (DAM) signatures.
-- **Treatment DE** in CAA-proximal microglia identifies **Il1b** as upregulated under Adu treatment (log2FC = 1.16, p = 0.005), suggesting a treatment-dependent inflammatory response at vascular amyloid deposits.
-- **Ridge plot analysis** reveals a treatment-dependent spatial shift: Adu-treated cells tend to sit closer to CAA plaques than IgG controls, while parenchymal plaque distances are largely unaffected.
+- **Treatment DE** in CAA-proximal microglia: no genes passed BH correction (expected given n = 3 vs 3 and ~370 testable genes). Among nominal candidates (p < 0.01, uncorrected), **Il1b** (log2FC = 1.16, p = 0.005) is an exploratory hit suggesting a possible treatment-dependent inflammatory response at vascular amyloid deposits; validation in larger cohorts is required.
+- **Ridge plot analysis** reveals a treatment-dependent spatial shift: Adu-treated microglia are distributed **further** from CAA plaques than IgG controls, while parenchymal plaque distances are largely unaffected.
 
 ## Repository Structure
 
@@ -29,7 +29,7 @@ This project co-registers HALO-segmented ThioS-positive amyloid plaques with 10x
 
 ### 1. Expand treatment DE beyond microglia
 
-The current pseudobulk DE is restricted to microglia. Other cell types that cluster near plaques (astrocytes, oligodendrocytes, OPCs) may also show treatment-dependent transcriptional changes. Running Adu vs IgG DE for each cell type proximal to CAA and parenchymal plaques would reveal whether the Il1b signal is microglia-specific or part of a broader inflammatory programme.
+The current pseudobulk DE is restricted to microglia. Other cell types that cluster near plaques (astrocytes, oligodendrocytes, OPCs) may also show treatment-dependent transcriptional changes. Running Adu vs IgG DE for each cell type proximal to CAA and parenchymal plaques would reveal whether the nominal Il1b signal (uncorrected p < 0.01) is microglia-specific or part of a broader inflammatory programme.
 
 ### 2. Plaque-size-stratified analysis
 
@@ -45,7 +45,7 @@ Moran's I or similar spatial statistics could test whether gene expression is sp
 
 ### 5. Pathway and gene-set enrichment
 
-The Xenium panel (~370 genes) limits conventional pathway analysis, but curated gene sets (DAM signature, complement cascade, cytokine signalling) could be tested for coordinated enrichment near plaques. A gene-set-level correlation with distance would be more robust than single-gene tests given the panel size.
+The Xenium panel (~480 total genes, ~370 after microglia filtering) limits conventional pathway analysis, but curated gene sets (DAM signature, complement cascade, cytokine signalling) could be tested for coordinated enrichment near plaques. A gene-set-level correlation with distance would be more robust than single-gene tests given the panel size.
 
 ### 6. Interaction modelling (distance x treatment)
 
@@ -53,7 +53,7 @@ The current analyses test distance and treatment separately. A formal interactio
 
 ### 7. Validation with larger cohorts
 
-With n = 3 per group, statistical power is limited. Replicating the Il1b finding and other top hits in an independent cohort or with additional biological replicates would strengthen the conclusions. The pseudobulk framework is ready to accommodate additional samples.
+With n = 3 per group, statistical power is limited and no genes survived BH correction in the pseudobulk DE. Replicating the nominal Il1b finding and other top hits in an independent cohort or with additional biological replicates would strengthen the conclusions. The pseudobulk framework is ready to accommodate additional samples.
 
 ### 8. CAA subtype characterisation
 
