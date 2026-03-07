@@ -80,7 +80,9 @@ bind_rows(cell_distances_1, cell_distances_2) |>
 
 ## Proximity classification
 
-Each cell was assigned to either the CAA or parenchymal plaque neighbourhood *based on which plaque type was spatially closer*. Across the six samples (n = 51,959–69,664 cells per brain), the large majority of cells were classified as parenchymal-proximal (87.5–92.9% per sample), with 7.4–12.5% classified as CAA-proximal, broadly reflecting the disparity in plaque abundance between types. Between 4.1–6.6% of cells per sample fell within the 50 µm CAA proximity threshold, while 38.5–52.2% of cells were within 50 µm of a parenchymal plaque.
+Each cell was assigned to either the CAA or parenchymal plaque neighbourhood *based on which plaque type was spatially closer*.  
+
+Across the six samples (n = 51,959–69,664 cells per brain), the large majority of cells were classified as parenchymal-proximal (87.5–92.9% per sample), with 7.4–12.5% classified as CAA-proximal, broadly reflecting the disparity in plaque abundance between types. Between 4.1–6.6% of cells per sample fell within the 50 µm CAA proximity threshold, while 38.5–52.2% of cells were within 50 µm of a parenchymal plaque.
 
 
 
@@ -111,14 +113,14 @@ slide2 <- AddMetaData(slide2, classify_proximity(cell_distances_2))
 md <- bind_rows(slide1@meta.data, slide2@meta.data)
 
 c1 <- compareGroups(sample_ID ~ caa + parenchymal + classification, data = md, max.ylev = 6)
-export2md(createTable(c1, show.p.overall = FALSE), caption = "")
+export2md(createTable(c1, show.p.overall = FALSE), caption = "Per sample")
 ```
 
-**Caveat — pseudoreplication.** The cell-level p-values in the table below treat each cell as an independent observation, but cells from the same brain are not independent. The true experimental unit is the brain (n = 3 Adu vs 3 IgG), so these p-values are inflated by pseudoreplication and should be treated as descriptive summaries only. Formal treatment comparisons use pseudobulk aggregation (see notebooks 7 and 8). Consult the computed table for exact numbers.
+
 
 ```{r}
 c2 <- compareGroups(Treatment.Group ~ caa + parenchymal + classification, data = md)
-export2md(createTable(c2), caption = "")
+export2md(createTable(c2), caption = "Per treatment group")
 ```
 
 _**Pseudoreplication warning:** these cell-level statistics treat each cell as independent, but the true unit of replication is the brain (n = 3 per group). P-values are therefore inflated and should not be used for formal inference. See pseudobulk DE in notebooks 7 and 8 for properly replicated treatment comparisons._
