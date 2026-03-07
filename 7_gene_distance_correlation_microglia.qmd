@@ -384,6 +384,42 @@ cor_any <- compute_gene_distance_correlation(
 
 ## Rank plots
 
+The microglia-specific gene-distance correlation, split by plaque type reveals that microglia activate fundamentally different transcriptional programmes near CAA vs parenchymal plaques.      
+                                                                                                                                                                                                            
+**Parenchymal plaque (righ panel)**                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                                                                                                         
+Near plaque (orange): Classic **DAM** (Disease-Associated Microglia) signature:
+
+  - Cst7 (rho ~0.45) — the canonical DAM marker, cystatin F, involved in lysosomal processing
+  - Ctsb, Cd63 — lysosomal/endosomal genes: microglia near parenchymal plaques are actively phagocytosing amyloid
+  - Lyz2 — lysozyme, antimicrobial/inflammatory
+  - Lpl — lipoprotein lipase, lipid metabolism rewiring in DAM
+
+  Far from plaque (purple): **Homeostatic** microglia signature:
+
+  - P2ry12, Tmem119 — the two defining homeostatic microglia markers. Their strong negative rho confirms that microglia lose their resting identity as they approach parenchymal plaques.
+  - Maf, Ptgs1, Lpcat2 — transcription factor and lipid metabolism genes associated with the surveilling/quiescent state
+
+ 
+
+**CAA plaque (left panel)**
+
+_The effect sizes are much smaller (~0.08 vs ~0.45) and the gene signature is completely different_.
+
+Near CAA (orange): This is a lipid/cholesterol metabolism programme, not a phagocytic one. CAA sits in vessel walls, and microglia nearby appear to be responding to vascular lipid dysregulation rather than engulfing
+  amyloid.
+
+  - Glul — glutamine synthetase, typically an astrocyte gene but also involved in glutamate-glutamine cycling at the vasculature
+  - Abhd17a — depalmitoylase, involved in protein trafficking
+  - Srebf2, Hmgcs1 — cholesterol biosynthesis pathway (SREBP2 is the master regulator, HMGCS1 is its direct target)
+  - Acsl6 — fatty acid activation
+
+  
+  Far from CAA (purple): 
+
+  - Lgals3bp, Ftl1 — galectin-binding and ferritin (iron storage)
+  - Abca1, Abcg1 — cholesterol efflux transporters (ABC family). 
+
 
 ```{r}
 #| label: plot-caa-paren-combined
