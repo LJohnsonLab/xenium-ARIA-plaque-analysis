@@ -1,0 +1,276 @@
+---
+title: "Neighborhood Enrichment"
+subtitle: "Cell-type proximity enrichment and niche composition near plaques via Giotto"
+date: last-modified
+execute:
+  echo: true
+  warning: false
+embed-resources: true
+format: html
+code-fold: true
+tags: [xenium, coregistration, halo, spatial, niche, giotto, proximity, neighborhood]
+---
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+source("R/setup.R")
+library(Giotto)
+library(patchwork)
+options(future.globals.maxSize = 8 * 1024^3)  # 8 GiB for large Giotto objects
+
+data <- load_slides_and_distances("full")
+slide1 <- data$slide1; slide2 <- data$slide2
+cell_distances_1 <- data$distances_1; cell_distances_2 <- data$distances_2
+cell_distances_all <- data$distances_all
+
+# Treatment lookup for joining to niche results
+treatment_lookup <- cell_distances_all |> dplyr::select(cell, Treatment.Group)
+```
+
+# Load Giotto objects
+
+Giotto objects with Delaunay and kNN(15) spatial networks were pre-computed in notebook 10 (`10_global_spatial_autocorrelation.qmd`) and saved to disk.
+
+```{r}
+#| label: load-giotto-objects
+giotto1 <- qs2::qs_read("spatial/giotto1.qs2")
+giotto2 <- qs2::qs_read("spatial/giotto2.qs2")
+```
+
+# Cell-type proximity enrichment
+
+Using the Delaunay spatial network, we test which cell-type pairs co-localise more (or less) than expected by chance via permutation testing. This reveals the cellular neighbourhoods independent of plaque proximity.
+
+```{r}
+#| label: cell-type-proximity-enrichment
+#| eval: false
+
+CPscore_1 <- cellProximityEnrichment(
+  giotto1,
+  cluster_column = "annotatedclusters",
+  spatial_network_name = "delaunay",
+  number_of_simulations = 1000
+)
+
+CPscore_2 <- cellProximityEnrichment(
+  giotto2,
+  cluster_column = "annotatedclusters",
+  spatial_network_name = "delaunay",
+  number_of_simulations = 1000
+)
+
+# qs_save is not supported for the next objects
+# saveRDS(CPscore_1, "spatial/CPscore_1.rds")
+# saveRDS(CPscore_2, "spatial/CPscore_2.rds")
+```
+
+```{r}
+#| label: load-cell-type-proximity-enrichment
+
+CPscore_1 <- readRDS("spatial/CPscore_1.rds")
+CPscore_2 <- readRDS("spatial/CPscore_2.rds")
+```
+
+## Co-localization heatmaps
+
+```{r}
+#| label: cell-proximity-heatmap
+#| fig-height: 10
+#| fig-width: 18
+p_heat1 <- cellProximityHeatmap(
+  gobject = giotto1,
+  CPscore = CPscore_1,
+  order_cell_types = TRUE,
+  show_plot = FALSE,
+  return_plot = TRUE)
+
+p_heat2 <- cellProximityHeatmap(
+  gobject = giotto2,
+  CPscore = CPscore_2,
+  order_cell_types = TRUE,
+  show_plot = FALSE,
+  return_plot = TRUE
+)
+p_heat1@column_title <- "Slide 1"
+p_heat2@column_title <- "Slide 2"
+p_heat1
+p_heat2
+```
+
+## Co-localization network
+
+```{r}
+#| label: cell-proximity-network-plot
+#| column: page
+#| fig-height: 8
+#| fig-width: 16
+p_net1 <- cellProximityNetwork(
+  gobject = giotto1,
+  CPscore = CPscore_1,
+  show_plot = FALSE,
+  return_plot = TRUE
+) + ggtitle("Slide 1")
+
+p_net2 <- cellProximityNetwork(
+  gobject = giotto2,
+  CPscore = CPscore_2,
+  show_plot = FALSE,
+  return_plot = TRUE
+) + ggtitle("Slide 2")
+
+p_net1
+p_net2
+```
+
+## Combined co-localisation (mean across slides)
+
+```{r}
+#| label: combined-proximity-scores
+# Average enrichment scores across slides
+enrich_combined <- bind_rows(
+  CPscore_1$enrichm_res |> mutate(slide = 1L),
+  CPscore_2$enrichm_res |> mutate(slide = 2L)
+) |>
+  group_by(unified_int, type_int) |>
+  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)), .groups = "drop")
+
+# Rebuild CPscore-like list so Giotto plotting functions accept it
+CPscore_avg <- list(enrichm_res = data.table::as.data.table(enrich_combined))
+```
+
+```{r}
+#| label: combined-proximity-heatmap
+#| fig-height: 5
+#| fig-width: 10
+cellProximityHeatmap(
+  gobject = giotto1,
+  CPscore = CPscore_avg,
+  order_cell_types = TRUE,
+  show_plot = TRUE,
+  return_plot = FALSE
+)
+```
+
+```{r}
+#| label: combined-proximity-network
+#| column: page
+#| fig-height: 8
+#| fig-width: 12
+cellProximityNetwork(
+  gobject = giotto1,
+  CPscore = CPscore_avg,
+  show_plot = TRUE,
+  return_plot = FALSE
+)
+```
+
+
+Cell-type proximity enrichment was assessed using Delaunay triangulation-based spatial networks with 1,000 permutations per slide. Results were consistent across both tissue sections. A clear vascular module emerged: BAM (border-associated macrophages), VLMC, VSMC, fibroblasts, choroid plexus, and ependymal cells were strongly co-localised with each other, forming a coherent perivascular/meningeal neighbourhood. Endothelial cells and pericytes co-localised with this vascular cluster and with astrocytes, consistent with the neurovascular unit. Neuronal subtypes (glutamatergic and GABAergic) showed strong self-association and mutual co-localisation, reflecting the laminar organisation of cortical and hippocampal regions, while being depleted near vascular cell types. Microglia showed moderate co-localisation with multiple cell types without strong enrichment toward any single partner, consistent with their dispersed surveillance role throughout the parenchyma. OPCs and oligodendrocytes co-localised with each other and with neuronal subtypes, reflecting their distribution along axonal tracts.
+
+
+# Niche composition near plaques
+
+For each cell within 30 µm of a plaque, we compute the cell-type composition of its 15 nearest neighbours. This reveals whether the cellular microenvironment differs between CAA and parenchymal plaques.
+
+```{r}
+#| label: niche-composition-near-plaques
+compute_niche_composition <- function(seurat_obj, cell_distances, threshold = 30) {
+  proximal_info <- cell_distances |>
+    mutate(
+      nearest_type = if_else(dist_caa < dist_paren, "CAA", "Parenchymal"),
+      min_dist     = pmin(dist_caa, dist_paren)
+    ) |>
+    filter(min_dist < threshold)
+
+  if (nrow(proximal_info) == 0) return(tibble())
+
+  coords <- GetTissueCoordinates(seurat_obj) |> as.data.frame()
+  meta   <- seurat_obj@meta.data |> as_tibble(rownames = "cell")
+
+  all_mat  <- coords |> dplyr::select(x, y) |> as.matrix()
+  prox_idx <- match(proximal_info$cell, coords$cell)
+  prox_idx <- prox_idx[!is.na(prox_idx)]
+
+  nn_res <- nn2(data = all_mat, query = all_mat[prox_idx, ], k = 16)
+
+  map(seq_along(prox_idx), \(i) {
+    neighbour_idx <- nn_res$nn.idx[i, -1]
+    tibble(
+      focal_cell     = coords$cell[prox_idx[i]],
+      neighbour_type = meta$annotatedclusters[neighbour_idx]
+    )
+  }) |>
+    bind_rows() |>
+    count(focal_cell, neighbour_type) |>
+    group_by(focal_cell) |>
+    mutate(prop = n / sum(n)) |>
+    ungroup() |>
+    left_join(
+      proximal_info |> dplyr::select(cell, nearest_type),
+      by = c("focal_cell" = "cell")
+    )
+}
+
+niche_1 <- compute_niche_composition(slide1, cell_distances_1)
+niche_2 <- compute_niche_composition(slide2, cell_distances_2)
+niche_all <- bind_rows(niche_1 |> mutate(slide = 1L), niche_2 |> mutate(slide = 2L))
+```
+
+## Niche composition heatmap: CAA vs parenchymal
+
+```{r}
+#| label: niche-composition-heatmap
+#| column: page
+#| fig-height: 3
+#| fig-width: 10
+niche_summary <- niche_all |>
+  group_by(nearest_type, neighbour_type) |>
+  summarise(mean_prop = mean(prop, na.rm = TRUE), .groups = "drop")
+
+niche_summary |>
+  ggplot(aes(x = neighbour_type, y = nearest_type, fill = mean_prop)) +
+  geom_tile(colour = "white") +
+  geom_text(aes(label = round(mean_prop, 3)), size = 2.5) +
+  scale_fill_viridis_c(option = "magma", name = "Mean\nproportion") +
+  labs(
+    title = "Niche composition near plaques (< 30 µm)",
+    subtitle = "Mean proportion of each cell type among 15 nearest neighbours",
+    x = "Neighbour cell type", y = "Nearest plaque type"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Niche composition by treatment
+
+```{r}
+#| label: niche-composition-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+niche_all <- niche_all |>
+  left_join(treatment_lookup, by = c("focal_cell" = "cell"))
+
+niche_treatment <- niche_all |>
+  group_by(Treatment.Group, nearest_type, neighbour_type) |>
+  summarise(mean_prop = mean(prop, na.rm = TRUE), .groups = "drop")
+
+niche_treatment |>
+  ggplot(aes(x = neighbour_type, y = nearest_type, fill = mean_prop)) +
+  geom_tile(colour = "white") +
+  geom_text(aes(label = round(mean_prop, 3)), size = 2) +
+  scale_fill_viridis_c(option = "magma", name = "Mean\nproportion") +
+  facet_wrap(~Treatment.Group, ncol = 1) +
+  labs(
+    title = "Niche composition: Adu vs IgG",
+    subtitle = "Plaque-proximal cells (< 30 µm), stratified by treatment",
+    x = "Neighbour cell type", y = "Nearest plaque type"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+For each cell within 30 um of a plaque, we computed the cell-type composition of its 15 nearest spatial neighbours. CAA and parenchymal plaques occupied distinct cellular microenvironments. CAA-proximal cells were enriched for vascular cell types: endothelial cells, fibroblasts, ependymal cells, and choroid plexus, consistent with the perivascular localisation of cerebral amyloid angiopathy. Parenchymal plaque-proximal cells were enriched for glutamatergic neurons (particularly subtypes 1 and 2), reflecting the preferential deposition of parenchymal amyloid within the grey matter neuropil. Both plaque types showed comparable proportions of microglia and astrocytes in their microenvironment. When stratified by treatment, the niche composition was broadly similar between Adu and IgG groups for both plaque types, suggesting that aducanumab treatment does not substantially remodel the cellular neighbourhood architecture around surviving plaques at this resolution.

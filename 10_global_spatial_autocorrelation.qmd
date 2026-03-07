@@ -1,6 +1,6 @@
 ---
-title: "Spatial autocorrelation and niche analysis"
-subtitle: "Moran's I, cell-type co-localisation, and niche composition via Giotto"
+title: "Global Spatial Autocorrelation"
+subtitle: "Moran's I and Geary's C via spdep — kNN(15) spatial weights"
 date: last-modified
 execute:
   echo: true
@@ -8,7 +8,7 @@ execute:
 embed-resources: true
 format: html
 code-fold: true
-tags: [xenium, coregistration, halo, spatial, autocorrelation, niche, giotto]
+tags: [xenium, coregistration, halo, spatial, autocorrelation, giotto, moran, geary]
 ---
 
 # Setup and data loading
@@ -19,11 +19,11 @@ source("R/setup.R")
 library(Giotto)
 library(patchwork)
 library(ggrepel)
+library(spdep)
 options(future.globals.maxSize = 8 * 1024^3)  # 8 GiB for large Giotto objects
 
 data <- load_slides_and_distances("full")
 slide1 <- data$slide1; slide2 <- data$slide2
-cell_distances_1 <- data$distances_1; cell_distances_2 <- data$distances_2
 cell_distances_all <- data$distances_all
 ```
 
@@ -71,17 +71,17 @@ giotto2 <- seurat_to_giotto_manual(slide2)
 
 # Spatial networks
 
-Spatial autocorrelation analyses quantify whether nearby cells have more similar gene expression than expected by chance (positive autocorrelation; “spatial clustering”), or instead tend to differ (negative autocorrelation; “spatial dispersion”). The definition of “nearby” is therefore a modelling choice that must be made explicit, and it is encoded in a spatial weights/neighbor graph.
+Spatial autocorrelation analyses quantify whether nearby cells have more similar gene expression than expected by chance (positive autocorrelation; "spatial clustering"), or instead tend to differ (negative autocorrelation; "spatial dispersion"). The definition of "nearby" is therefore a modelling choice that must be made explicit, and it is encoded in a spatial weights/neighbor graph.
 
 We build two types of spatial networks per slide, because they address different biological questions:
 
 - **Delaunay triangulation**: connects immediate spatial neighbours; used for cell-type co-localisation enrichment (who tends to sit next to whom), which is naturally framed as adjacency.
 
-- **k-nearest neighbours** (k=15): connects each cell to its 15 closest neighbours; used for Moran’s I and Geary’s C, which require a weights structure over neighbors and are easier to compare across regions when neighborhood size is fixed.
+- **k-nearest neighbours** (k=15): connects each cell to its 15 closest neighbours; used for Moran's I and Geary's C, which require a weights structure over neighbors and are easier to compare across regions when neighborhood size is fixed.
 
-For Moran’s I / Geary’s C, we use **row-standardized weights** (`style = "W" in spdep::nb2listw`), which rescales each cell’s outgoing neighbour weights to sum to 1. This reduces sensitivity to differences in effective connectivity (for example, edge cells versus interior cells), because each cell contributes comparably to the global statistic after normalization.
+For Moran's I / Geary's C, we use **row-standardized weights** (`style = "W" in spdep::nb2listw`), which rescales each cell's outgoing neighbour weights to sum to 1. This reduces sensitivity to differences in effective connectivity (for example, edge cells versus interior cells), because each cell contributes comparably to the global statistic after normalization.
 
-Finally, **kNN neighbourhoods are generally directed/asymmetric** (cell A can include cell B among its 15 nearest neighbours even if cell B does not include cell A), so the implied weights matrix is not guaranteed symmetric. Because classical inference for Moran’s I can be sensitive to the neighbor graph (and symmetry is an assumption in common derivations), we emphasize Moran’s I and Geary’s C primarily as effect sizes for ranking genes by spatial structure, and interpret analytical p-values cautiously.
+Finally, **kNN neighbourhoods are generally directed/asymmetric** (cell A can include cell B among its 15 nearest neighbours even if cell B does not include cell A), so the implied weights matrix is not guaranteed symmetric. Because classical inference for Moran's I can be sensitive to the neighbor graph (and symmetry is an assumption in common derivations), we emphasize Moran's I and Geary's C primarily as effect sizes for ranking genes by spatial structure, and interpret analytical p-values cautiously.
 
 ```{r}
 #| label: create-spatial-networks
@@ -104,9 +104,9 @@ giotto2 <- qs2::qs_read("spatial/giotto2.qs2")
 
 # Moran's I — global spatial autocorrelation
 
-Global Moran’s I summarizes whether a gene’s expression is spatially clustered across the full tissue section at the scale defined by the kNN(15) graph. Intuitively, Moran’s I increases when cells tend to resemble their neighbours (e.g., high-expression cells near other high-expression cells), producing broad spatial domains, while values near 0 indicate little spatial structure at this scale. Negative values indicate local alternation (neighbours tending to differ), which is less common in many biological expression maps but can occur for sharply alternating patterns.
+Global Moran's I summarizes whether a gene's expression is spatially clustered across the full tissue section at the scale defined by the kNN(15) graph. Intuitively, Moran's I increases when cells tend to resemble their neighbours (e.g., high-expression cells near other high-expression cells), producing broad spatial domains, while values near 0 indicate little spatial structure at this scale. Negative values indicate local alternation (neighbours tending to differ), which is less common in many biological expression maps but can occur for sharply alternating patterns.
 ​
-Here, Moran’s I is used mainly as a **ranking statistic**: genes with higher Moran’s I show stronger spatial patterning and are more likely to reflect anatomy, cell-type organization, or spatially restricted biological processes
+Here, Moran's I is used mainly as a **ranking statistic**: genes with higher Moran's I show stronger spatial patterning and are more likely to reflect anatomy, cell-type organization, or spatially restricted biological processes
 
 ```{r}
 #| label: morans-i-global
@@ -114,7 +114,6 @@ Here, Moran’s I is used mainly as a **ranking statistic**: genes with higher M
 
 # Direct spdep implementation — Giotto's wrapper fails on zero-variance genes
 # in the future.apply parallel framework. Using spdep directly with error handling.
-library(spdep)
 
 compute_moran_direct <- function(giotto_obj, network_name = "knn15") {
   # Extract spatial network as neighbour list
@@ -159,17 +158,16 @@ moran_combined <- bind_rows(moran_1, moran_2)
 # write_csv(moran_combined, "spatial/moran_combined.csv")
 ```
 
- ```{r}
- #| label: load-moran-combined
- moran_combined <- read_csv("spatial/moran_combined.csv")
-
- ```
+```{r}
+#| label: load-moran-combined
+moran_combined <- read_csv("spatial/moran_combined.csv")
+```
 
 ## Moran's I rank plot
 
-Moran’s I measures whether nearby cells have similar expression values (I > 0: spatial clustering; I ≈ 0: spatial randomness; I < 0: spatial dispersion). The overall distribution was skewed positive(median I = 0.071, mean I = 0.100), with 64.5% of genes showing mean Moran’s I >= 0.05 and 12.1% >= 0.20, indicating broad but variable spatial structuring of transcriptional programs. Highly spatially structured genes included Slc17a7, Ccdc153, Car12,Tmem212, and Mbp (top mean Moran’s I values), consistent with strong anatomical/cell-type patterning. Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
+Moran's I measures whether nearby cells have similar expression values (I > 0: spatial clustering; I ≈ 0: spatial randomness; I < 0: spatial dispersion). The overall distribution was skewed positive(median I = 0.071, mean I = 0.100), with 64.5% of genes showing mean Moran's I >= 0.05 and 12.1% >= 0.20, indicating broad but variable spatial structuring of transcriptional programs. Highly spatially structured genes included Slc17a7, Ccdc153, Car12,Tmem212, and Mbp (top mean Moran's I values), consistent with strong anatomical/cell-type patterning. Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
 
-**Interpretation note**: The analytical p-values from spdep::moran.test rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and spdep explicitly recommends checking results using permutation-based alternatives (e.g., moran.mc) when inference is critical. For this reason, we interpret Moran’s I primarily as an effect size for ranking genes by spatial structure, and treat p-values as secondary.
+**Interpretation note**: The analytical p-values from spdep::moran.test rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and spdep explicitly recommends checking results using permutation-based alternatives (e.g., moran.mc) when inference is critical. For this reason, we interpret Moran's I primarily as an effect size for ranking genes by spatial structure, and treat p-values as secondary.
 
 ```{r}
 #| label: morans-i-rank-plot
@@ -202,12 +200,12 @@ ggplot(moran_mean, aes(x = rank, y = mean_moran)) +
 ```
 
 
-Global Moran’s I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights. All genes exhibited positive Moran’s I (range: ~0 to 0.56), consistent with the spatially organized cytoarchitecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran’s I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression. Estimates were highly reproducible across the two independent tissue sections (Pearson r = 0.973; Spearman rho = 0.971).
+Global Moran's I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights. All genes exhibited positive Moran's I (range: ~0 to 0.56), consistent with the spatially organized cytoarchitecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression. Estimates were highly reproducible across the two independent tissue sections (Pearson r = 0.973; Spearman rho = 0.971).
 
 
-## Moran’s I vs distance correlation
+## Moran's I vs distance correlation
 
-Moran’s I alone does not identify what drives spatial structure. A gene can have high Moran’s I simply because it marks anatomy or cell-type domains, even if it is unrelated to plaques. To separate these effects, we combine Moran’s I with an independent plaque-association measure: the Spearman correlation between gene expression and cell-to-plaque distance (with the sign flipped so that positive values indicate higher expression nearer plaques).
+Moran's I alone does not identify what drives spatial structure. A gene can have high Moran's I simply because it marks anatomy or cell-type domains, even if it is unrelated to plaques. To separate these effects, we combine Moran's I with an independent plaque-association measure: the Spearman correlation between gene expression and cell-to-plaque distance (with the sign flipped so that positive values indicate higher expression nearer plaques).
 
 - **High Moran's I + high rho_flip**: spatially clustered AND plaque-associated (e.g., DAM genes)
 - **High Moran's I + low rho_flip**: spatially structured but NOT due to plaques (brain architecture)
@@ -319,246 +317,6 @@ ggplot(moran_vs_dist, aes(x = rho_flip, y = mean_moran)) +
 To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of 471 tested genes, 88 fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), 147 in "spatial only," 105 in "plaque only," and 131 in "neither." Canonical DAM genes (*Cst7*, rho_flip = 0.30; *Trem2*, 0.22; *Lyz2*, 0.22; *Cd68*, 0.20; *Bcl2a1b*, 0.21) clustered in the lower-right of the plot: strongly plaque-associated but with modest Moran's I (0.08--0.16), indicating that their expression is spatially punctate rather than forming broad contiguous domains. This is consistent with focal microglial activation around individual amyloid deposits. By contrast, the highest Moran's I genes (*Ccdc153*, *Car12*, *Calb1*, *Chst1*) had negative rho_flip, confirming that their spatial structure reflects brain anatomy (cortical layers, white matter tracts) rather than plaque biology. *Mbp* was a notable exception: both highly spatial (I = 0.44) and modestly plaque-associated (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions. *Il1b*, despite being a classical inflammatory cytokine, showed near-zero values on both axes (I = 0.014, rho_flip = 0.04), suggesting that Il1b-mediated neuroinflammation is not a spatially coherent feature of the plaque microenvironment in this model.
 
 
-# Cell-type proximity enrichment
-
-Using the Delaunay spatial network, we test which cell-type pairs co-localise more (or less) than expected by chance via permutation testing. This reveals the cellular neighbourhoods independent of plaque proximity.
-
-```{r}
-#| label: cell-type-proximity-enrichment
-#| eval: false
-
-CPscore_1 <- cellProximityEnrichment(
-  giotto1,
-  cluster_column = "annotatedclusters",
-  spatial_network_name = "delaunay",
-  number_of_simulations = 1000
-)
-
-CPscore_2 <- cellProximityEnrichment(
-  giotto2,
-  cluster_column = "annotatedclusters",
-  spatial_network_name = "delaunay",
-  number_of_simulations = 1000
-)
-
-# qs_save is not supported for the next objects
-# saveRDS(CPscore_1, "spatial/CPscore_1.rds")
-# saveRDS(CPscore_2, "spatial/CPscore_2.rds")
-
-```
-
-```{r}
-#| label: load-cell-type-proximity-enrichment
-
-CPscore_1 <- readRDS("spatial/CPscore_1.rds")
-CPscore_2 <- readRDS("spatial/CPscore_2.rds")
-```
-
-## Co-localization heatmaps
-
-```{r}
-#| label: cell-proximity-heatmap
-#| fig-height: 10
-#| fig-width: 18
-p_heat1 <- cellProximityHeatmap(
-  gobject = giotto1,
-  CPscore = CPscore_1,
-  order_cell_types = TRUE,
-  show_plot = FALSE,
-  return_plot = TRUE) 
-
-p_heat2 <- cellProximityHeatmap(
-  gobject = giotto2,
-  CPscore = CPscore_2,
-  order_cell_types = TRUE,
-  show_plot = FALSE,
-  return_plot = TRUE
-)
-p_heat1@column_title <- "Slide 1"                                                                                                                                                                    
-p_heat2@column_title <- "Slide 2"
-p_heat1
-p_heat2
-```
-
-## Co-localization network
-
-```{r}
-#| label: cell-proximity-network-plot
-#| column: page
-#| fig-height: 8
-#| fig-width: 16
-p_net1 <- cellProximityNetwork(
-  gobject = giotto1,
-  CPscore = CPscore_1,
-  show_plot = FALSE,
-  return_plot = TRUE
-)+ ggtitle("Slide 1")
-
-p_net2 <- cellProximityNetwork(
-  gobject = giotto2,
-  CPscore = CPscore_2,
-  show_plot = FALSE,
-  return_plot = TRUE
-)+ ggtitle("Slide 2")
-
-
-p_net1
-p_net2
-```
-
-## Combined co-localisation (mean across slides)
-
-```{r}
-#| label: combined-proximity-scores
-# Average enrichment scores across slides
-enrich_combined <- bind_rows(
-  CPscore_1$enrichm_res |> mutate(slide = 1L),
-  CPscore_2$enrichm_res |> mutate(slide = 2L)
-) |>
-  group_by(unified_int, type_int) |>
-  summarise(across(where(is.numeric), \(x) mean(x, na.rm = TRUE)), .groups = "drop")
-
-# Rebuild CPscore-like list so Giotto plotting functions accept it
-CPscore_avg <- list(enrichm_res = data.table::as.data.table(enrich_combined))
-```
-
-```{r}
-#| label: combined-proximity-heatmap
-#| fig-height: 5
-#| fig-width: 10
-cellProximityHeatmap(
-  gobject = giotto1,
-  CPscore = CPscore_avg,
-  order_cell_types = TRUE,
-  show_plot = TRUE,
-  return_plot = FALSE
-)
-```
-
-```{r}
-#| label: combined-proximity-network
-#| column: page
-#| fig-height: 8
-#| fig-width: 12
-cellProximityNetwork(
-  gobject = giotto1,
-  CPscore = CPscore_avg,
-  show_plot = TRUE,
-  return_plot = FALSE
-)
-```
-
-
-Cell-type proximity enrichment was assessed using Delaunay triangulation-based spatial networks with 1,000 permutations per slide. Results were consistent across both tissue sections. A clear vascular module emerged: BAM (border-associated macrophages), VLMC, VSMC, fibroblasts, choroid plexus, and ependymal cells were strongly co-localised with each other, forming a coherent perivascular/meningeal neighbourhood. Endothelial cells and pericytes co-localised with this vascular cluster and with astrocytes, consistent with the neurovascular unit. Neuronal subtypes (glutamatergic and GABAergic) showed strong self-association and mutual co-localisation, reflecting the laminar organisation of cortical and hippocampal regions, while being depleted near vascular cell types. Microglia showed moderate co-localisation with multiple cell types without strong enrichment toward any single partner, consistent with their dispersed surveillance role throughout the parenchyma. OPCs and oligodendrocytes co-localised with each other and with neuronal subtypes, reflecting their distribution along axonal tracts.
-
-
-# Niche composition near plaques
-
-For each cell within 30 µm of a plaque, we compute the cell-type composition of its 15 nearest neighbours. This reveals whether the cellular microenvironment differs between CAA and parenchymal plaques.
-
-```{r}
-#| label: niche-composition-near-plaques
-compute_niche_composition <- function(seurat_obj, cell_distances, threshold = 30) {
-  proximal_info <- cell_distances |>
-    mutate(
-      nearest_type = if_else(dist_caa < dist_paren, "CAA", "Parenchymal"),
-      min_dist     = pmin(dist_caa, dist_paren)
-    ) |>
-    filter(min_dist < threshold)
-
-  if (nrow(proximal_info) == 0) return(tibble())
-
-  coords <- GetTissueCoordinates(seurat_obj) |> as.data.frame()
-  meta   <- seurat_obj@meta.data |> as_tibble(rownames = "cell")
-
-  all_mat  <- coords |> dplyr::select(x, y) |> as.matrix()
-  prox_idx <- match(proximal_info$cell, coords$cell)
-  prox_idx <- prox_idx[!is.na(prox_idx)]
-
-  nn_res <- nn2(data = all_mat, query = all_mat[prox_idx, ], k = 16)
-
-  map(seq_along(prox_idx), \(i) {
-    neighbour_idx <- nn_res$nn.idx[i, -1]
-    tibble(
-      focal_cell     = coords$cell[prox_idx[i]],
-      neighbour_type = meta$annotatedclusters[neighbour_idx]
-    )
-  }) |>
-    bind_rows() |>
-    count(focal_cell, neighbour_type) |>
-    group_by(focal_cell) |>
-    mutate(prop = n / sum(n)) |>
-    ungroup() |>
-    left_join(
-      proximal_info |> dplyr::select(cell, nearest_type),
-      by = c("focal_cell" = "cell")
-    )
-}
-
-niche_1 <- compute_niche_composition(slide1, cell_distances_1)
-niche_2 <- compute_niche_composition(slide2, cell_distances_2)
-niche_all <- bind_rows(niche_1 |> mutate(slide = 1L), niche_2 |> mutate(slide = 2L))
-```
-
-## Niche composition heatmap: CAA vs parenchymal
-
-```{r}
-#| label: niche-composition-heatmap
-#| column: page
-#| fig-height: 3
-#| fig-width: 10
-niche_summary <- niche_all |>
-  group_by(nearest_type, neighbour_type) |>
-  summarise(mean_prop = mean(prop, na.rm = TRUE), .groups = "drop")
-
-niche_summary |>
-  ggplot(aes(x = neighbour_type, y = nearest_type, fill = mean_prop)) +
-  geom_tile(colour = "white") +
-  geom_text(aes(label = round(mean_prop, 3)), size = 2.5) +
-  scale_fill_viridis_c(option = "magma", name = "Mean\nproportion") +
-  labs(
-    title = "Niche composition near plaques (< 30 µm)",
-    subtitle = "Mean proportion of each cell type among 15 nearest neighbours",
-    x = "Neighbour cell type", y = "Nearest plaque type"
-  ) +
-  theme_minimal(base_size = 15) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-## Niche composition by treatment
-
-```{r}
-#| label: niche-composition-treatment
-#| column: page
-#| fig-height: 5
-#| fig-width: 10
-#| 
-niche_all <- niche_all |>
-  left_join(treatment_lookup, by = c("focal_cell" = "cell"))
-
-niche_treatment <- niche_all |>
-  group_by(Treatment.Group, nearest_type, neighbour_type) |>
-  summarise(mean_prop = mean(prop, na.rm = TRUE), .groups = "drop")
-
-niche_treatment |>
-  ggplot(aes(x = neighbour_type, y = nearest_type, fill = mean_prop)) +
-  geom_tile(colour = "white") +
-  geom_text(aes(label = round(mean_prop, 3)), size = 2) +
-  scale_fill_viridis_c(option = "magma", name = "Mean\nproportion") +
-  facet_wrap(~Treatment.Group, ncol = 1) +
-  labs(
-    title = "Niche composition: Adu vs IgG",
-    subtitle = "Plaque-proximal cells (< 30 µm), stratified by treatment",
-    x = "Neighbour cell type", y = "Nearest plaque type"
-  ) +
-  theme_minimal(base_size = 15) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-
-For each cell within 30 um of a plaque, we computed the cell-type composition of its 15 nearest spatial neighbours. CAA and parenchymal plaques occupied distinct cellular microenvironments. CAA-proximal cells were enriched for vascular cell types: endothelial cells, fibroblasts, ependymal cells, and choroid plexus, consistent with the perivascular localisation of cerebral amyloid angiopathy. Parenchymal plaque-proximal cells were enriched for glutamatergic neurons (particularly subtypes 1 and 2), reflecting the preferential deposition of parenchymal amyloid within the grey matter neuropil. Both plaque types showed comparable proportions of microglia and astrocytes in their microenvironment. When stratified by treatment, the niche composition was broadly similar between Adu and IgG groups for both plaque types, suggesting that aducanumab treatment does not substantially remodel the cellular neighbourhood architecture around surviving plaques at this resolution.
-
-
 # Treatment-stratified Moran's I
 
 Does spatial autocorrelation differ between Adu- and IgG-treated tissue? We subset each slide by treatment and re-compute Moran's I.
@@ -605,18 +363,16 @@ moran_by_treatment <- bind_rows(
 
 moran_by_treatment <- read_csv("spatial/moran_by_treatment.csv")
 
-
 moran_treat_wide <- moran_by_treatment |>
   pivot_wider(names_from = treatment, values_from = mean_moran)
 
 label_treat <- moran_treat_wide |>
   filter(
-    #gene %in% dam_genes |
     abs(Adu - IgG) > quantile(abs(moran_treat_wide$Adu - moran_treat_wide$IgG), 0.95, na.rm = TRUE)
   )
 
 ggplot(moran_treat_wide, aes(x = IgG, y = Adu)) +
-  geom_point(alpha = 0.6,size=2, colour = "grey60") +
+  geom_point(alpha = 0.6, size = 2, colour = "grey60") +
   geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "red") +
   geom_text_repel(
     data = label_treat,
@@ -640,25 +396,25 @@ To assess whether aducanumab treatment altered the spatial organisation of gene 
 
 # Geary's C — complementary spatial measure
 
-Moran’s I and Geary’s C are both global measures of spatial autocorrelation computed on the same neighbor graph, but they emphasize different aspects of spatial structure. Moran’s I is covariance/correlation-like and is most sensitive to broad spatial domains, whereas Geary’s C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity and sharp boundaries.
+Moran's I and Geary's C are both global measures of spatial autocorrelation computed on the same neighbor graph, but they emphasize different aspects of spatial structure. Moran's I is covariance/correlation-like and is most sensitive to broad spatial domains, whereas Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity and sharp boundaries.
 
-For Geary’s C, C ~1 indicates no spatial autocorrelation, C < 1 indicates positive autocorrelation (neighbours are similar), and C > 1 indicates negative autocorrelation (neighbours are dissimilar). As a result, genes with high Moran’s I often tend to have low Geary’s C, so plotting Moran vs Geary provides a simple consistency check and can highlight genes where “spatial structure” is dominated by local discontinuities.
+For Geary's C, C ~1 indicates no spatial autocorrelation, C < 1 indicates positive autocorrelation (neighbours are similar), and C > 1 indicates negative autocorrelation (neighbours are dissimilar). As a result, genes with high Moran's I often tend to have low Geary's C, so plotting Moran vs Geary provides a simple consistency check and can highlight genes where "spatial structure" is dominated by local discontinuities.
 
 ```{r}
 #| label: geary-c-global
 #| eval: false
 
 compute_geary_direct <- function(giotto_obj, network_name = "knn15") {
-  spat_net <- getSpatialNetwork(giotto_obj, name = network_name, output = "networkDT") 
+  spat_net <- getSpatialNetwork(giotto_obj, name = network_name, output = "networkDT")
   cell_ids <- spatIDs(giotto_obj)
   n_cells  <- length(cell_ids)
 
   from_idx <- match(spat_net$from, cell_ids)
   to_idx   <- match(spat_net$to, cell_ids)
-  nb_list  <- map(seq_len(n_cells), \(i) {                                                                                                                                       
-      neighbours <- as.integer(to_idx[from_idx == i])                                                                                                                              
-      if (length(neighbours) == 0) 0L else neighbours                                                                                                                              
-     })   
+  nb_list  <- map(seq_len(n_cells), \(i) {
+    neighbours <- as.integer(to_idx[from_idx == i])
+    if (length(neighbours) == 0) 0L else neighbours
+  })
   class(nb_list) <- "nb"
   attr(nb_list, "region.id") <- cell_ids
   lw <- nb2listw(nb_list, style = "W", zero.policy = TRUE)
@@ -754,15 +510,10 @@ integration |>
 ```
 
 
-Integration of spatial autocorrelation (Moran's I, Geary's C) with gene-distance correlations and niche composition analysis yielded several key findings:
+Integration of spatial autocorrelation (Moran's I, Geary's C) with gene-distance correlations yielded several key findings:
 
 1. **Plaque-associated transcription is spatially focal, not diffuse.** DAM genes (*Cst7*, *Trem2*, *Lyz2*, *Cd68*, *Bcl2a1b*, *Ctsd*) had low-to-moderate Moran's I (0.08--0.16) but the strongest plaque-distance correlations (rho_flip 0.19--0.30), indicating that microglial activation creates discrete hotspots around individual plaques rather than broad spatial domains. This focal pattern is consistent with a model in which each amyloid deposit independently recruits and activates surrounding microglia.
 
 2. **High spatial autocorrelation reflects brain architecture, not disease.** The most spatially structured genes (*Slc17a7*, *Ccdc153*, *Car12*, *Calb1*) are regional cell-type identity markers whose expression domains correspond to cortical layers, white matter tracts, and ventricular surfaces. Disentangling anatomy from pathology requires the joint Moran's I / distance-correlation framework presented here.
 
-3. **CAA and parenchymal plaques sit in distinct cellular niches.** CAA-proximal microenvironments were enriched for vascular cell types (endothelial, fibroblast, ependymal), while parenchymal plaque niches were enriched for glutamatergic neurons, consistent with the respective anatomical localisations of vascular and parenchymal amyloid.
-
-4. **Aducanumab treatment does not substantially remodel the spatial architecture.** Both niche composition and treatment-stratified Moran's I showed broadly preserved spatial organisation between Adu and IgG groups, suggesting that anti-amyloid immunotherapy alters plaque burden but not the fundamental tissue-level organisation of gene expression around surviving plaques.
-
-5. **Cell-type co-localisation reveals a coherent vascular module.** BAM, VLMC, VSMC, fibroblasts, choroid plexus, and ependymal cells form a tightly co-localised perivascular neighbourhood, while neuronal subtypes self-segregate by laminar position. Microglia lack strong co-localisation bias toward any single partner, consistent with their dispersed parenchymal distribution.
-
+3. **Aducanumab treatment does not substantially remodel the spatial architecture.** Treatment-stratified Moran's I showed broadly preserved spatial organisation between Adu and IgG groups, suggesting that anti-amyloid immunotherapy alters plaque burden but not the fundamental tissue-level organisation of gene expression around surviving plaques.
