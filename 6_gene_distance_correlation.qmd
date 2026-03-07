@@ -1,6 +1,6 @@
 ---
 title: "Gene-to-distance-to-plaque correlation"
-subtitle: "Replication of Saito et al. (2025) approach w/ Akhil annotations"
+subtitle: "All genes"
 date: last-modified
 execute:
   echo: true
@@ -10,6 +10,7 @@ format: html
 code-fold: true
 tags: [xenium, coregistration, halo, correlation]
 ---
+**Replication of Fig 3G in [Saito et al.,2025](https://www.biorxiv.org/content/10.1101/2025.05.16.654329v1.full) with Akhil ThioS annotations**
 
 # Setup and data loading
 
@@ -28,7 +29,9 @@ cell_distances_all <- data$distances_all
 
 # Gene-distance correlation functions
 
-**does a cell's expression of this gene change systematically as the cell sits closer to (or farther from) a plaque?**
+**Does a cell's expression of this gene change systematically as the cell sits closer to (or farther from) a plaque?**
+
+_Gene expression ~ distance_
 
 ## `compute_gene_distance_correlation()`
 
@@ -200,23 +203,33 @@ Compute gene–distance correlations for three distance metrics:
 
 ```{r}
 #| label: run-correlations
+#| eval: false
 seurat_list <- list(slide1, slide2)
 
 cor_caa <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_caa"
-)
+  seurat_list, cell_distances_all, distance_col = "dist_caa")
 
 cor_paren <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_paren"
-)
+  seurat_list, cell_distances_all, distance_col = "dist_paren")
 
 cor_any <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_any"
-)
+  seurat_list, cell_distances_all, distance_col = "dist_any")
+
+# qs2::qs_save(cor_caa, "data/cor_caa.qs2")
+# qs2::qs_save(cor_paren, "data/cor_paren.qs2")
+# qs2::qs_save(cor_any, "data/cor_any.qs2")
+
 ```
 
 ## Rank plots
 
+```{r}
+#| label: load-correlations
+
+cor_caa <- qs2::qs_read("data/cor_caa.qs2")
+cor_paren <- qs2::qs_read("data/cor_paren.qs2")
+cor_any <- qs2::qs_read("data/cor_any.qs2")
+```
 
 Three analyses are shown, each using a different distance metric: (1) distance to nearest **CAA** plaque only, (2) distance to nearest **parenchymal** plaque only, and (3) distance to nearest plaque of **any type**. Comparing across the three reveals whether certain genes are specifically associated with one plaque subtype or with amyloid deposits in general.
 
