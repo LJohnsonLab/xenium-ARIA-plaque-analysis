@@ -73,7 +73,7 @@ giotto2 <- seurat_to_giotto_manual(slide2)
 
 Spatial autocorrelation analyses quantify whether nearby cells have more similar gene expression than expected by chance (positive autocorrelation; "spatial clustering"), or instead tend to differ (negative autocorrelation; "spatial dispersion"). The definition of "nearby" is therefore a modelling choice that must be made explicit, and it is encoded in a spatial weights/neighbor graph.
 
-We build two types of spatial networks per slide, because they address different biological questions:
+We build two types of spatial networks _per slide_, because they address different biological questions:
 
 - **Delaunay triangulation**: connects immediate spatial neighbours; used for cell-type co-localisation enrichment (who tends to sit next to whom), which is naturally framed as adjacency.
 
@@ -104,9 +104,10 @@ giotto2 <- qs2::qs_read("spatial/giotto2.qs2")
 
 # Moran's I — global spatial autocorrelation
 
-Global Moran's I summarizes whether a gene's expression is spatially clustered across the full tissue section at the scale defined by the kNN(15) graph. Intuitively, Moran's I increases when cells tend to resemble their neighbours (e.g., high-expression cells near other high-expression cells), producing broad spatial domains, while values near 0 indicate little spatial structure at this scale. Negative values indicate local alternation (neighbours tending to differ), which is less common in many biological expression maps but can occur for sharply alternating patterns.
+Global Moran's I summarizes whether a gene's expression is spatially clustered across the full tissue section at the scale defined by the kNN(15) graph.    
+Intuitively, Moran's I increases when cells tend to resemble their neighbours (e.g., high-expression cells near other high-expression cells), producing broad spatial domains, while values near 0 indicate little spatial structure at this scale. Negative values indicate local alternation (neighbours tending to differ), which is less common in many biological expression maps but can occur for sharply alternating patterns.  
 ​
-Here, Moran's I is used mainly as a **ranking statistic**: genes with higher Moran's I show stronger spatial patterning and are more likely to reflect anatomy, cell-type organization, or spatially restricted biological processes
+Here, Moran's I is used mainly as a **ranking statistic**: genes with higher Moran's I show stronger spatial patterning and are more likely to reflect anatomy, cell-type organization, or spatially restricted biological processes.   
 
 ```{r}
 #| label: morans-i-global
@@ -165,9 +166,10 @@ moran_combined <- read_csv("spatial/moran_combined.csv")
 
 ## Moran's I rank plot
 
-Moran's I measures whether nearby cells have similar expression values (I > 0: spatial clustering; I ≈ 0: spatial randomness; I < 0: spatial dispersion). The overall distribution was skewed positive(median I = 0.071, mean I = 0.100), with 64.5% of genes showing mean Moran's I >= 0.05 and 12.1% >= 0.20, indicating broad but variable spatial structuring of transcriptional programs. Highly spatially structured genes included Slc17a7, Ccdc153, Car12,Tmem212, and Mbp (top mean Moran's I values), consistent with strong anatomical/cell-type patterning. Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
+Moran's I measures whether nearby cells have similar expression values (I > 0: spatial clustering; I ≈ 0: spatial randomness; I < 0: spatial dispersion).   
 
-**Interpretation note**: The analytical p-values from spdep::moran.test rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and spdep explicitly recommends checking results using permutation-based alternatives (e.g., moran.mc) when inference is critical. For this reason, we interpret Moran's I primarily as an effect size for ranking genes by spatial structure, and treat p-values as secondary.
+
+**Interpretation note**: The analytical p-values from `spdep::moran.test` rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and `spdep` explicitly recommends checking results using permutation-based alternatives (e.g., `moran.mc`) when inference is critical. For this reason, we interpret Moran's I primarily as an **effect size for ranking genes** by spatial structure, and treat p-values as secondary.
 
 ```{r}
 #| label: morans-i-rank-plot
@@ -200,12 +202,17 @@ ggplot(moran_mean, aes(x = rank, y = mean_moran)) +
 ```
 
 
-Global Moran's I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights. All genes exhibited positive Moran's I (range: ~0 to 0.56), consistent with the spatially organized cytoarchitecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression. Estimates were highly reproducible across the two independent tissue sections (Pearson r = 0.973; Spearman rho = 0.971).
+Global Moran's I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights.  
 
+All genes exhibited positive Moran's I (range: ~0 to 0.56), consistent with the spatially organized architecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression.   
+
+Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
 
 ## Moran's I vs distance correlation
 
-Moran's I alone does not identify what drives spatial structure. A gene can have high Moran's I simply because it marks anatomy or cell-type domains, even if it is unrelated to plaques. To separate these effects, we combine Moran's I with an independent plaque-association measure: the Spearman correlation between gene expression and cell-to-plaque distance (with the sign flipped so that positive values indicate higher expression nearer plaques).
+Moran's I alone does not identify what drives spatial structure. A gene can have high Moran's I simply because it marks anatomy or cell-type domains, even if it is unrelated to plaques.  
+
+To separate these effects, we combine Moran's I with an independent plaque-association measure: the Spearman correlation between gene expression and cell-to-plaque distance (with the sign flipped so that positive values indicate higher expression nearer plaques).  
 
 - **High Moran's I + high rho_flip**: spatially clustered AND plaque-associated (e.g., DAM genes)
 - **High Moran's I + low rho_flip**: spatially structured but NOT due to plaques (brain architecture)
@@ -279,32 +286,31 @@ cor_any <- qs2::qs_read("spatial/cor_any.qs2")
 moran_vs_dist <- moran_mean |>
   inner_join(cor_any |> dplyr::select(gene, rho_flip, sig), by = "gene")
 
-dam_genes <- c("Cst7", "Trem2", "Cd68", "Il1b", "Lyz2", "Bcl2a1b")
+
 
 label_set <- moran_vs_dist |>
   filter(
-    gene %in% dam_genes |
-    (mean_moran > quantile(mean_moran, 0.95) & abs(rho_flip) > quantile(abs(rho_flip), 0.9)) |
-    (mean_moran > quantile(mean_moran, 0.95) & abs(rho_flip) < quantile(abs(rho_flip), 0.1)) |
-    (mean_moran < quantile(mean_moran, 0.25) & abs(rho_flip) > quantile(abs(rho_flip), 0.9))
-  )
+    #gene %in% dam_genes |
+    mean_moran > quantile(mean_moran, 0.99)|
+    rho_flip > quantile(abs(rho_flip), 0.99) |
+    (mean_moran > quantile(mean_moran, 0.90) & abs(rho_flip) > quantile(abs(rho_flip), 0.9)) |
+    (mean_moran > quantile(mean_moran, 0.90) & abs(rho_flip) < quantile(abs(rho_flip), 0.1)) |
+    (mean_moran < quantile(mean_moran, 0.25) & abs(rho_flip) > quantile(abs(rho_flip), 0.9)))
 
 ggplot(moran_vs_dist, aes(x = rho_flip, y = mean_moran)) +
   geom_point(aes(colour = sig), alpha = 0.5) +
   geom_text_repel(
     data = label_set,
     aes(label = gene),
-    size = 3.5, fontface = "italic", max.overlaps = 20
-  ) +
+    size = 3.5, fontface = "italic", max.overlaps = 20) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "grey60") +
   geom_vline(xintercept = 0, linetype = "dashed", colour = "grey60") +
   scale_colour_manual(
     values = c("enriched_near" = "#E07B39", "enriched_far" = "#7B68AE", "ns" = "grey70"),
-    labels = c("enriched_near" = "Enriched near plaque", "enriched_far" = "Enriched far", "ns" = "NS")
-  ) +
+    labels = c("enriched_near" = "Enriched near plaque", "enriched_far" = "Enriched far", "ns" = "NS")) +
   labs(
     title = "Moran's I vs gene-distance correlation",
-    subtitle = "Top-right: spatially clustered AND plaque-associated (DAM candidates)",
+    subtitle = "Top-right: spatially clustered AND plaque-associated",
     x = "Spearman rho (flipped; + = near plaque)",
     y = "Mean Moran's I",
     colour = "Distance sig."
@@ -314,12 +320,14 @@ ggplot(moran_vs_dist, aes(x = rho_flip, y = mean_moran)) +
 ```
 
 
-To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of 471 tested genes, 88 fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), 147 in "spatial only," 105 in "plaque only," and 131 in "neither." Canonical DAM genes (*Cst7*, rho_flip = 0.30; *Trem2*, 0.22; *Lyz2*, 0.22; *Cd68*, 0.20; *Bcl2a1b*, 0.21) clustered in the lower-right of the plot: strongly plaque-associated but with modest Moran's I (0.08--0.16), indicating that their expression is spatially punctate rather than forming broad contiguous domains. This is consistent with focal microglial activation around individual amyloid deposits. By contrast, the highest Moran's I genes (*Ccdc153*, *Car12*, *Calb1*, *Chst1*) had negative rho_flip, confirming that their spatial structure reflects brain anatomy (cortical layers, white matter tracts) rather than plaque biology. *Mbp* was a notable exception: both highly spatial (I = 0.44) and modestly plaque-associated (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions. *Il1b*, despite being a classical inflammatory cytokine, showed near-zero values on both axes (I = 0.014, rho_flip = 0.04), suggesting that Il1b-mediated neuroinflammation is not a spatially coherent feature of the plaque microenvironment in this model.
+To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of 471 tested genes, 88 fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), 147 in "spatial only," 105 in "plaque only," and 131 in "neither."   
+
+The labeled genes separate into two clear groups. First, the strongest global spatial genes were largely plaque-distant/anatomy-linked: *Ccdc153* (I=0.505, rho_flip=-0.088), *Car12* (0.464, -0.126), *Tmem212* (0.463, -0.078), *Calb1* (0.373, -0.130), *Chst1* (0.333, -0.126), *Ids* (0.293, -0.158), and *Fdft1* (0.228, -0.138), consistent with broad anatomical domains rather than plaque-local biology. Second, canonical DAM genes were strongly plaque-associated but only modestly spatial by Moran’s I: *Cst7* (0.161, 0.295), *Lyz2* (0.109, 0.220), *Trem2* (0.095, 0.216), *Bcl2a1b* (0.086, 0.208), and *Cd68* (0.080, 0.198), consistent with focal plaque-proximal microglial activation. *Mbp* was a notable exception: both highly spatial (I = 0.44) and modestly plaque-associated (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions.
 
 
 # Treatment-stratified Moran's I
 
-Does spatial autocorrelation differ between Adu- and IgG-treated tissue? We subset each slide by treatment and re-compute Moran's I.
+Next we tested if spatial autocorrelation differ between Adu- and IgG-treated tissue. For that,  we subseted **each slide** by treatment and re-compute Moran's I.
 
 ```{r}
 #| label: treatment-stratified-moran
@@ -368,7 +376,7 @@ moran_treat_wide <- moran_by_treatment |>
 
 label_treat <- moran_treat_wide |>
   filter(
-    abs(Adu - IgG) > quantile(abs(moran_treat_wide$Adu - moran_treat_wide$IgG), 0.95, na.rm = TRUE)
+    abs(Adu - IgG) > quantile(abs(moran_treat_wide$Adu - moran_treat_wide$IgG), 0.99, na.rm = TRUE)
   )
 
 ggplot(moran_treat_wide, aes(x = IgG, y = Adu)) +
@@ -388,17 +396,18 @@ ggplot(moran_treat_wide, aes(x = IgG, y = Adu)) +
   coord_equal()
 ```
 
-Labeled genes are those whose absolute difference in Moran's I between Adu and IgG falls in the top 5% of all genes. These are the genes most off-diagonal, i.e., whose spatial structure changes the most between treatments.
+Most genes clustered near the identity line $(I_{\mathrm{Adu}} \approx I_{\mathrm{IgG}})$, indicating that overall transcriptome-wide spatial organization is largely preserved between treatment groups.  
 
-
-To assess whether aducanumab treatment altered the spatial organisation of gene expression, we recomputed Moran's I separately for Adu- and IgG-treated tissue regions within each slide. Most genes fell along the diagonal (Adu Moran's I ~ IgG Moran's I), indicating that the global spatial structure of the transcriptome is largely preserved across treatment groups. Among the top 5% most off-diagonal genes, several showed higher spatial autocorrelation in IgG than Adu tissue, including *Car12*, *Snap25*, *Slc17a6*, and *Lypd1* (neuronal identity markers), as well as complement and extracellular matrix genes (*C3*, *Serping1*, *Col1a2*, *Vtn*). Conversely, genes such as *Fcer1a* and *Tpsb2* (mast cell markers) had higher Moran's I in Adu-treated tissue. The modest deviations from the diagonal suggest that aducanumab may subtly alter the spatial coherence of specific gene programmes, though the biological significance of these shifts requires further investigation.
+To detect treatment-sensitive spatial changes, we ranked genes by $(|I_{\mathrm{Adu}} - I_{\mathrm{IgG}}|)$ and selected the top 1% most off-diagonal genes. Five genes met this threshold: *Car12, Fcer1a, Nts, Tac1, and Tdo2*.Together, these findings indicate that aducanumab is not associated with a global reconfiguration of tissue-scale transcriptomic architecture, but rather with selective, gene-specific changes in spatial coherence. Because Moran’s I quantifies global spatial dependence, these differences reflect altered spatial patterning rather than mean-expression shifts alone.
 
 
 # Geary's C — complementary spatial measure
 
 Moran's I and Geary's C are both global measures of spatial autocorrelation computed on the same neighbor graph, but they emphasize different aspects of spatial structure. Moran's I is covariance/correlation-like and is most sensitive to broad spatial domains, whereas Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity and sharp boundaries.
 
-For Geary's C, C ~1 indicates no spatial autocorrelation, C < 1 indicates positive autocorrelation (neighbours are similar), and C > 1 indicates negative autocorrelation (neighbours are dissimilar). As a result, genes with high Moran's I often tend to have low Geary's C, so plotting Moran vs Geary provides a simple consistency check and can highlight genes where "spatial structure" is dominated by local discontinuities.
+For Geary's C, C ~1 indicates no spatial autocorrelation, C < 1 indicates positive autocorrelation (neighbours are similar), and C > 1 indicates negative autocorrelation (neighbours are dissimilar).   
+
+As a result, genes with high Moran's I often tend to have low Geary's C, so plotting Moran vs Geary provides a simple consistency check and can highlight genes where "spatial structure" is dominated by local discontinuities.
 
 ```{r}
 #| label: geary-c-global
@@ -456,7 +465,7 @@ geary_vs_moran <- geary_mean |>
 ggplot(geary_vs_moran, aes(x = mean_moran, y = mean_geary)) +
   geom_point(alpha = 0.4, colour = "grey50") +
   geom_text_repel(
-    data = geary_vs_moran |> filter(gene %in% dam_genes),
+    data = geary_vs_moran |> filter(gene %in% label_set$gene),
     aes(label = gene),
     size = 3.5, fontface = "italic"
   ) +
@@ -469,51 +478,6 @@ ggplot(geary_vs_moran, aes(x = mean_moran, y = mean_geary)) +
 ```
 
 
-To validate the Moran's I findings, we computed Geary's C for all genes using the same kNN(15) spatial weight matrix. Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity than Moran's I, which captures global covariance structure. As expected, the two statistics showed a strong inverse relationship: genes with high Moran's I exhibited low Geary's C (positive autocorrelation confirmed by both measures), and vice versa. DAM genes (*Cst7*, *Trem2*, *Lyz2*, *Cd68*, *Bcl2a1b*) had Geary's C values near 0.8--0.9, confirming modest positive autocorrelation at local scales consistent with focal plaque-associated expression. *Il1b* showed Geary's C near 1.0 (no local autocorrelation), corroborating its lack of spatial structure in both measures. The tight inverse correlation between the two statistics indicates that the spatial autocorrelation rankings are robust and not artefacts of the specific test statistic used.
+To validate the Moran's I findings, we computed Geary's C for all genes using the same kNN(15) spatial weight matrix. Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity than Moran's I, which captures global covariance structure. As expected, the two statistics showed a strong inverse relationship: genes with high Moran's I exhibited low Geary's C (positive autocorrelation confirmed by both measures), and vice versa. The tight inverse correlation between the two statistics indicates that the spatial autocorrelation rankings are robust and not artefacts of the specific test statistic used.
 
 
-# Summary and integration
-
-```{r}
-#| label: summary-and-integration
-dam_set <- c("Cst7", "Trem2", "Cd68", "Il1b", "Lyz2", "Bcl2a1b",
-             "Apoe", "Tyrobp", "Ctsd", "B2m")
-
-integration <- moran_mean |>
-  left_join(cor_any |> dplyr::select(gene, rho_flip, sig), by = "gene") |>
-  left_join(geary_mean |> dplyr::select(gene, mean_geary), by = "gene") |>
-  mutate(
-    is_dam = gene %in% dam_set,
-    quadrant = case_when(
-      mean_moran > median(mean_moran, na.rm = TRUE) & rho_flip > 0  ~ "spatial + plaque",
-      mean_moran > median(mean_moran, na.rm = TRUE) & rho_flip <= 0 ~ "spatial only",
-      mean_moran <= median(mean_moran, na.rm = TRUE) & rho_flip > 0 ~ "plaque only",
-      TRUE ~ "neither"
-    )
-  ) |>
-  arrange(desc(mean_moran))
-
-integration |>
-  filter(is_dam | row_number() <= 20) |>
-  mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
-  kbl(caption = "Integrated summary: Moran's I + distance correlation + DAM status") |>
-  kable_styling("striped", full_width = FALSE) |>
-  scroll_box(width = "100%")
-```
-
-```{r}
-#| label: quadrant-counts
-integration |>
-  count(quadrant) |>
-  kbl(caption = "Gene counts by quadrant") |>
-  kable_styling("striped", full_width = FALSE)
-```
-
-
-Integration of spatial autocorrelation (Moran's I, Geary's C) with gene-distance correlations yielded several key findings:
-
-1. **Plaque-associated transcription is spatially focal, not diffuse.** DAM genes (*Cst7*, *Trem2*, *Lyz2*, *Cd68*, *Bcl2a1b*, *Ctsd*) had low-to-moderate Moran's I (0.08--0.16) but the strongest plaque-distance correlations (rho_flip 0.19--0.30), indicating that microglial activation creates discrete hotspots around individual plaques rather than broad spatial domains. This focal pattern is consistent with a model in which each amyloid deposit independently recruits and activates surrounding microglia.
-
-2. **High spatial autocorrelation reflects brain architecture, not disease.** The most spatially structured genes (*Slc17a7*, *Ccdc153*, *Car12*, *Calb1*) are regional cell-type identity markers whose expression domains correspond to cortical layers, white matter tracts, and ventricular surfaces. Disentangling anatomy from pathology requires the joint Moran's I / distance-correlation framework presented here.
-
-3. **Aducanumab treatment does not substantially remodel the spatial architecture.** Treatment-stratified Moran's I showed broadly preserved spatial organisation between Adu and IgG groups, suggesting that anti-amyloid immunotherapy alters plaque burden but not the fundamental tissue-level organisation of gene expression around surviving plaques.
