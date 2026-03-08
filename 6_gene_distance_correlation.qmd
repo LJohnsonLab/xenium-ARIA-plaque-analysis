@@ -2,13 +2,6 @@
 title: "Gene-to-distance-to-plaque correlation"
 subtitle: "All genes"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, correlation]
 ---
 **Replication of Fig 3G in [Saito et al.,2025](https://www.biorxiv.org/content/10.1101/2025.05.16.654329v1.full) with Akhil ThioS annotations**
 

@@ -2,13 +2,6 @@
 title: "Neighborhood Enrichment"
 subtitle: "Cell-type proximity enrichment and niche composition near plaques via Giotto"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, spatial, niche, giotto, proximity, neighborhood]
 ---
 
 # Setup and data loading
@@ -123,7 +116,7 @@ p_net2 <- cellProximityNetwork(
   CPscore = CPscore_2,
   show_plot = FALSE,
   return_plot = TRUE) +
-     ggtitle("Slide 1")+
+     ggtitle("Slide 2")+
      theme(legend.position = "none")
 
 p_net1
@@ -177,7 +170,7 @@ cellProximityNetwork(
 
 Cell-type proximity enrichment analysis revealed a robust two-module spatial architecture that was highly consistent across both independent tissue sections (Slides 1 and 2).
 
-**Vascular/meningeal module.** Border-associated macrophages (BAM), vascular leptomeningeal cells (VLMC), vascular smooth muscle cells (VSMC), fibroblasts, choroid plexus (CP), and ependymal cells were strongly and mutually co-enriched, forming a coherent perivascular/meningeal neighbourhood (Fig. X, upper-left block). Endothelial cells and pericytes co-localised with this vascular cluster and with astrocytes, consistent with the cellular composition of the neurovascular unit. T cells also associated with the vascular module, in keeping with their role in CNS border immune surveillance. Conversely, all vascular cell types showed significant co-localisation depletion with neuronal subtypes (strong blue off-diagonal bands in the heatmap), indicating physical segregation of the perivascular compartment from the parenchymal neuropil.
+**Vascular/meningeal module.** Border-associated macrophages (BAM), vascular leptomeningeal cells (VLMC), vascular smooth muscle cells (VSMC), fibroblasts, choroid plexus (CP), and ependymal cells were strongly and mutually co-enriched, forming a coherent perivascular/meningeal neighbourhood. Endothelial cells and pericytes co-localised with this vascular cluster and with astrocytes, consistent with the cellular composition of the neurovascular unit. T cells also associated with the vascular module, in keeping with their role in CNS border immune surveillance. Conversely, all vascular cell types showed significant co-localisation depletion with neuronal subtypes (strong blue off-diagonal bands in the heatmap), indicating physical segregation of the perivascular compartment from the parenchymal neuropil.
 
 **Neuronal/parenchymal module.** The five glutamatergic neuron subtypes (Glutamatergic Neurons 1–5) and four GABAergic neuron subtypes (GABAergic Neurons 1–4) showed strong homotypic clustering and mutual heterotypic enrichment, reflecting the laminar and columnar organisation of cortical and hippocampal regions. Oligodendrocytes and OPCs co-localised with neuronal subtypes and with each other, consistent with their distribution along myelinated axonal tracts.
 
@@ -266,7 +259,7 @@ CAA and parenchymal plaques occupied distinct cellular microenvironments.
 
 **CAA-proximal niche.** Cells within 50 µm of CAA plaques were markedly enriched for vascular and perivascular cell types: fibroblasts (mean neighbour proportion 0.131 vs. 0.012 for parenchymal; ~11-fold), vascular smooth muscle cells (VSMC; 0.067 vs. 0.006; ~10-fold), vascular leptomeningeal cells (VLMC; 0.014 vs. 0.001; ~23-fold), and border-associated macrophages (BAM; 0.028 vs. 0.003; ~8-fold). Endothelial cells were also proportionally higher near CAA (0.095 vs. 0.072). Together these data are fully consistent with the perivascular localisation of cerebral amyloid angiopathy: CAA deposits form within the vessel wall and are therefore structurally surrounded by the cellular constituents of the neurovascular unit. Astrocytes were the single most abundant neighbour cell type for CAA-proximal cells (0.178), reflecting their endfeet wrapping of cerebral blood vessels.
 
-**Parenchymal-proximal niche.** In contrast, the immediate neighbourhood of parenchymal plaques was dominated by oligodendrocytes (0.209 vs. 0.095; ~2.2-fold), microglia (0.137 vs. 0.072; ~1.9-fold), and glutamatergic neurons, particularly Glutamatergic Neuron 1 (0.111 vs. 0.039; ~2.8-fold) and Glutamatergic Neuron 2 (0.074 vs. 0.129 — higher for CAA here, reflecting subtype-specific anatomical distributions). GABAergic neuron subtypes were also more represented near parenchymal plaques. This pattern is consistent with the diffuse deposition of parenchymal amyloid within the grey matter neuropil, which is densely populated by neurons, their myelin sheaths, and surveilling microglia.
+**Parenchymal-proximal niche.** In contrast, the immediate neighbourhood of parenchymal plaques was dominated by oligodendrocytes (0.209 vs. 0.095; ~2.2-fold), microglia (0.137 vs. 0.072; ~1.9-fold), and glutamatergic neurons, particularly Glutamatergic Neuron 1 (0.111 vs. 0.039; ~2.8-fold). Most glutamatergic subtypes were more abundant near parenchymal plaques. An exception was Glutamatergic Neuron 2, which was actually higher near CAA (0.129 vs. 0.074), likely reflecting its anatomical distribution in cortical layers near vessels. GABAergic neuron subtypes were also more represented near parenchymal plaques. This pattern is consistent with the diffuse deposition of parenchymal amyloid within the grey matter neuropil, which is densely populated by neurons, their myelin sheaths, and surveilling microglia.
 
 Notably, the niche differences mirror the two-module co-localisation architecture identified by proximity enrichment above — CAA plaques sit within the vascular/meningeal module while parenchymal plaques are embedded in the neuronal/parenchymal module — providing orthogonal biological validation of the single-annotator ThioS plaque classifications used in this study.
 
@@ -293,7 +286,7 @@ niche_treatment |>
   labs(
     title = "Niche composition: Adu vs IgG",
     subtitle = "Plaque-proximal cells (< 50 µm), stratified by treatment",
-    x = "Neighbour cell type", y = "Nearest plaque type"
+    x = "Neighbour cell type", y = "Treatment group"
   ) +
   theme_minimal(base_size = 15) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))

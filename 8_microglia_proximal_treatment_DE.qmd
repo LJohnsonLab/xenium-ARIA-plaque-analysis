@@ -1,14 +1,7 @@
 ---
-title: "Microglia proximal vs distal to plaques "
+title: "Microglia proximal vs distal to plaques"
 subtitle: "Differential expression (pseudobulk DE) within microglia stratified by plaque proximity"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, microglia, DE]
 ---
 
 # Rationale

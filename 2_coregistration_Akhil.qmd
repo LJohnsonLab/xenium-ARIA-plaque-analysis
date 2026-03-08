@@ -2,13 +2,6 @@
 title: "Co-registration — Akhil (single annotator)"
 subtitle: "ThioS quantification and HALO analysis"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo]
 ---
 
 ```{r}

@@ -1,0 +1,48 @@
+project:
+  type: website
+  output-dir: docs
+  render:
+    - "*.qmd"
+    - "!9_multi_plaque_neighbourhood.qmd"
+
+website:
+  title: "ThioS Plaque Spatial Analysis"
+  navbar:
+    left:
+      - text: Home
+        href: index.qmd
+      - text: Co-registration
+        href: 2_coregistration_Akhil.qmd
+      - text: Gene expression-Distance
+        menu:
+          - text: All cell types
+            href: 6_gene_distance_correlation.qmd
+          - text: Cell-type ridge plots
+            href: 6.1_cell_type_distance_ridges.qmd
+          - text: "---"
+          - text: Microglia correlations
+            href: 7_gene_distance_correlation_microglia.qmd
+          - text: Microglia proximal DE
+            href: 8_microglia_proximal_treatment_DE.qmd
+      - text: Spatial Analysis
+        menu:
+          - text: Global autocorrelation
+            href: 10_global_spatial_autocorrelation.qmd
+          - text: Neighborhood enrichment
+            href: 11_neighborhood_enrichment.qmd
+
+format:
+  html:
+    theme: cosmo
+    code-fold: true
+    number-sections: false
+    toc: true
+    toc-depth: 2
+
+knitr:
+  opts_chunk:
+    dev: svglite
+
+execute:
+  message: false
+  warning: false

@@ -1,0 +1,15 @@
+---
+title: "Project Overview"
+subtitle: "Abstract"
+date: last-modified
+---
+
+This project integrates histological plaque annotations with single-cell spatial transcriptomics to characterise the molecular microenvironment of amyloid plaques in a mouse model of Alzheimer's disease treated with Aducanumab.  
+
+Six mouse brains (3 treated with Aducanumab and 3 IgG controls) were profiled using 10x Xenium spatial transcriptomics, and plaque boundaries were annotated in HALO using thioflavin-S (ThioS) immunostaining by a single annotator (Akhil Palleria), eliminating the inter-observer variability. Two distinct plaque types are considered: cerebral amyloid angiopathy (CAA) and parenchymal plaques, enabling plaque-type-specific analyses across five brain regions.
+
+Co-registration of HALO annotations with the Xenium coordinate system is performed by computing plaque centroids from bounding-box coordinates and converting pixel units to micrometres (factor 0.2125 µm/pixel). Cell-to-plaque distances are calculated for all detected cells using k-d trees (`RANN::nn2`), and cells are stratified into proximal (< 50 µm) and distal (≥ 50 µm) compartments relative to CAA and parenchymal plaques separately.  
+
+Spearman rank correlations between normalised gene expression and continuous plaque-distance values (sign-flipped so that positive rho indicates enrichment near plaques) are computed across all 22 annotated cell types and within the microglia subset. Pseudobulk differential expression (DESeq2 Wald test, aggregated per brain) compares Aducanumab-treated and IgG-control microglia in plaque-proximal versus plaque-distal compartments. Additional spatial analyses include multi-plaque neighbourhood modelling to disentangle proximity from local plaque density, global spatial autocorrelation via Moran's I and Geary's C (spdep, kNN-15 weights), and cell-type neighbourhood enrichment near plaques using Giotto Suite.
+
+Taken together, these analyses provide a systematic, quantitative account of how plaque proximity and Aducanumab treatment jointly shape transcriptional states across cell types in the Alzheimer's disease brain, with particular emphasis on microglial reactivity at the two distinct plaque compartments.

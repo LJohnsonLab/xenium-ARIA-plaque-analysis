@@ -2,13 +2,6 @@
 title: "Multi-plaque neighbourhood effects"
 subtitle: "Disentangling plaque proximity from local plaque density"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, density, neighbourhood]
 ---
 
 # Setup and data loading

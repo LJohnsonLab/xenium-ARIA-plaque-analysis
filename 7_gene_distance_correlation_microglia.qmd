@@ -2,13 +2,6 @@
 title: "Gene-to-distance-to-plaque correlation — microglia only"
 subtitle: "Microglia object provided by Kai Saito with  Akhil HALO annotations"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, correlation, microglia]
 ---
 
 # Gene-distance correlation functions
@@ -80,15 +73,7 @@ cell_distances_all <- cell_distances_all |>
 
 ```{r}
 #| label: cell-counts
-# Add treatment info from Seurat metadata
-treatment_lookup <- bind_rows(
-  slide1_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group),
-  slide2_mg@meta.data |> as_tibble(rownames = "cell") |> select(cell, sample_ID, Treatment.Group)
-)
-
-cell_distances_all <- cell_distances_all |>
-  left_join(treatment_lookup, by = "cell")
-
+# sample_ID and Treatment.Group are already in cell_distances_all (joined in load_slides_and_distances)
 cell_distances_all |>
   group_by(sample_ID, Treatment.Group, prox_any) |>
   summarise(n = n(), .groups = "drop") |>
@@ -269,7 +254,7 @@ cor_any <- compute_gene_distance_correlation(
 
 The microglia-specific gene-distance correlation, split by plaque type reveals that microglia activate fundamentally different transcriptional programmes near CAA vs parenchymal plaques.      
                                                                                                                                                                                                             
-**Parenchymal plaque (righ panel)**                                                                                                                                                                          
+**Parenchymal plaque (right panel)**                                                                                                                                                                          
                                                                                                                                                                                                                                                                                                                                                                                                          
 Near plaque (orange): Classic **DAM** (Disease-Associated Microglia) signature:
 

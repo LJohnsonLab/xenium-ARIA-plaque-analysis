@@ -2,13 +2,6 @@
 title: "Global Spatial Autocorrelation"
 subtitle: "Moran's I and Geary's C via spdep — kNN(15) spatial weights"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, spatial, autocorrelation, giotto, moran, geary]
 ---
 
 # Setup and data loading
@@ -204,7 +197,7 @@ ggplot(moran_mean, aes(x = rank, y = mean_moran)) +
 
 Global Moran's I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights.  
 
-All genes exhibited positive Moran's I (range: ~0 to 0.56), consistent with the spatially organized architecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression.   
+Nearly all genes exhibited positive Moran's I (range: −0.0003 to 0.56; *Il1r2* was the sole gene with a marginally negative value, effectively zero), consistent with the spatially organized architecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression.   
 
 Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
 
@@ -320,14 +313,25 @@ ggplot(moran_vs_dist, aes(x = rho_flip, y = mean_moran)) +
 ```
 
 
-To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of 471 tested genes, 88 fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), 147 in "spatial only," 105 in "plaque only," and 131 in "neither."   
+```{r}
+#| label: quadrant-counts
+#| include: false
+moran_med <- median(moran_vs_dist$mean_moran)
+q_n_total  <- nrow(moran_vs_dist)
+q_sp_pl    <- sum(moran_vs_dist$mean_moran >= moran_med & moran_vs_dist$rho_flip >  0)
+q_sp_only  <- sum(moran_vs_dist$mean_moran >= moran_med & moran_vs_dist$rho_flip <= 0)
+q_pl_only  <- sum(moran_vs_dist$mean_moran <  moran_med & moran_vs_dist$rho_flip >  0)
+q_neither  <- sum(moran_vs_dist$mean_moran <  moran_med & moran_vs_dist$rho_flip <= 0)
+```
+
+To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of `r q_n_total` tested genes, `r q_sp_pl` fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), `r q_sp_only` in "spatial only," `r q_pl_only` in "plaque only," and `r q_neither` in "neither."   
 
 The labeled genes separate into two clear groups. First, the strongest global spatial genes were largely plaque-distant/anatomy-linked: *Ccdc153* (I=0.505, rho_flip=-0.088), *Car12* (0.464, -0.126), *Tmem212* (0.463, -0.078), *Calb1* (0.373, -0.130), *Chst1* (0.333, -0.126), *Ids* (0.293, -0.158), and *Fdft1* (0.228, -0.138), consistent with broad anatomical domains rather than plaque-local biology. Second, canonical DAM genes were strongly plaque-associated but only modestly spatial by Moran’s I: *Cst7* (0.161, 0.295), *Lyz2* (0.109, 0.220), *Trem2* (0.095, 0.216), *Bcl2a1b* (0.086, 0.208), and *Cd68* (0.080, 0.198), consistent with focal plaque-proximal microglial activation. *Mbp* was a notable exception: both highly spatial (I = 0.44) and modestly plaque-associated (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions.
 
 
 # Treatment-stratified Moran's I
 
-Next we tested if spatial autocorrelation differ between Adu- and IgG-treated tissue. For that,  we subseted **each slide** by treatment and re-compute Moran's I.
+Next we tested if spatial autocorrelation differ between Adu- and IgG-treated tissue. For that,  we subset **each slide** by treatment and recomputed Moran's I.
 
 ```{r}
 #| label: treatment-stratified-moran

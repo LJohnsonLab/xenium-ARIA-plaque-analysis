@@ -2,13 +2,6 @@
 title: "Cell-type distance to plaque — ridge plots"
 subtitle: "Distance distributions per annotated cell type, faceted by plaque type and treatment"
 date: last-modified
-execute:
-  echo: true
-  warning: false
-embed-resources: true
-format: html
-code-fold: true
-tags: [xenium, coregistration, halo, ridge, cell-types]
 ---
 
 # Setup and data loading
