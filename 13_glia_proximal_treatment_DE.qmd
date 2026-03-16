@@ -1,0 +1,477 @@
+---
+title: "Astrocyte and oligodendrocyte proximal treatment DE"
+subtitle: "Pseudobulk DESeq2: Adu vs IgG in plaque-proximal glia — spatial validation of Layers 2 and 3"
+date: last-modified
+---
+
+# Rationale
+
+Notebook 8 showed that microglia near parenchymal plaques carry a nominally
+significant treatment signal (Ccl12, Ifitm3, Nlrp3 at p < 0.01). Here we extend
+the same pseudobulk DESeq2 framework to **astrocytes** and **oligodendrocytes** to
+test whether the amplification and remodeling layers of the three-layer model also
+show Adu vs IgG differences near plaques.
+
+- **Astrocytes** (Layer 2 — Amplification): hypothesised up: Ifitm3, Ccl2, Agt
+- **Oligodendrocytes** (Layer 3 — Remodeling): hypothesised up: Abca1, Srebf1, Apod;
+  hypothesised down: Got1, Ldhb
+
+Pseudobulk aggregation per brain (n = 3 Adu vs n = 3 IgG) is used throughout. No
+genes are expected to survive BH correction; we report nominal p < 0.01 as
+exploratory candidates, consistent with notebook 8.
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+source("R/setup.R")
+library(DESeq2)
+library(EnhancedVolcano)
+library(patchwork)
+library(gridExtra)
+library(ggridges)
+
+data <- load_slides_and_distances("full")
+slide1 <- data$slide1; slide2 <- data$slide2
+cell_distances_1 <- data$distances_1; cell_distances_2 <- data$distances_2
+```
+
+## Identify cell-type cluster labels
+
+```{r}
+#| label: identify-clusters
+all_types <- sort(unique(c(slide1$annotatedclusters, slide2$annotatedclusters)))
+
+ct_astro <- all_types[grepl("astrocyte", all_types, ignore.case = TRUE)]
+ct_oligo <- all_types[grepl("oligodendrocyte", all_types, ignore.case = TRUE)]
+
+message("Astrocyte clusters:       ", paste(ct_astro, collapse = ", "))
+message("Oligodendrocyte clusters: ", paste(ct_oligo, collapse = ", "))
+```
+
+## Add proximity metadata to full objects
+
+```{r}
+#| label: add-proximity-metadata
+add_proximity <- function(seurat_obj, cell_distances) {
+  prox <- cell_distances |>
+    mutate(
+      prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+      prox_paren = if_else(dist_paren < 50,  "proximal", "distal"),
+      prox_any   = if_else(pmin(dist_caa, dist_paren) < 50, "proximal", "distal")
+    ) |>
+    column_to_rownames("cell") |>
+    select(dist_caa, dist_paren, prox_caa, prox_paren, prox_any)
+
+  AddMetaData(seurat_obj, prox)
+}
+
+slide1 <- add_proximity(slide1, cell_distances_1)
+slide2 <- add_proximity(slide2, cell_distances_2)
+```
+
+## Subset to target cell types
+
+```{r}
+#| label: subset-cell-types
+# Subset to astrocytes
+slide1_astro <- subset(slide1, annotatedclusters %in% ct_astro)
+slide2_astro <- subset(slide2, annotatedclusters %in% ct_astro)
+
+# Subset to oligodendrocytes
+slide1_oligo <- subset(slide1, annotatedclusters %in% ct_oligo)
+slide2_oligo <- subset(slide2, annotatedclusters %in% ct_oligo)
+
+message(sprintf("Astrocytes:        slide1 = %d, slide2 = %d",
+                ncol(slide1_astro), ncol(slide2_astro)))
+message(sprintf("Oligodendrocytes:  slide1 = %d, slide2 = %d",
+                ncol(slide1_oligo), ncol(slide2_oligo)))
+```
+
+## Cell counts per proximity group
+
+```{r}
+#| label: cell-counts
+count_proximity <- function(slide_list, label) {
+  bind_rows(map(slide_list, \(obj) obj@meta.data |> as_tibble(rownames = "cell"))) |>
+    group_by(sample_ID, prox_any) |>
+    summarise(n = n(), .groups = "drop") |>
+    pivot_wider(names_from = prox_any, values_from = n, values_fill = 0L) |>
+    mutate(total = proximal + distal, cell_type = label)
+}
+
+bind_rows(
+  count_proximity(list(slide1_astro, slide2_astro), "Astrocytes"),
+  count_proximity(list(slide1_oligo, slide2_oligo), "Oligodendrocytes")
+) |>
+  kbl(caption = "Cells per sample — proximity to any plaque (50 um threshold)") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+## Ridge plots: distance distributions by treatment
+
+```{r}
+#| label: ridge-distances
+#| fig-width: 14
+#| fig-height: 8
+#| fig-cap: "Distance distributions for astrocytes (top) and oligodendrocytes (bottom) by treatment group. Vertical dashed line = 50 um proximal threshold. Distances capped at 500 um."
+
+build_ridge_df <- function(slide_list, label) {
+  bind_rows(map(slide_list, \(obj) {
+    obj@meta.data |>
+      as_tibble(rownames = "cell") |>
+      select(cell, sample_ID, Treatment.Group, dist_caa, dist_paren)
+  })) |>
+    pivot_longer(
+      cols = c(dist_caa, dist_paren),
+      names_to = "plaque_type", values_to = "distance"
+    ) |>
+    mutate(
+      plaque_type   = recode(plaque_type, dist_caa = "CAA", dist_paren = "Parenchymal"),
+      distance_cap  = pmin(distance, 500),
+      cell_type     = label
+    )
+}
+
+ridge_df <- bind_rows(
+  build_ridge_df(list(slide1_astro, slide2_astro), "Astrocytes"),
+  build_ridge_df(list(slide1_oligo, slide2_oligo), "Oligodendrocytes")
+)
+
+ggplot(ridge_df, aes(x = distance_cap, y = Treatment.Group, fill = Treatment.Group)) +
+  geom_density_ridges(alpha = 0.6, scale = 1.2, rel_min_height = 0.01) +
+  geom_vline(xintercept = 50, linetype = "dashed", colour = "grey30") +
+  facet_grid(cell_type ~ plaque_type) +
+  scale_fill_manual(values = c("IgG" = "#4DAF4A", "Adu" = "#E41A1C")) +
+  labs(
+    x    = "Distance to nearest plaque (um)",
+    y    = NULL,
+    fill = "Treatment"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(legend.position = "bottom",
+        strip.text = element_text(size = 14))
+```
+
+# Pseudobulk helpers
+
+Functions are identical to notebook 8: aggregate counts per sample within a proximity
+group, then run DESeq2 Adu vs IgG.
+
+```{r}
+#| label: define-pseudobulk-builder
+build_pseudobulk <- function(slide_list, group_col) {
+  all_counts <- map(slide_list, \(obj) {
+    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
+  })
+  all_meta <- map(slide_list, \(obj) {
+    obj@meta.data |>
+      rownames_to_column("cell") |>
+      mutate(pb_group = .data[[group_col]])
+  })
+
+  shared_genes <- Reduce(intersect, map(all_counts, rownames))
+  counts <- do.call(cbind, map(all_counts, \(m) m[shared_genes, ]))
+  meta   <- bind_rows(all_meta)
+
+  groups <- unique(meta$pb_group)
+  indicator <- Matrix::sparseMatrix(
+    i = match(meta$cell, colnames(counts)),
+    j = match(meta$pb_group, groups),
+    x = 1,
+    dims = c(ncol(counts), length(groups)),
+    dimnames = list(colnames(counts), groups)
+  )
+
+  list(
+    pb_counts = as.matrix(counts %*% indicator),
+    meta      = meta,
+    groups    = groups
+  )
+}
+```
+
+```{r}
+#| label: define-deseq2-runner
+run_deseq2 <- function(
+    pb_counts,
+    col_data,
+    design_formula,
+    contrast,
+    plot_title    = "DE results",
+    plot_subtitle = "",
+    pval_threshold = 0.01
+) {
+  dds <- DESeqDataSetFromMatrix(
+    countData = pb_counts,
+    colData   = col_data,
+    design    = design_formula
+  )
+  keep <- rowSums(counts(dds)) >= 10
+  dds  <- dds[keep, ]
+  dds  <- DESeq(dds)
+  res  <- results(dds, contrast = contrast)
+
+  res_df <- as.data.frame(res) |>
+    rownames_to_column("gene") |>
+    as_tibble() |>
+    dplyr::rename(p_val = pvalue, p_val_adj = padj, avg_log2FC = log2FoldChange) |>
+    arrange(p_val_adj)
+
+  sig_df    <- res_df |> filter(p_val < pval_threshold)
+  ev_df     <- res_df |> column_to_rownames("gene")
+  sig_genes <- sig_df$gene
+
+  keyvals <- rep("grey60", nrow(ev_df))
+  names(keyvals) <- rownames(ev_df)
+  keyvals[sig_genes] <- "red2"
+
+  fc_range  <- range(ev_df$avg_log2FC, na.rm = TRUE)
+  xlim_vals <- c(floor(fc_range[1]), ceiling(fc_range[2]))
+
+  volcano <- EnhancedVolcano(
+    ev_df,
+    lab            = rownames(ev_df),
+    selectLab      = sig_genes,
+    x              = "avg_log2FC",
+    y              = "p_val",
+    ylim           = c(0, 3),
+    title          = plot_title,
+    subtitle       = plot_subtitle,
+    labFace        = "italic",
+    labSize        = 6,
+    caption        = "",
+    pCutoff        = 1,
+    FCcutoff       = 0.001,
+    colCustom      = keyvals,
+    legendPosition = "none",
+    drawConnectors = TRUE,
+    directionConnectors = "both",
+    max.overlaps   = Inf,
+    xlim           = xlim_vals
+  )
+
+  if (length(sig_genes) > 0) {
+    raw_boundary <- max(ev_df[sig_genes, "p_val"], na.rm = TRUE)
+    volcano <- volcano +
+      geom_hline(yintercept = -log10(raw_boundary),
+                 linetype = "dashed", colour = "black")
+  }
+
+  list(
+    all_results         = ev_df,
+    significant_results = sig_df |> column_to_rownames("gene"),
+    volcano_plot        = volcano,
+    sig_genes           = sig_genes,
+    summary = list(total_genes = nrow(ev_df), significant_genes = nrow(sig_df))
+  )
+}
+```
+
+```{r}
+#| label: define-treatment-de
+run_treatment_de <- function(slide_list, proximity_col, proximity_value, plot_title) {
+  slide_list_sub <- map(slide_list, \(obj) {
+    subset(obj, cells = colnames(obj)[obj[[proximity_col, drop = TRUE]] == proximity_value])
+  })
+
+  pb <- build_pseudobulk(slide_list_sub, "sample_ID")
+
+  treatment_map <- bind_rows(map(slide_list, \(obj) {
+    obj@meta.data |> distinct(sample_ID, Treatment.Group)
+  })) |> distinct()
+
+  col_data <- data.frame(
+    treatment = factor(
+      treatment_map$Treatment.Group[match(pb$groups, treatment_map$sample_ID)],
+      levels = c("IgG", "Adu")
+    ),
+    row.names = pb$groups
+  )
+
+  run_deseq2(pb$pb_counts, col_data,
+             design_formula = ~ treatment,
+             contrast       = c("treatment", "Adu", "IgG"),
+             plot_title     = plot_title,
+             plot_subtitle  = "Adu vs IgG")
+}
+```
+
+# Gene filtering funnel
+
+```{r}
+#| label: gene-funnel
+count_after_pb <- function(slide_list, proximity_col, proximity_value) {
+  sub <- map(slide_list, \(obj) {
+    subset(obj, cells = colnames(obj)[obj[[proximity_col, drop = TRUE]] == proximity_value])
+  })
+  pb <- build_pseudobulk(sub, "sample_ID")
+  n_cells        <- sum(map_int(sub, ncol))
+  n_genes_before <- nrow(pb$pb_counts)
+  n_genes_after  <- sum(rowSums(pb$pb_counts) >= 10)
+  tibble(n_cells = n_cells, genes_in_pb = n_genes_before, genes_after_filter = n_genes_after)
+}
+
+panel_genes <- intersect(
+  rownames(LayerData(slide1, layer = "counts")),
+  rownames(LayerData(slide2, layer = "counts"))
+)
+
+astro_caa_stats   <- count_after_pb(list(slide1_astro, slide2_astro), "prox_caa",   "proximal")
+astro_paren_stats <- count_after_pb(list(slide1_astro, slide2_astro), "prox_paren", "proximal")
+oligo_caa_stats   <- count_after_pb(list(slide1_oligo, slide2_oligo), "prox_caa",   "proximal")
+oligo_paren_stats <- count_after_pb(list(slide1_oligo, slide2_oligo), "prox_paren", "proximal")
+
+tribble(
+  ~step,                                                   ~count,
+  "Xenium panel (shared across slides)",                   length(panel_genes),
+  "Astro CAA-proximal: cells",                             astro_caa_stats$n_cells,
+  "Astro CAA-proximal: genes after >=10 counts filter",    astro_caa_stats$genes_after_filter,
+  "Astro Paren-proximal: cells",                           astro_paren_stats$n_cells,
+  "Astro Paren-proximal: genes after >=10 counts filter",  astro_paren_stats$genes_after_filter,
+  "Oligo CAA-proximal: cells",                             oligo_caa_stats$n_cells,
+  "Oligo CAA-proximal: genes after >=10 counts filter",    oligo_caa_stats$genes_after_filter,
+  "Oligo Paren-proximal: cells",                           oligo_paren_stats$n_cells,
+  "Oligo Paren-proximal: genes after >=10 counts filter",  oligo_paren_stats$genes_after_filter
+) |>
+  kbl(caption = "Gene filtering funnel — cells and genes available per group") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+# Astrocyte treatment DE
+
+## CAA-proximal astrocytes: Adu vs IgG
+
+```{r}
+#| label: astro-trt-caa
+#| fig-width: 14
+#| fig-height: 6
+trt_caa_astro <- run_treatment_de(
+  list(slide1_astro, slide2_astro), "prox_caa", "proximal",
+  "Astrocytes proximal to CAA — Adu vs IgG"
+)
+
+sig_tbl <- if (nrow(trt_caa_astro$significant_results) > 0) {
+  trt_caa_astro$significant_results |>
+    select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_caa_astro$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+## Parenchymal-proximal astrocytes: Adu vs IgG
+
+```{r}
+#| label: astro-trt-paren
+#| fig-width: 14
+#| fig-height: 6
+trt_paren_astro <- run_treatment_de(
+  list(slide1_astro, slide2_astro), "prox_paren", "proximal",
+  "Astrocytes proximal to parenchymal — Adu vs IgG"
+)
+
+sig_tbl <- if (nrow(trt_paren_astro$significant_results) > 0) {
+  trt_paren_astro$significant_results |>
+    select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_paren_astro$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+# Oligodendrocyte treatment DE
+
+## CAA-proximal oligodendrocytes: Adu vs IgG
+
+```{r}
+#| label: oligo-trt-caa
+#| fig-width: 14
+#| fig-height: 6
+trt_caa_oligo <- run_treatment_de(
+  list(slide1_oligo, slide2_oligo), "prox_caa", "proximal",
+  "Oligodendrocytes proximal to CAA — Adu vs IgG"
+)
+
+sig_tbl <- if (nrow(trt_caa_oligo$significant_results) > 0) {
+  trt_caa_oligo$significant_results |>
+    select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_caa_oligo$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+## Parenchymal-proximal oligodendrocytes: Adu vs IgG
+
+```{r}
+#| label: oligo-trt-paren
+#| fig-width: 14
+#| fig-height: 6
+trt_paren_oligo <- run_treatment_de(
+  list(slide1_oligo, slide2_oligo), "prox_paren", "proximal",
+  "Oligodendrocytes proximal to parenchymal — Adu vs IgG"
+)
+
+sig_tbl <- if (nrow(trt_paren_oligo$significant_results) > 0) {
+  trt_paren_oligo$significant_results |>
+    select(p_val, avg_log2FC, p_val_adj) |>
+    mutate(across(where(is.numeric), \(x) signif(x, 3))) |>
+    arrange(p_val_adj) |>
+    tableGrob(theme = ttheme_minimal(base_size = 14))
+} else {
+  tableGrob(data.frame(Result = "No significant DEGs"), theme = ttheme_minimal(base_size = 16))
+}
+
+trt_paren_oligo$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))
+```
+
+# Summary: candidate Layer 2 and 3 genes
+
+```{r}
+#| label: summary-table
+# Pull all results and check candidate genes
+layer2_candidates <- c("Ifitm3", "Ccl2", "Ccl12", "Cxcl10", "Agt")
+layer3_candidates <- c("Abca1", "Abcg1", "Srebf1", "Apod", "Got1", "Ldhb")
+
+extract_candidates <- function(de_result, candidates, label) {
+  de_result$all_results |>
+    as_tibble(rownames = "gene") |>
+    filter(gene %in% candidates) |>
+    mutate(
+      comparison = label,
+      sig        = p_val < 0.01
+    ) |>
+    select(gene, avg_log2FC, p_val, p_val_adj, comparison, sig) |>
+    arrange(p_val)
+}
+
+bind_rows(
+  extract_candidates(trt_caa_astro,   layer2_candidates, "Astro — CAA proximal"),
+  extract_candidates(trt_paren_astro, layer2_candidates, "Astro — Paren proximal"),
+  extract_candidates(trt_caa_oligo,   layer3_candidates, "Oligo — CAA proximal"),
+  extract_candidates(trt_paren_oligo, layer3_candidates, "Oligo — Paren proximal")
+) |>
+  mutate(across(c(avg_log2FC), \(x) round(x, 3)),
+         across(c(p_val, p_val_adj), \(x) formatC(x, format = "e", digits = 2))) |>
+  kbl(caption = "Candidate Layer 2/3 genes across all comparisons (nominal p < 0.01 = TRUE)") |>
+  kable_styling("striped", full_width = FALSE) |>
+  row_spec(which(bind_rows(
+    extract_candidates(trt_caa_astro,   layer2_candidates, "Astro — CAA proximal"),
+    extract_candidates(trt_paren_astro, layer2_candidates, "Astro — Paren proximal"),
+    extract_candidates(trt_caa_oligo,   layer3_candidates, "Oligo — CAA proximal"),
+    extract_candidates(trt_paren_oligo, layer3_candidates, "Oligo — Paren proximal")
+  )$sig), bold = TRUE, color = "red")
+```

@@ -1,0 +1,451 @@
+---
+title: "Gene-distance correlation — astrocytes and oligodendrocytes"
+subtitle: "Spatial validation of Layers 2 and 3 of the three-layer glial response model"
+date: last-modified
+---
+
+# Rationale
+
+Notebook 7 established that microglia activate a DAM transcriptional programme near
+parenchymal plaques and a distinct cholesterol/lipid programme near CAA. This
+constitutes spatial evidence for **Layer 1 (Initiation)** of the proposed three-layer
+glial response model.
+
+Here we extend the same gene-distance correlation approach to **astrocytes** and
+**oligodendrocytes** to test whether Layers 2 and 3 also show plaque-proximity
+gradients:
+
+- **Layer 2 — Amplification (Astrocytes)**: Ifitm3, Ccl2, Ccl12, Cxcl10, Tnf, Agt
+- **Layer 3 — Remodeling (Oligodendrocytes)**: Abca1, Abcg1, Apod, Srebf1, Got1↓, Ldhb↓
+
+By restricting the analysis to a single cell type at a time we remove the cell-type
+composition confound: any residual gene-distance relationship reflects transcriptional
+changes within that cell type rather than differential abundance near plaques.
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+source("R/setup.R")
+library(ggrepel)
+library(patchwork)
+library(ggVennDiagram)
+
+data <- load_slides_and_distances("full")
+slide1 <- data$slide1; slide2 <- data$slide2
+cell_distances_all <- data$distances_all
+
+message(sprintf("Cell types: %s",
+  paste(sort(unique(slide1$annotatedclusters)), collapse = ", ")))
+```
+
+## Identify cell-type cluster labels
+
+```{r}
+#| label: identify-clusters
+all_types <- sort(unique(c(slide1$annotatedclusters, slide2$annotatedclusters)))
+
+ct_astro <- all_types[grepl("astrocyte", all_types, ignore.case = TRUE)]
+ct_oligo <- all_types[grepl("oligodendrocyte", all_types, ignore.case = TRUE)]
+ct_opc   <- all_types[grepl("^opc$|^opcs?$|precursor", all_types, ignore.case = TRUE)]
+
+message("Astrocyte clusters:      ", paste(ct_astro, collapse = ", "))
+message("Oligodendrocyte clusters: ", paste(ct_oligo, collapse = ", "))
+message("OPC clusters:            ", paste(ct_opc,   collapse = ", "))
+```
+
+## Subset objects and distances
+
+```{r}
+#| label: subset-objects
+# Subset Seurat objects to target cell type
+subset_by_type <- function(slide_list, cell_types) {
+  map(slide_list, \(obj) {
+    keep <- obj$annotatedclusters %in% cell_types
+    subset(obj, cells = colnames(obj)[keep])
+  })
+}
+
+slides_astro <- subset_by_type(list(slide1, slide2), ct_astro)
+slides_oligo <- subset_by_type(list(slide1, slide2), ct_oligo)
+
+# Subset distance table to matching cells
+dist_astro <- cell_distances_all |>
+  filter(cell %in% unlist(map(slides_astro, colnames)))
+
+dist_oligo <- cell_distances_all |>
+  filter(cell %in% unlist(map(slides_oligo, colnames)))
+
+message(sprintf("Astrocytes: %d cells", nrow(dist_astro)))
+message(sprintf("Oligodendrocytes: %d cells", nrow(dist_oligo)))
+```
+
+## Cell counts per group
+
+```{r}
+#| label: cell-counts
+build_count_table <- function(dist_df, label) {
+  dist_df |>
+    mutate(
+      prox_caa   = if_else(dist_caa < 50,   "proximal", "distal"),
+      prox_paren = if_else(dist_paren < 50,  "proximal", "distal")
+    ) |>
+    group_by(sample_ID, Treatment.Group) |>
+    summarise(
+      n_total       = n(),
+      n_prox_caa    = sum(prox_caa == "proximal"),
+      n_prox_paren  = sum(prox_paren == "proximal"),
+      .groups = "drop"
+    ) |>
+    mutate(cell_type = label)
+}
+
+bind_rows(
+  build_count_table(dist_astro, "Astrocytes"),
+  build_count_table(dist_oligo, "Oligodendrocytes")
+) |>
+  kbl(caption = "Cell counts per sample and proximity group") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+# Gene-distance correlation functions
+
+These functions are identical to notebook 7. For each gene we compute a Spearman rank
+correlation between per-cell raw expression counts and distance to the nearest plaque
+of the specified type. The sign is flipped so that positive `rho_flip` = enriched near
+plaques.
+
+```{r}
+#| label: define-compute-correlation
+compute_gene_distance_correlation <- function(
+    seurat_list,
+    cell_distances,
+    distance_col = "dist_any",
+    min_expressing_cells = 50
+) {
+  count_list <- map(seurat_list, \(obj) {
+    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
+  })
+
+  shared_genes <- Reduce(intersect, map(count_list, rownames))
+  counts <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
+
+  shared_cells <- intersect(colnames(counts), cell_distances$cell)
+  counts <- counts[, shared_cells]
+  dist_vec <- cell_distances |>
+    filter(cell %in% shared_cells) |>
+    arrange(match(cell, shared_cells)) |>
+    pull(!!sym(distance_col))
+
+  n_expressing <- Matrix::rowSums(counts > 0)
+  keep <- n_expressing >= min_expressing_cells
+  counts <- counts[keep, ]
+  message(sprintf(
+    "Kept %d / %d genes (>= %d expressing cells)",
+    sum(keep), length(keep), min_expressing_cells
+  ))
+
+  results <- map(seq_len(nrow(counts)), \(i) {
+    gene_expr <- counts[i, ]
+    ct <- cor.test(as.numeric(gene_expr), dist_vec,
+                   method = "spearman", exact = FALSE)
+    tibble(gene = rownames(counts)[i], rho = ct$estimate, pval = ct$p.value)
+  }, .progress = "Spearman correlations") |>
+    bind_rows()
+
+  results |>
+    mutate(
+      padj     = p.adjust(pval, method = "BH"),
+      rho_flip = -rho,
+      rank     = rank(-rho_flip, ties.method = "first"),
+      sig      = case_when(
+        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
+        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
+        TRUE                        ~ "ns"
+      )
+    ) |>
+    arrange(rank)
+}
+```
+
+```{r}
+#| label: define-plot-correlation
+plot_gene_distance_correlation <- function(
+    results,
+    title          = "Gene-distance correlation",
+    n_top          = 5,
+    genes_to_label = NULL
+) {
+  top_pos    <- results |> filter(sig == "enriched_near") |> slice_min(rank, n = n_top)
+  top_neg    <- results |> filter(sig == "enriched_far")  |> slice_max(rank, n = n_top)
+  auto_label <- bind_rows(top_pos, top_neg)
+
+  if (!is.null(genes_to_label)) {
+    user_genes <- results |> filter(gene %in% genes_to_label)
+    auto_label <- bind_rows(auto_label, user_genes) |> distinct(gene, .keep_all = TRUE)
+  }
+
+  colour_map <- c(
+    "enriched_near" = "#E07B39",
+    "enriched_far"  = "#7B68AE",
+    "ns"            = "grey70"
+  )
+
+  ggplot(results, aes(x = rank, y = rho_flip)) +
+    geom_point(aes(colour = sig), size = 2, alpha = 0.5) +
+    geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+    geom_text_repel(
+      data        = auto_label,
+      aes(label = gene, colour = sig),
+      size        = 5,
+      fontface    = "italic",
+      box.padding = 0.4,
+      max.overlaps = 20,
+      show.legend = FALSE,
+      seed = 23
+    ) +
+    scale_colour_manual(
+      values = colour_map,
+      labels = c(
+        "enriched_near" = "Enriched near plaque (padj < 0.05)",
+        "enriched_far"  = "Enriched far from plaque (padj < 0.05)",
+        "ns"            = "Not significant"
+      )
+    ) +
+    labs(
+      title  = title,
+      x      = "Gene rank",
+      y      = "Spearman rho (flipped)",
+      colour = NULL
+    ) +
+    theme_minimal(base_size = 14) +
+    theme(
+      legend.position    = "bottom",
+      panel.grid.minor   = element_blank(),
+      panel.grid.major.x = element_blank()
+    )
+}
+```
+
+# Astrocyte gene-distance correlations
+
+Candidate genes from DEG_consolidated model (Layer 2 — Amplification):
+- Near plaque: Ifitm3, Ccl2, Ccl12, Cxcl10, Agt, Gfap, Vim, S100b
+- Far from plaque: homeostatic astrocyte markers
+
+```{r}
+#| label: run-astro-correlations
+astro_candidate_genes <- c(
+  "Ifitm3", "Ccl2", "Ccl12", "Cxcl10", "Agt",
+  "Gfap", "Vim", "S100b", "Apod", "Abca1", "Plin4"
+)
+
+cor_caa_astro <- compute_gene_distance_correlation(
+  slides_astro, dist_astro, distance_col = "dist_caa"
+)
+
+cor_paren_astro <- compute_gene_distance_correlation(
+  slides_astro, dist_astro, distance_col = "dist_paren"
+)
+```
+
+## Rank plots — astrocytes
+
+```{r}
+#| label: plot-astro-caa-paren
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+#| fig-cap: "Spearman gene-distance correlation for astrocytes. Positive rho_flip = enriched near plaque. Top 5 enriched-near and enriched-far genes are automatically labeled; candidate Layer 2 genes (Ifitm3, Ccl2, Ccl12, Cxcl10, Agt, Gfap, Vim) are additionally labeled if significant."
+
+p_caa_astro   <- plot_gene_distance_correlation(
+  cor_caa_astro,
+  title          = "Astrocytes — CAA",
+  genes_to_label = astro_candidate_genes
+)
+
+p_paren_astro <- plot_gene_distance_correlation(
+  cor_paren_astro,
+  title          = "Astrocytes — Parenchymal",
+  genes_to_label = astro_candidate_genes
+)
+
+(p_caa_astro | p_paren_astro) +
+  plot_annotation(title = "Astrocyte gene-distance correlation") +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+## Top astrocyte genes
+
+```{r}
+#| label: astro-top-tables
+show_top <- function(results, label, n = 10) {
+  bind_rows(
+    results |> filter(sig == "enriched_near") |> slice_min(rank, n = n),
+    results |> filter(sig == "enriched_far")  |> slice_max(rank, n = n)
+  ) |>
+    select(gene, rho, rho_flip, pval, padj, rank, sig) |>
+    mutate(
+      across(c(rho, rho_flip), \(x) round(x, 4)),
+      across(c(pval, padj), \(x) ifelse(x < 1e-300, "< 1e-300", formatC(x, format = "e", digits = 2)))
+    ) |>
+    kbl(caption = label) |>
+    kable_styling("striped", full_width = FALSE)
+}
+
+show_top(cor_caa_astro,   "Top genes — astrocytes, distance to CAA")
+show_top(cor_paren_astro, "Top genes — astrocytes, distance to parenchymal")
+```
+
+## Venn diagram — astrocyte enriched-near overlap
+
+```{r}
+#| label: astro-venn
+#| fig-height: 4
+#| fig-width: 6
+#| fig-cap: "Overlap of genes significantly enriched near plaques (padj < 0.05, rho_flip > 0) in astrocytes, between CAA and parenchymal analyses."
+
+near_caa_astro   <- cor_caa_astro   |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+near_paren_astro <- cor_paren_astro |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+
+ggVennDiagram(
+  list(CAA = near_caa_astro, Parenchymal = near_paren_astro),
+  label_alpha = 0, label = "count", shape_id = "201"
+) +
+  labs(title = "Astrocytes — enriched-near genes (padj < 0.05)") +
+  theme(legend.position = "none") +
+  scale_fill_distiller(palette = "RdBu")
+
+cat("Common enriched-near astrocyte genes (CAA and parenchymal):\n",
+    paste(intersect(near_caa_astro, near_paren_astro), collapse = ", "))
+```
+
+# Oligodendrocyte gene-distance correlations
+
+Candidate genes from DEG_consolidated model (Layer 3 — Remodeling):
+- Near plaque: Abca1, Abcg1, Srebf1, Apod, Aspa, Mbp, Plp1
+- Far from plaque: Got1, Ldhb, Mdh2, Hk1 (metabolic downregulation)
+
+```{r}
+#| label: run-oligo-correlations
+oligo_candidate_genes <- c(
+  "Abca1", "Abcg1", "Srebf1", "Apod", "Aspa",
+  "Mbp", "Plp1", "Got1", "Ldhb", "Mdh2", "Hk1"
+)
+
+cor_caa_oligo <- compute_gene_distance_correlation(
+  slides_oligo, dist_oligo, distance_col = "dist_caa"
+)
+
+cor_paren_oligo <- compute_gene_distance_correlation(
+  slides_oligo, dist_oligo, distance_col = "dist_paren"
+)
+```
+
+## Rank plots — oligodendrocytes
+
+```{r}
+#| label: plot-oligo-caa-paren
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+#| fig-cap: "Spearman gene-distance correlation for oligodendrocytes. Top 5 enriched-near and enriched-far genes are automatically labeled; candidate Layer 3 genes (Abca1, Abcg1, Srebf1, Apod, Got1, Ldhb) are additionally labeled if present."
+
+p_caa_oligo   <- plot_gene_distance_correlation(
+  cor_caa_oligo,
+  title          = "Oligodendrocytes — CAA",
+  genes_to_label = oligo_candidate_genes
+)
+
+p_paren_oligo <- plot_gene_distance_correlation(
+  cor_paren_oligo,
+  title          = "Oligodendrocytes — Parenchymal",
+  genes_to_label = oligo_candidate_genes
+)
+
+(p_caa_oligo | p_paren_oligo) +
+  plot_annotation(title = "Oligodendrocyte gene-distance correlation") +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "bottom")
+```
+
+## Top oligodendrocyte genes
+
+```{r}
+#| label: oligo-top-tables
+show_top(cor_caa_oligo,   "Top genes — oligodendrocytes, distance to CAA")
+show_top(cor_paren_oligo, "Top genes — oligodendrocytes, distance to parenchymal")
+```
+
+## Venn diagram — oligodendrocyte enriched-near overlap
+
+```{r}
+#| label: oligo-venn
+#| fig-height: 4
+#| fig-width: 6
+#| fig-cap: "Overlap of genes significantly enriched near plaques (padj < 0.05, rho_flip > 0) in oligodendrocytes."
+
+near_caa_oligo   <- cor_caa_oligo   |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+near_paren_oligo <- cor_paren_oligo |> filter(padj < 0.05, rho_flip > 0) |> pull(gene)
+
+ggVennDiagram(
+  list(CAA = near_caa_oligo, Parenchymal = near_paren_oligo),
+  label_alpha = 0, label = "count", shape_id = "201"
+) +
+  labs(title = "Oligodendrocytes — enriched-near genes (padj < 0.05)") +
+  theme(legend.position = "none") +
+  scale_fill_distiller(palette = "RdBu")
+
+cat("Common enriched-near oligodendrocyte genes (CAA and parenchymal):\n",
+    paste(intersect(near_caa_oligo, near_paren_oligo), collapse = ", "))
+```
+
+# Cross-cell-type comparison
+
+## Astrocytes vs oligodendrocytes — candidate gene heatmap
+
+Visualise the rho_flip values for all DEG_consolidated candidate genes across both
+cell types and both plaque types in a single heatmap.
+
+```{r}
+#| label: candidate-gene-heatmap
+#| fig-height: 6
+#| fig-width: 8
+#| fig-cap: "Spearman rho_flip for candidate Layer 2 (astrocyte) and Layer 3 (oligodendrocyte) genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Grey fill = gene not tested (< 50 expressing cells)."
+
+all_candidates <- union(astro_candidate_genes, oligo_candidate_genes)
+
+heatmap_df <- bind_rows(
+  cor_caa_astro   |> mutate(cell_type = "Astrocytes",      plaque = "CAA"),
+  cor_paren_astro |> mutate(cell_type = "Astrocytes",      plaque = "Parenchymal"),
+  cor_caa_oligo   |> mutate(cell_type = "Oligodendrocytes", plaque = "CAA"),
+  cor_paren_oligo |> mutate(cell_type = "Oligodendrocytes", plaque = "Parenchymal")
+) |>
+  filter(gene %in% all_candidates) |>
+  mutate(
+    facet = paste(cell_type, plaque, sep = " — "),
+    sig_label = case_when(
+      padj < 0.001 ~ "***",
+      padj < 0.01  ~ "**",
+      padj < 0.05  ~ "*",
+      TRUE         ~ ""
+    )
+  )
+
+ggplot(heatmap_df, aes(x = facet, y = gene, fill = rho_flip)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(aes(label = sig_label), size = 4, vjust = 0.75) +
+  scale_fill_gradient2(
+    low  = "#7B68AE", mid = "white", high = "#E07B39",
+    midpoint = 0,
+    name = "rho_flip\n(+ = near plaque)"
+  ) +
+  labs(
+    title = "Candidate gene-distance correlations",
+    subtitle = "* padj < 0.05  ** padj < 0.01  *** padj < 0.001",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```

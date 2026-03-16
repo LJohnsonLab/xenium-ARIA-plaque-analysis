@@ -24,6 +24,11 @@ website:
             href: 7_gene_distance_correlation_microglia.qmd
           - text: Microglia proximal DE
             href: 8_microglia_proximal_treatment_DE.qmd
+          - text: "---"
+          - text: Glia correlations (Layers 2+3)
+            href: 12_glia_gene_distance.qmd
+          - text: Glia proximal DE (Layers 2+3)
+            href: 13_glia_proximal_treatment_DE.qmd
       - text: Spatial Analysis
         menu:
           - text: Global autocorrelation
@@ -32,6 +37,9 @@ website:
             href: 11_neighborhood_enrichment.qmd
           - text: Niche pseudobulk treatment
             href: 11.1_niche_pseudobulk_treatment.qmd
+          - text: "---"
+          - text: Radial niche profile
+            href: 15_radial_niche_profile.qmd
 
 format:
   html:

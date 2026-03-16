@@ -485,3 +485,212 @@ ggplot(geary_vs_moran, aes(x = mean_moran, y = mean_geary)) +
 To validate the Moran's I findings, we computed Geary's C for all genes using the same kNN(15) spatial weight matrix. Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity than Moran's I, which captures global covariance structure. As expected, the two statistics showed a strong inverse relationship: genes with high Moran's I exhibited low Geary's C (positive autocorrelation confirmed by both measures), and vice versa. The tight inverse correlation between the two statistics indicates that the spatial autocorrelation rankings are robust and not artefacts of the specific test statistic used.
 
 
+# Bivariate spatial cross-correlation — three-layer relay test
+
+The three-layer glial response model proposes a spatial relay: microglia activation
+(Layer 1) drives astrocyte amplification (Layer 2), which in turn triggers
+oligodendrocyte remodeling (Layer 3). If this relay is spatially structured rather than
+three independent regional responses, then activated microglia cells and activated
+astrocytes should be spatially co-located: where one finds a microglial *Ccl12* hotspot,
+one should also find an astrocyte *Ifitm3* hotspot nearby.
+
+**Lee's L statistic** is the bivariate generalisation of Moran's I: it quantifies whether
+two spatial variables are jointly clustered. We use it to test the following pairs:
+
+| Pair | Gene X | Cell type X | Gene Y | Cell type Y | Hypothesis |
+|------|--------|------------|--------|------------|------------|
+| 1 | Ccl12 | Microglia | Ifitm3 | Astrocytes | Layer 1 → Layer 2 co-activation |
+| 2 | Ifitm3 | Astrocytes | Abca1 | Oligodendrocytes | Layer 2 → Layer 3 relay |
+| 3 | Ccl12 | Microglia | Abca1 | Oligodendrocytes | Long-range Layer 1 → Layer 3 |
+
+For each pair we create two per-cell expression vectors: the gene's raw count if the
+cell belongs to the relevant cell type, zero otherwise. Lee's L of these two vectors
+tests whether the spatial patterns are concordant (L > 0) or discordant (L < 0) beyond
+what is expected by chance. Significance is assessed by Monte Carlo permutation (n = 499
+shuffles) while keeping cell coordinates fixed.
+
+```{r}
+#| label: bivariate-setup
+library(spdep)
+
+# Reload full objects and distances (already loaded above if session is fresh)
+# source("R/setup.R")  # uncomment if running in isolation
+
+all_types <- sort(unique(c(slide1$annotatedclusters, slide2$annotatedclusters)))
+ct_micro  <- all_types[grepl("microglia", all_types, ignore.case = TRUE)]
+ct_astro  <- all_types[grepl("astrocyte", all_types, ignore.case = TRUE)]
+ct_oligo  <- all_types[grepl("oligodendrocyte", all_types, ignore.case = TRUE)]
+
+message("Microglia:        ", paste(ct_micro, collapse = ", "))
+message("Astrocytes:       ", paste(ct_astro, collapse = ", "))
+message("Oligodendrocytes: ", paste(ct_oligo, collapse = ", "))
+```
+
+```{r}
+#| label: build-cell-type-expression-vectors
+# Build a per-cell expression vector for gene G in cell type T:
+# value = raw count if cell is of type T, 0 otherwise
+build_ct_expr_vector <- function(seurat_obj, gene, cell_types) {
+  meta <- seurat_obj@meta.data |> as_tibble(rownames = "cell")
+  cells_all <- colnames(seurat_obj)
+  ct_mask   <- meta$annotatedclusters %in% cell_types
+
+  counts_mat <- LayerData(seurat_obj, assay = DefaultAssay(seurat_obj), layer = "counts")
+  if (!gene %in% rownames(counts_mat)) return(rep(0, length(cells_all)))
+
+  expr <- as.numeric(counts_mat[gene, cells_all])
+  expr[!ct_mask] <- 0
+  expr
+}
+```
+
+```{r}
+#| label: build-spatial-weight-matrix
+# Rebuild kNN(15) spatial weight matrix from Giotto objects (already saved to disk)
+# We extract the neighbour list from the Giotto network and construct spdep::listw
+
+build_listw_from_giotto <- function(giotto_obj, network_name = "knn15") {
+  spat_net <- getSpatialNetwork(giotto_obj, name = network_name, output = "networkDT")
+  cell_ids <- spatIDs(giotto_obj)
+  n_cells  <- length(cell_ids)
+
+  from_idx <- match(spat_net$from, cell_ids)
+  to_idx   <- match(spat_net$to,   cell_ids)
+
+  nb_list <- map(seq_len(n_cells), \(i) {
+    nb <- as.integer(to_idx[from_idx == i])
+    if (length(nb) == 0) 0L else nb
+  })
+  class(nb_list) <- "nb"
+  attr(nb_list, "region.id") <- cell_ids
+  nb2listw(nb_list, style = "W", zero.policy = TRUE)
+}
+
+lw1 <- build_listw_from_giotto(giotto1)
+lw2 <- build_listw_from_giotto(giotto2)
+```
+
+```{r}
+#| label: define-bivariate-lee
+# Run Lee's L with Monte Carlo permutation for one gene pair on one slide
+run_lee <- function(seurat_obj, lw, gene_x, ct_x, gene_y, ct_y, nsim = 499) {
+  x <- build_ct_expr_vector(seurat_obj, gene_x, ct_x)
+  y <- build_ct_expr_vector(seurat_obj, gene_y, ct_y)
+
+  # Only run if both genes are detected in their respective cell types
+  if (sum(x > 0) < 10 || sum(y > 0) < 10) {
+    return(tibble(
+      gene_x = gene_x, ct_x = paste(ct_x, collapse = "/"),
+      gene_y = gene_y, ct_y = paste(ct_y, collapse = "/"),
+      lee_L = NA_real_, pval = NA_real_,
+      n_x = sum(x > 0), n_y = sum(y > 0)
+    ))
+  }
+
+  mc_res <- lee.mc(x, y, listw = lw, nsim = nsim, zero.policy = TRUE)
+  tibble(
+    gene_x = gene_x, ct_x = paste(ct_x, collapse = "/"),
+    gene_y = gene_y, ct_y = paste(ct_y, collapse = "/"),
+    lee_L  = mc_res$statistic,
+    pval   = mc_res$p.value,
+    n_x    = sum(x > 0),
+    n_y    = sum(y > 0)
+  )
+}
+```
+
+```{r}
+#| label: run-bivariate-lee
+#| eval: false
+# Define the three relay pairs to test
+relay_pairs <- list(
+  list(gene_x = "Ccl12",  ct_x = ct_micro, gene_y = "Ifitm3", ct_y = ct_astro),
+  list(gene_x = "Ifitm3", ct_x = ct_astro, gene_y = "Abca1",  ct_y = ct_oligo),
+  list(gene_x = "Ccl12",  ct_x = ct_micro, gene_y = "Abca1",  ct_y = ct_oligo)
+)
+
+lee_results <- map(relay_pairs, \(pair) {
+  bind_rows(
+    run_lee(slide1, lw1,
+            pair$gene_x, pair$ct_x, pair$gene_y, pair$ct_y) |> mutate(slide = "Slide 1"),
+    run_lee(slide2, lw2,
+            pair$gene_x, pair$ct_x, pair$gene_y, pair$ct_y) |> mutate(slide = "Slide 2")
+  )
+}) |>
+  bind_rows()
+
+# write_csv(lee_results, "spatial/lee_bivariate.csv")
+```
+
+```{r}
+#| label: load-lee-results
+lee_results <- read_csv("spatial/lee_bivariate.csv")
+```
+
+```{r}
+#| label: lee-results-table
+#| fig-cap: "Lee's L bivariate spatial cross-correlation for three relay gene pairs. L > 0 indicates spatial co-activation; pval from 499 Monte Carlo permutations."
+
+lee_results |>
+  mutate(
+    pair        = paste0(gene_x, " (", ct_x, ")\n× ", gene_y, " (", ct_y, ")"),
+    lee_L       = round(lee_L, 4),
+    pval        = formatC(pval, format = "f", digits = 3),
+    significant = pval < 0.05
+  ) |>
+  select(pair, slide, lee_L, pval, n_x, n_y) |>
+  kbl(caption = "Bivariate Lee's L — three-layer relay pairs") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+```{r}
+#| label: lee-results-dotplot
+#| fig-height: 4
+#| fig-width: 8
+#| fig-cap: "Lee's L (bivariate Moran's I analogue) for the three relay pairs across both slides. Positive L supports spatial co-activation; error bars show slide-to-slide range. Dashed line at L = 0 (null hypothesis: no spatial association)."
+
+lee_summary <- lee_results |>
+  group_by(gene_x, ct_x, gene_y, ct_y) |>
+  summarise(
+    mean_L = mean(lee_L, na.rm = TRUE),
+    min_L  = min(lee_L,  na.rm = TRUE),
+    max_L  = max(lee_L,  na.rm = TRUE),
+    n_sig  = sum(pval < 0.05, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  mutate(
+    pair  = paste0(gene_x, "\n(", ct_x, ")\n×\n", gene_y, "\n(", ct_y, ")"),
+    label = case_when(
+      n_sig == 2 ~ "Both slides sig.",
+      n_sig == 1 ~ "One slide sig.",
+      TRUE       ~ "NS"
+    )
+  )
+
+ggplot(lee_summary, aes(x = pair, y = mean_L, colour = label)) +
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "grey40") +
+  geom_point(size = 4) +
+  geom_errorbar(aes(ymin = min_L, ymax = max_L), width = 0.2) +
+  scale_colour_manual(values = c(
+    "Both slides sig." = "#E07B39",
+    "One slide sig."   = "#F5A623",
+    "NS"               = "grey60"
+  )) +
+  labs(
+    title  = "Bivariate Lee's L — three-layer relay",
+    x      = NULL,
+    y      = "Lee's L (mean across slides)",
+    colour = "Significance"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(size = 9))
+```
+
+A **positive and significant Lee's L** for the Ccl12(microglia) × Ifitm3(astrocyte)
+pair would indicate that regions of microglial Ccl12 activation are spatially
+concordant with astrocyte Ifitm3 expression — direct spatial evidence for the
+Layer 1 → Layer 2 relay. A positive L for Ifitm3(astrocyte) × Abca1(oligodendrocyte)
+would support the Layer 2 → Layer 3 step. If both pairs show L > 0 but the
+Ccl12 × Abca1 pair (skipping Layer 2) shows weaker L, this provides spatial
+evidence for a sequential relay rather than independent parallel responses.
+

@@ -1,0 +1,300 @@
+---
+title: "Radial niche shell profile"
+subtitle: "Cell-type composition in concentric distance shells around plaques"
+date: last-modified
+---
+
+# Rationale
+
+Notebooks 11 and 11.1 characterise the niche composition within a fixed 50 µm radius
+around plaques. Here we extend this to **concentric shells** to ask whether the
+three-layer glial response model has a spatial architecture: do microglia peak in the
+innermost shell, astrocytes in the middle shell, and oligodendrocytes in an outer
+shell, consistent with an initiation–amplification–remodeling relay?
+
+**Shells** (distance to nearest plaque):
+
+| Shell | Range (µm) |
+|-------|-----------|
+| 1     | 0 – 25    |
+| 2     | 25 – 50   |
+| 3     | 50 – 100  |
+| 4     | 100 – 200 |
+| 5     | > 200     |
+
+Analysis is run separately for CAA and parenchymal plaques, and separately for Adu
+and IgG treatment groups.
+
+# Setup and data loading
+
+```{r}
+#| label: setup
+source("R/setup.R")
+library(patchwork)
+
+data <- load_slides_and_distances("full")
+slide1 <- data$slide1; slide2 <- data$slide2
+cell_distances_all <- data$distances_all
+
+# Add cell-type and sample metadata to the distance table
+meta_lookup <- bind_rows(
+  slide1@meta.data |> as_tibble(rownames = "cell") |>
+    select(cell, annotatedclusters, sample_ID, Treatment.Group),
+  slide2@meta.data |> as_tibble(rownames = "cell") |>
+    select(cell, annotatedclusters, sample_ID, Treatment.Group)
+)
+
+cells_with_meta <- cell_distances_all |>
+  left_join(meta_lookup, by = "cell")
+```
+
+## Cell-type abundance check
+
+```{r}
+#| label: ct-counts
+cells_with_meta |>
+  count(annotatedclusters, Treatment.Group, name = "n") |>
+  arrange(desc(n)) |>
+  kbl(caption = "Total cells per annotated cluster and treatment") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+# Shell assignment
+
+```{r}
+#| label: assign-shells
+shell_breaks <- c(0, 25, 50, 100, 200, Inf)
+shell_labels <- c("0-25", "25-50", "50-100", "100-200", ">200")
+
+cells_shelled <- cells_with_meta |>
+  mutate(
+    shell_caa   = cut(dist_caa,   breaks = shell_breaks, labels = shell_labels,
+                      right = FALSE, include.lowest = TRUE),
+    shell_paren = cut(dist_paren, breaks = shell_breaks, labels = shell_labels,
+                      right = FALSE, include.lowest = TRUE)
+  )
+```
+
+# Compute shell proportions
+
+For each brain (sample_ID), plaque type, and distance shell, we compute the proportion
+of each cell type among all cells in that shell. Proportions are then averaged across
+the 6 brains for the group-level profile, and separately within Adu and IgG groups.
+
+```{r}
+#| label: compute-shell-props
+compute_shell_props <- function(shelled_df, plaque_type_col, shell_col) {
+  shelled_df |>
+    rename(shell = !!sym(shell_col)) |>
+    count(sample_ID, Treatment.Group, shell, annotatedclusters, name = "n") |>
+    group_by(sample_ID, shell) |>
+    mutate(prop = n / sum(n)) |>
+    ungroup()
+}
+
+props_caa   <- compute_shell_props(cells_shelled, "dist_caa",   "shell_caa")
+props_paren <- compute_shell_props(cells_shelled, "dist_paren",  "shell_paren")
+```
+
+# Aggregate across brains
+
+```{r}
+#| label: aggregate-props
+# Mean proportion per shell × cell type × treatment group
+summarise_props <- function(props_df, plaque_label) {
+  props_df |>
+    group_by(Treatment.Group, shell, annotatedclusters) |>
+    summarise(
+      mean_prop = mean(prop, na.rm = TRUE),
+      se_prop   = sd(prop, na.rm = TRUE) / sqrt(n()),
+      .groups   = "drop"
+    ) |>
+    mutate(plaque_type = plaque_label)
+}
+
+summary_caa   <- summarise_props(props_caa,   "CAA")
+summary_paren <- summarise_props(props_paren, "Parenchymal")
+summary_all   <- bind_rows(summary_caa, summary_paren)
+```
+
+# Radial profile plots
+
+## All cell types — area plot by shell
+
+```{r}
+#| label: area-plot-all
+#| column: page
+#| fig-height: 10
+#| fig-width: 16
+#| fig-cap: "Cell-type composition in each distance shell. Each bar shows the mean proportion of each cell type among all cells in that shell, averaged across all 6 brains. Left: CAA plaques; Right: Parenchymal plaques. Top: Adu; Bottom: IgG."
+
+ggplot(summary_all, aes(x = shell, y = mean_prop, fill = annotatedclusters)) +
+  geom_col(position = "fill", colour = "white", linewidth = 0.2) +
+  facet_grid(Treatment.Group ~ plaque_type) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title = "Radial niche composition — all cell types",
+    x     = "Distance shell (µm from plaque)",
+    y     = "Mean cell-type proportion",
+    fill  = "Cell type"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    legend.position = "right"
+  )
+```
+
+## Glial triad: microglia, astrocytes, oligodendrocytes
+
+To test the relay architecture, we focus on the three glial cell types predicted to
+dominate successive shells by the three-layer model.
+
+```{r}
+#| label: identify-glial-types
+all_types <- sort(unique(cells_shelled$annotatedclusters))
+
+ct_micro <- all_types[grepl("microglia|microglia", all_types, ignore.case = TRUE)]
+ct_astro <- all_types[grepl("astrocyte", all_types, ignore.case = TRUE)]
+ct_oligo <- all_types[grepl("oligodendrocyte", all_types, ignore.case = TRUE)]
+
+message("Microglia:        ", paste(ct_micro, collapse = ", "))
+message("Astrocytes:       ", paste(ct_astro, collapse = ", "))
+message("Oligodendrocytes: ", paste(ct_oligo, collapse = ", "))
+
+glial_types <- c(ct_micro, ct_astro, ct_oligo)
+glial_labels <- setNames(
+  rep(c("Microglia", "Astrocytes", "Oligodendrocytes"),
+      c(length(ct_micro), length(ct_astro), length(ct_oligo))),
+  glial_types
+)
+```
+
+```{r}
+#| label: glial-shell-props
+# Recompute proportions with collapsed glial categories
+cells_glial <- cells_shelled |>
+  filter(annotatedclusters %in% glial_types) |>
+  mutate(glia_type = glial_labels[annotatedclusters])
+
+props_glial_caa <- cells_glial |>
+  rename(shell = shell_caa) |>
+  count(sample_ID, Treatment.Group, shell, glia_type, name = "n") |>
+  # Denominator: ALL cells in this shell (not just glia), to show relative abundance
+  left_join(
+    cells_shelled |>
+      rename(shell = shell_caa) |>
+      count(sample_ID, shell, name = "n_total"),
+    by = c("sample_ID", "shell")
+  ) |>
+  mutate(prop = n / n_total) |>
+  group_by(Treatment.Group, shell, glia_type) |>
+  summarise(mean_prop = mean(prop, na.rm = TRUE),
+            se_prop   = sd(prop, na.rm = TRUE) / sqrt(n()),
+            .groups   = "drop") |>
+  mutate(plaque_type = "CAA")
+
+props_glial_paren <- cells_glial |>
+  rename(shell = shell_paren) |>
+  count(sample_ID, Treatment.Group, shell, glia_type, name = "n") |>
+  left_join(
+    cells_shelled |>
+      rename(shell = shell_paren) |>
+      count(sample_ID, shell, name = "n_total"),
+    by = c("sample_ID", "shell")
+  ) |>
+  mutate(prop = n / n_total) |>
+  group_by(Treatment.Group, shell, glia_type) |>
+  summarise(mean_prop = mean(prop, na.rm = TRUE),
+            se_prop   = sd(prop, na.rm = TRUE) / sqrt(n()),
+            .groups   = "drop") |>
+  mutate(plaque_type = "Parenchymal")
+
+props_glial <- bind_rows(props_glial_caa, props_glial_paren) |>
+  mutate(glia_type = factor(glia_type, levels = c("Microglia", "Astrocytes", "Oligodendrocytes")))
+```
+
+```{r}
+#| label: glial-line-plot
+#| column: page
+#| fig-height: 6
+#| fig-width: 14
+#| fig-cap: "Proportion of each glial cell type (relative to all cells in that shell) across distance shells. Points show the mean across 6 brains; error bars are ±1 SE. If the three-layer relay holds, microglia should peak in the innermost shell (0–25 µm), with astrocytes and oligodendrocytes showing broader or more distal peaks."
+
+glial_colours <- c(
+  "Microglia"        = "#E41A1C",
+  "Astrocytes"       = "#FF7F00",
+  "Oligodendrocytes" = "#377EB8"
+)
+
+ggplot(props_glial,
+       aes(x = shell, y = mean_prop,
+           colour = glia_type, group = glia_type)) +
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_prop - se_prop, ymax = mean_prop + se_prop),
+                width = 0.2) +
+  facet_grid(Treatment.Group ~ plaque_type) +
+  scale_colour_manual(values = glial_colours) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title  = "Glial radial profile — three-layer relay test",
+    x      = "Distance shell (µm from plaque)",
+    y      = "Mean proportion of all cells in shell",
+    colour = "Glial cell type"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x   = element_text(angle = 30, hjust = 1),
+    legend.position = "bottom",
+    strip.text    = element_text(size = 13)
+  )
+```
+
+## Adu vs IgG comparison: does treatment shift the glial profile?
+
+```{r}
+#| label: glial-treatment-comparison
+#| column: page
+#| fig-height: 8
+#| fig-width: 14
+#| fig-cap: "Glial radial profiles split by treatment. Solid = Adu, dashed = IgG. Divergence between treatment lines within a shell suggests treatment-dependent spatial reorganization."
+
+ggplot(props_glial,
+       aes(x = shell, y = mean_prop,
+           colour = glia_type, linetype = Treatment.Group, group = interaction(glia_type, Treatment.Group))) +
+  geom_line(linewidth = 1.1) +
+  geom_point(size = 2.5) +
+  facet_wrap(~ plaque_type, ncol = 2) +
+  scale_colour_manual(values = glial_colours) +
+  scale_linetype_manual(values = c("Adu" = "solid", "IgG" = "dashed")) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    title    = "Glial radial profile by treatment",
+    x        = "Distance shell (µm from plaque)",
+    y        = "Mean proportion of all cells in shell",
+    colour   = "Glial cell type",
+    linetype = "Treatment"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x   = element_text(angle = 30, hjust = 1),
+    legend.position = "bottom"
+  )
+```
+
+# Summary table: peak shells per cell type
+
+```{r}
+#| label: peak-shell-table
+# For each glia type, plaque type, treatment: which shell has the maximum mean_prop?
+props_glial |>
+  group_by(glia_type, plaque_type, Treatment.Group) |>
+  slice_max(mean_prop, n = 1) |>
+  ungroup() |>
+  select(glia_type, plaque_type, Treatment.Group, peak_shell = shell, peak_prop = mean_prop) |>
+  mutate(peak_prop = scales::percent(peak_prop, accuracy = 0.1)) |>
+  arrange(plaque_type, glia_type, Treatment.Group) |>
+  kbl(caption = "Peak shell for each glial cell type by plaque type and treatment") |>
+  kable_styling("striped", full_width = FALSE)
+```
