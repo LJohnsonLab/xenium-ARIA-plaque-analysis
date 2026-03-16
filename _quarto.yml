@@ -30,6 +30,8 @@ website:
             href: 10_global_spatial_autocorrelation.qmd
           - text: Neighborhood enrichment
             href: 11_neighborhood_enrichment.qmd
+          - text: Niche pseudobulk treatment
+            href: 11.1_niche_pseudobulk_treatment.qmd
 
 format:
   html:

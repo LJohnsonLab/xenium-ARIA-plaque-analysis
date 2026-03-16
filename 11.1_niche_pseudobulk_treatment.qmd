@@ -1,0 +1,209 @@
+---
+title: "Niche Composition: Pseudobulk Treatment Comparison"
+subtitle: "Per-brain aggregation of plaque-proximal cellular niches, Adu vs IgG"
+date: last-modified
+---
+
+# Setup
+
+```{r}
+#| label: setup
+source("R/setup.R")
+library(patchwork)
+
+data <- load_slides_and_distances("full")
+slide1 <- data$slide1; slide2 <- data$slide2
+cell_distances_1 <- data$distances_1; cell_distances_2 <- data$distances_2
+cell_distances_all <- data$distances_all
+
+sample_lookup <- cell_distances_all |> dplyr::select(cell, sample_ID, Treatment.Group)
+```
+
+# Motivation
+
+The treatment comparison in notebook 11 (`11_neighborhood_enrichment.qmd`) pools all cells from
+Adu-treated brains and compares them against all cells from IgG-treated brains, treating each cell
+as an independent observation. This inflates effective sample size and ignores the nested structure
+of the experiment: 3 biological replicates per group.
+
+Here we take a **pseudobulk approach**: niche proportions are first averaged within each brain, then
+compared across the 3 Adu brains vs 3 IgG brains. This makes the biological replication explicit
+and is the appropriate unit of inference.
+
+> **Note on statistical power.** With n = 3 replicates per group, all tests are severely
+> underpowered. Welch's t-test is used here because, unlike the Wilcoxon rank-sum test (minimum
+> two-sided p-value of 0.1 at n = 3 vs n = 3), it can in principle reach p < 0.05 when
+> between-group differences are large relative to within-group variance. Normality cannot be
+> verified at n = 3, so results should be interpreted as exploratory and directional.
+
+# Compute per-brain niche composition
+
+For every plaque-proximal cell (< 50 µm from the nearest plaque), the 15 nearest spatial
+neighbours are identified within the same tissue slide, and the proportion of each annotated cell
+type among those neighbours is recorded. Proportions are then **averaged to the brain level**,
+yielding 6 brain-level observations per (plaque type × neighbour cell type) combination.
+
+```{r}
+#| label: compute-niche
+compute_niche_composition <- function(seurat_obj, cell_distances, threshold = 50) {
+  proximal_info <- cell_distances |>
+    mutate(
+      nearest_type = if_else(dist_caa < dist_paren, "CAA", "Parenchymal"),
+      min_dist     = pmin(dist_caa, dist_paren)
+    ) |>
+    filter(min_dist < threshold)
+
+  if (nrow(proximal_info) == 0) return(tibble())
+
+  coords <- GetTissueCoordinates(seurat_obj) |> as.data.frame()
+  meta   <- seurat_obj@meta.data |> as_tibble(rownames = "cell")
+
+  all_mat  <- coords |> dplyr::select(x, y) |> as.matrix()
+  prox_idx <- match(proximal_info$cell, coords$cell)
+  prox_idx <- prox_idx[!is.na(prox_idx)]
+
+  nn_res <- nn2(data = all_mat, query = all_mat[prox_idx, ], k = 16)
+
+  map(seq_along(prox_idx), \(i) {
+    neighbour_idx <- nn_res$nn.idx[i, -1]
+    tibble(
+      focal_cell     = coords$cell[prox_idx[i]],
+      neighbour_type = meta$annotatedclusters[neighbour_idx]
+    )
+  }) |>
+    bind_rows() |>
+    count(focal_cell, neighbour_type) |>
+    complete(focal_cell, neighbour_type, fill = list(n = 0L)) |>
+    group_by(focal_cell) |>
+    mutate(prop = n / sum(n)) |>
+    ungroup() |>
+    left_join(
+      proximal_info |> dplyr::select(cell, nearest_type),
+      by = c("focal_cell" = "cell")
+    ) |>
+    filter(!is.na(nearest_type))
+}
+
+niche_1 <- compute_niche_composition(slide1, cell_distances_1)
+niche_2 <- compute_niche_composition(slide2, cell_distances_2)
+
+niche_all <- bind_rows(
+  niche_1 |> mutate(slide = 1L),
+  niche_2 |> mutate(slide = 2L)
+) |>
+  left_join(sample_lookup, by = c("focal_cell" = "cell"))
+```
+
+## Pseudobulk aggregation
+
+```{r}
+#| label: pseudobulk-aggregation
+niche_brain <- niche_all |>
+  group_by(sample_ID, Treatment.Group, nearest_type, neighbour_type) |>
+  summarise(mean_prop = mean(prop, na.rm = TRUE), .groups = "drop")
+```
+
+# Treatment comparison
+
+## Dot plots: per-brain niche proportions
+
+Each point represents one brain (n = 3 per group). Crossbars show group means. Plotting individual
+brains makes consistency (or inconsistency) of treatment effects across replicates directly visible.
+
+```{r}
+#| label: dotplot-treatment
+#| column: page
+#| fig-height: 8
+#| fig-width: 14
+
+niche_brain |>
+  ggplot(aes(x = neighbour_type, y = mean_prop, colour = Treatment.Group)) +
+  geom_point(
+    position = position_dodge(width = 0.6),
+    size = 2.5, alpha = 0.85
+  ) +
+  stat_summary(
+    aes(group = Treatment.Group),
+    fun = mean, geom = "crossbar",
+    width = 0.45,
+    position = position_dodge(width = 0.6),
+    linewidth = 0.5
+  ) +
+  scale_colour_manual(values = c(Adu = "#E05A4E", IgG = "#4E79A7")) +
+  facet_wrap(~ nearest_type, ncol = 1) +
+  labs(
+    title = "Niche composition: Adu vs IgG (pseudobulk, n = 3 per group)",
+    x = "Neighbour cell type",
+    y = "Mean niche proportion",
+    colour = "Treatment"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Welch's t-test (exploratory)
+
+```{r}
+#| label: ttest-results
+ttest_results <- niche_brain |>
+  group_by(nearest_type, neighbour_type) |>
+  summarise(
+    mean_Adu = mean(mean_prop[Treatment.Group == "Adu"], na.rm = TRUE),
+    mean_IgG = mean(mean_prop[Treatment.Group == "IgG"], na.rm = TRUE),
+    delta    = mean_Adu - mean_IgG,
+    log2fc   = log2((mean_Adu + 1e-6) / (mean_IgG + 1e-6)),
+    p_value  = tryCatch(
+      t.test(
+        mean_prop[Treatment.Group == "Adu"],
+        mean_prop[Treatment.Group == "IgG"]
+      )$p.value,
+      error = \(e) NA_real_
+    ),
+    .groups = "drop"
+  ) |>
+  mutate(p_adj = p.adjust(p_value, method = "BH")) |>
+  arrange(nearest_type, p_value)
+
+ttest_results |>
+  mutate(across(c(mean_Adu, mean_IgG, delta, log2fc), \(x) round(x, 4))) |>
+  mutate(across(c(p_value, p_adj), \(x) round(x, 3))) |>
+  kableExtra::kbl(
+    caption = "Pseudobulk Welch's t-test: Adu vs IgG niche proportions (n = 3 per group)",
+    col.names = c(
+      "Plaque type", "Neighbour type",
+      "Mean Adu", "Mean IgG", "Δ (Adu − IgG)", "log₂FC", "p-value", "p adj (BH)"
+    )
+  ) |>
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover"),
+    full_width = FALSE
+  )
+```
+
+## Difference heatmap (Adu − IgG)
+
+Red tiles indicate cell types proportionally more abundant in Adu niche; blue tiles indicate
+depletion relative to IgG. The colour scale shows the raw difference in mean niche proportion.
+
+```{r}
+#| label: delta-heatmap
+#| column: page
+#| fig-height: 3.5
+#| fig-width: 12
+
+ttest_results |>
+  ggplot(aes(x = neighbour_type, y = nearest_type, fill = delta)) +
+  geom_tile(colour = "white") +
+  scale_fill_gradient2(
+    low = "#4E79A7", mid = "white", high = "#E05A4E", midpoint = 0,
+    name = "Δ proportion\n(Adu − IgG)"
+  ) +
+  labs(
+    title = "Treatment difference in niche composition (pseudobulk)",
+    subtitle = "Δ = mean(Adu) − mean(IgG) per brain; n = 3 per group",
+    x = "Neighbour cell type",
+    y = "Nearest plaque type"
+  ) +
+  theme_minimal(base_size = 15) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
