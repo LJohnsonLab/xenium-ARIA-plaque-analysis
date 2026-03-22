@@ -1,6 +1,6 @@
 ---
 title: "Global Spatial Autocorrelation"
-subtitle: "Moran's I and Geary's C via `spdep` — kNN(15) spatial weights"
+subtitle: "Moran's I, Geary's C, and binSpect — kNN(15) and Delaunay spatial networks"
 date: last-modified
 ---
 
@@ -21,6 +21,14 @@ cell_distances_all <- data$distances_all
 ```
 
 # Convert Seurat to Giotto
+
+::: {.callout-important}
+## Giotto status — `seuratToGiottoV5()`: **BROKEN**
+
+`seuratToGiottoV5()` is incompatible with SeuratObject ≥ 5 (defunct slot argument). The function errors immediately and cannot be used.
+
+**Workaround:** Giotto objects are built manually using `createGiottoObject()` + `normalizeGiotto()` + `addCellMetadata()`. All three of these lower-level functions work natively without issues.
+:::
 
 ```{r}
 #| label: convert-seurat-to-giotto
@@ -64,6 +72,12 @@ giotto2 <- seurat_to_giotto_manual(slide2)
 
 # Spatial networks
 
+::: {.callout-tip}
+## Giotto status — `createSpatialNetwork()`: **native, works**
+
+Both `method = "Delaunay"` and `method = "kNN"` work correctly and return the updated giotto object as documented. No issues observed.
+:::
+
 Spatial autocorrelation analyses quantify whether nearby cells have more similar gene expression than expected by chance (positive autocorrelation; "spatial clustering"), or instead tend to differ (negative autocorrelation; "spatial dispersion"). The definition of "nearby" is therefore a modelling choice that must be made explicit, and it is encoded in a spatial weights/neighbor graph.
 
 We build two types of spatial networks _per slide_, because they address different biological questions:
@@ -72,9 +86,11 @@ We build two types of spatial networks _per slide_, because they address differe
 
 - **k-nearest neighbours** (k=15): connects each cell to its 15 closest neighbours; used for Moran's I and Geary's C, which require a weights structure over neighbors and are easier to compare across regions when neighborhood size is fixed.
 
-For Moran's I / Geary's C, we use **row-standardized weights** (`style = "W" in spdep::nb2listw`), which rescales each cell's outgoing neighbour weights to sum to 1. This reduces sensitivity to differences in effective connectivity (for example, edge cells versus interior cells), because each cell contributes comparably to the global statistic after normalization.
+For Moran's I / Geary's C, we use **row-standardized weights** (`style = "W"` in `spdep::mat2listw`), which rescales each cell's outgoing neighbour weights to sum to 1. This reduces sensitivity to differences in effective connectivity (for example, edge cells versus interior cells), because each cell contributes comparably to the global statistic after normalization.  
 
-Finally, **kNN neighbourhoods are generally directed/asymmetric** (cell A can include cell B among its 15 nearest neighbours even if cell B does not include cell A), so the implied weights matrix is not guaranteed symmetric. Because classical inference for Moran's I can be sensitive to the neighbor graph (and symmetry is an assumption in common derivations), we emphasize Moran's I and Geary's C primarily as effect sizes for ranking genes by spatial structure, and interpret analytical p-values cautiously.
+kNN neighbourhoods are inherently directed/asymmetric: cell A can include cell B among its 15 nearest neighbours even if cell B does not include cell A. We convert this directed graph to an **undirected (symmetrized) weight matrix** using `createSpatialWeightMatrix()`, which adds the reverse edge wherever it is missing.  
+
+ Symmetrization satisfies the requirement for symmetric weights assumed by classical Moran's I inference, and means each cell's effective neighbourhood includes both the cells it selected and those that selected it. Under row-standardization this produces somewhat larger effective neighbourhoods and consequently more conservative (lower) Moran's I estimates than a raw directed-edge approach. We treat Moran's I and Geary's C primarily as **ranking statistics** and interpret analytical p-values cautiously.
 
 ```{r}
 #| label: create-spatial-networks
@@ -97,6 +113,15 @@ giotto2 <- qs2::qs_read("spatial/giotto2.qs2")
 
 # Moran's I — global spatial autocorrelation
 
+::: {.callout-warning}
+## Giotto status — Moran's I pipeline: **native with one workaround**
+
+- **`createSpatialWeightMatrix()`** — native, works. Returns the raw adjacency matrix; passed to `spdep::mat2listw()` for row-standardized weights.
+- **`getExpression()`** — namespace conflict. The `future` package exports a `getExpression()` generic that masks Giotto's when `future` is loaded (which happens automatically in the treatment-stratified section). Works here because `library(Giotto)` is loaded before `library(future)`. When in doubt, use `Giotto::getExpression()` explicitly.
+- **`spdep::moran.test()`** — external package (spdep), not Giotto. Works natively.
+- **`spdepAutoCorr()`** (treatment section) — Giotto-native wrapper around spdep; works, but has no internal `tryCatch`, so zero-variance genes must be pre-filtered manually before calling or it crashes.
+:::
+
 Global Moran's I summarizes whether a gene's expression is spatially clustered across the full tissue section at the scale defined by the kNN(15) graph.    
 Intuitively, Moran's I increases when cells tend to resemble their neighbours (e.g., high-expression cells near other high-expression cells), producing broad spatial domains, while values near 0 indicate little spatial structure at this scale. Negative values indicate local alternation (neighbours tending to differ), which is less common in many biological expression maps but can occur for sharply alternating patterns.  
 ​
@@ -106,41 +131,27 @@ Here, Moran's I is used mainly as a **ranking statistic**: genes with higher Mor
 #| label: morans-i-global
 #| eval: false
 
-# Direct spdep implementation — Giotto's wrapper fails on zero-variance genes
-# in the future.apply parallel framework. Using spdep directly with error handling.
-
+# Uses Giotto's createSpatialWeightMatrix() to build the spdep listw object,
 compute_moran_direct <- function(giotto_obj, network_name = "knn15") {
-  # Extract spatial network as neighbour list
-  spat_net <- getSpatialNetwork(giotto_obj, name = network_name, output = "networkDT")
-  cell_ids <- spatIDs(giotto_obj)
-  n_cells  <- length(cell_ids)
+  wm  <- createSpatialWeightMatrix(
+    giotto_obj, spatial_network_to_use = network_name,
+    method = "adjacency", return_gobject = FALSE, verbose = FALSE
+  )
+  lw  <- spdep::mat2listw(wm, style = "W", zero.policy = TRUE)
 
-  # Build spdep neighbours list from Giotto network
-  from_idx <- match(spat_net$from, cell_ids)
-  to_idx   <- match(spat_net$to, cell_ids)
-  nb_list  <- map(seq_len(n_cells), \(i) {
-    neighbours <- as.integer(to_idx[from_idx == i])
-    if (length(neighbours) == 0) 0L else neighbours
-  })
-  class(nb_list) <- "nb"
-  attr(nb_list, "region.id") <- cell_ids
-  lw <- nb2listw(nb_list, style = "W", zero.policy = TRUE)
-
-  # Get normalized expression
   expr_mat <- getExpression(giotto_obj, values = "normalized", output = "matrix")
+  gene_var  <- apply(expr_mat, 1, var)
+  genes     <- names(gene_var[gene_var > 0])
+  message(sprintf("Testing %d / %d genes (non-zero variance)", length(genes), nrow(expr_mat)))
 
-  # Filter to genes with non-zero variance
-  gene_var <- apply(expr_mat, 1, var)
-  genes_to_test <- names(gene_var[gene_var > 0])
-  message(sprintf("Testing %d / %d genes (non-zero variance)", length(genes_to_test), nrow(expr_mat)))
-
-  map(genes_to_test, \(g) {
-    tryCatch({
-      mt <- moran.test(as.numeric(expr_mat[g, ]), lw, zero.policy = TRUE)
-      tibble(gene = g, moran_I = mt$estimate["Moran I statistic"], pval = mt$p.value)
-    }, error = \(e) tibble(gene = g, moran_I = NA_real_, pval = NA_real_))
-  }, .progress = "Moran's I") |>
-    bind_rows() |>
+  purrr::map(genes, \(g) tryCatch(
+    {
+      mt <- spdep::moran.test(as.numeric(expr_mat[g, ]), lw, zero.policy = TRUE)
+      tibble(gene = g, moran_I = mt$estimate[["Moran I statistic"]], pval = mt$p.value)
+    },
+    error = \(e) tibble(gene = g, moran_I = NA_real_, pval = NA_real_)
+  ), .progress = "Moran's I") |>
+    list_rbind() |>
     filter(!is.na(moran_I))
 }
 
@@ -152,10 +163,6 @@ moran_combined <- bind_rows(moran_1, moran_2)
 # write_csv(moran_combined, "spatial/moran_combined.csv")
 ```
 
-```{r}
-#| label: load-moran-combined
-moran_combined <- read_csv("spatial/moran_combined.csv")
-```
 
 ## Moran's I rank plot
 
@@ -168,6 +175,8 @@ Moran's I measures whether nearby cells have similar expression values (I > 0: s
 #| label: morans-i-rank-plot
 #| fig-height: 6
 #| fig-width: 8
+
+moran_combined <- read_csv("spatial/moran_combined.csv")
 moran_mean <- moran_combined |>
   group_by(gene) |>
   summarise(mean_moran = mean(moran_I, na.rm = TRUE), .groups = "drop") |>
@@ -191,15 +200,125 @@ ggplot(moran_mean, aes(x = rank, y = mean_moran)) +
     title = "Global Moran's I — mean across both slides",
     x = "Gene rank", y = "Mean Moran's I"
   ) +
-  theme_minimal(base_size = 13)
+  theme_minimal(base_size = 13)+
+  theme(panel.grid.minor = element_blank(),
+  panel.grid.major.x = element_blank())
 ```
 
 
 Global Moran's I was computed for each gene in the Xenium panel using a k=15 nearest-neighbour spatial weight matrix with row-standardized weights.  
 
-Nearly all genes exhibited positive Moran's I (range: −0.0003 to 0.56; *Il1r2* was the sole gene with a marginally negative value, effectively zero), consistent with the spatially organized architecture of the mouse brain. The distribution was right-skewed (median I = 0.071, mean I = 0.100), with 64.5% of genes showing I >= 0.05 and 12.1% showing I >= 0.20. The most spatially structured genes were regional cell-type markers: *Slc17a7* (I = 0.56, excitatory neurons), *Ccdc153* (I = 0.51, ependymal cells), *Car12* (I = 0.46, oligodendrocyte lineage), *Tmem212* (I = 0.46, ciliated cells), and *Mbp* (I = 0.44, myelin/white matter). These reflect normal brain laminar architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression.   
+Most genes exhibited positive Moran's I (range: −0.0003 to 0.40; nine genes showed marginally negative values, all effectively zero), consistent with the spatially organized architecture of the mouse brain.  
 
-Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.973; Spearman rho = 0.971).
+The distribution was right-skewed (median I = 0.039, mean I = 0.057), with 39.3% of genes showing I ≥ 0.05 and 3.4% showing I ≥ 0.20. _The overall lower values compared to directed-edge approaches reflect the larger effective neighbourhoods produced by graph symmetrization under row-standardization._. 
+ 
+The most spatially structured genes were: *Slc17a7* (I = 0.40, excitatory neurons), *Mbp* (I = 0.29, myelin/white matter), *Lamp5* (I = 0.29, cortical interneurons), *Car12* (I = 0.27, oligodendrocyte lineage), and *Ttr* (I = 0.26, choroid plexus). These reflect normal brain laminar and regional architecture rather than disease processes. At the opposite extreme, genes expressed by rare, scattered populations showed near-zero Moran's I (*Ly6g*, *Chil3*, *Apoc2*, *Il1r2*), indicating spatially random expression.
+
+Spatial autocorrelation estimates were highly reproducible between slides (Pearson r = 0.959; Spearman rho = 0.924).
+
+## binSpect — binary spatially variable genes
+
+::: {.callout-tip}
+## Giotto status — `binSpect()`: **native, works**
+
+`binSpect()` runs without errors. Two things worth noting:
+
+- A `showGiottoInstructions()` deprecation warning fires at startup — benign, can be ignored.
+- `return_gobject = FALSE` must be set to get results as a data.frame/tibble rather than an updated giotto object. Without this, downstream tidyverse operations fail.
+
+No workarounds required beyond those two flags.
+:::
+
+binSpect (Binary Spatial Extraction) is complementary to Moran's I: rather than computing a global covariance statistic over continuous expression values, it binarizes each gene's expression into "high" and "low" cells (rank-based threshold: top 30% of expressing cells) and then tests via Fisher exact test whether high-expressing cells are enriched among their spatial neighbours.  
+
+The rank method is more robust than k-means binarization for sparse Xenium panels where many genes have few expressing cells. Simulation studies show binSpect is more robust to noise than continuous methods and better at recovering known spatial genes, particularly for discrete expression domains rather than broad gradients.
+
+Comparing binSpect odds-ratio rank with Moran's I rank allows us to distinguish:
+
+- **High on both**: robustly spatial genes detected by both continuous and binary metrics
+- **High binSpect / low Moran's I**: discrete local hubs (tight spatial clusters of a few cells)
+- **High Moran's I / low binSpect**: broad anatomical gradients with graded, non-binary expression
+
+```{r}
+#| label: binspect-svg
+#| eval: false
+# binSpect() single-kernel variant (one spatial network at a time).
+# Use binSpectMulti() for multi-kernel testing across several networks.
+# The showGiottoInstructions() deprecation warning is benign.
+# Run first, then re-render; outputs saved to spatial/binspect_combined.csv.
+bs1 <- binSpect(
+  giotto1, spatial_network_name = "delaunay",
+  bin_method = "rank", do_fisher_test = TRUE,
+  adjust_method = "fdr", return_gobject = FALSE
+) |> mutate(slide = "Slide 1")
+
+bs2 <- binSpect(
+  giotto2, spatial_network_name = "delaunay",
+  bin_method = "rank", do_fisher_test = TRUE,
+  adjust_method = "fdr", return_gobject = FALSE
+) |> mutate(slide = "Slide 2")
+
+bs_combined <- bind_rows(bs1, bs2)
+# write_csv(bs_combined, "spatial/binspect_combined.csv")
+```
+
+```{r}
+#| label: binspect-rank-plot
+#| fig-height: 7
+#| fig-width: 12
+bs_combined <- read_csv("spatial/binspect_combined.csv")
+
+bs_mean <- bs_combined |>
+  group_by(feats) |>
+  summarise(mean_estimate = mean(estimate, na.rm = TRUE), .groups = "drop") |>
+  arrange(desc(mean_estimate)) |>
+  mutate(bs_rank = row_number())
+
+moran_vs_bs <- bs_mean |>
+  inner_join(moran_mean |> dplyr::select(gene, mean_moran, rank), by = c("feats" = "gene")) |>
+  rename(moran_rank = rank)
+
+top_bs <- bind_rows(
+  moran_vs_bs |> slice_head(n = 10),
+  moran_vs_bs |> slice_tail(n = 5)
+)
+
+p1 <- ggplot(bs_mean, aes(x = bs_rank, y = mean_estimate)) +
+  geom_point(alpha = 0.5, colour = "grey50") +
+  geom_text_repel(
+    data = top_bs,
+    aes(x = bs_rank, label = feats),
+    size = 3.5, fontface = "italic", max.overlaps = 20) +
+  labs(
+    title = "binSpect: Fisher odds ratio",
+    subtitle = "mean across both slides",
+    x = "Gene rank (binSpect)", y = "Mean odds ratio (estimate)") +
+  theme_minimal(base_size = 13)
+
+p2 <- ggplot(moran_vs_bs, aes(x = moran_rank, y = bs_rank)) +
+  geom_point(alpha = 0.4, colour = "grey50") +
+  geom_text_repel(
+    data = moran_vs_bs |> filter(abs(moran_rank - bs_rank) > quantile(abs(moran_rank - bs_rank), 0.97)),
+    aes(label = feats),
+    size = 3.5, fontface = "italic", max.overlaps = 15) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "red") +
+  labs(
+    title = "Moran's I rank vs binSpect rank",
+    subtitle = "Off-diagonal: local hubs (high binSpect)\n vs broad gradients (high Moran's I)",
+    x = "Moran's I rank (1 = most spatial)",
+    y = "binSpect rank (1 = highest odds ratio)") +
+  theme_minimal(base_size = 13)
+
+p1 + p2
+```
+
+The binSpect odds ratio distribution is extremely right-skewed, dominated by a handful of genes expressed in rare, spatially tightly clustered cell types.  
+
+The top-ranked genes are mast cell markers — *Tpsb2* (odds ratio ≈ 2000), *Fcer1a* (~1000), and *Tpsab1* (~850) — indicating that when a mast cell is present, its immediate spatial neighbours are almost exclusively also mast cells.  
+
+Other high-ranking genes include ciliary/ependymal markers (*Ccdc153*, *Tmem212*, *Dnah11*), and the NK cell marker *Klrb1c*. The vast majority of genes have near-zero odds ratios, indicating no discrete local spatial enrichment.  
+
+Comparing binSpect rank with Moran's I rank reveals two distinct populations. Most genes cluster near the diagonal, meaning both methods agree on their degree of spatial structure. The key exception is a cluster of genes with **high binSpect odds ratios but very low Moran's I** (bottom-right in the rank scatter): mast cell markers (*Tpsb2*, *Tpsab1*, *Fcer1a*) alongside T cell, NK cell, and inflammatory markers (*Gzmb*, *Nkg7*, *Cd3d*, *Itk*, *Il1b*, *Tnf*, *Ccl4*, *Mgl2*, *Cd209a*). _These immune cell genes are **invisible to Moran's I** because the cells are too rare to drive global spatial autocorrelation_, yet binSpect detects them as extreme local hubs — when one immune cell is present, its neighbours are disproportionately also immune cells. In the context of amyloid pathology, this points to spatially clustered immune infiltration that a global statistic would entirely miss.
 
 ## Moran's I vs distance correlation
 
@@ -239,12 +358,22 @@ compute_gene_distance_correlation <- function(
   keep <- n_expressing >= min_expressing_cells
   counts <- counts[keep, ]
 
-  results <- map(seq_len(nrow(counts)), \(i) {
-    gene_expr <- counts[i, ]
-    ct <- cor.test(as.numeric(gene_expr), dist_vec, method = "spearman", exact = FALSE)
-    tibble(gene = rownames(counts)[i], rho = ct$estimate, pval = ct$p.value)
-  }, .progress = "Spearman correlations") |>
-    bind_rows()
+  n <- ncol(counts)
+  # apply() over matrix rows returns a matrix directly (n_cells × n_genes), which
+  # is the structure cor() expects. map() would return a list and require an extra
+  # bind step to reassemble the matrix — same CPU work, more overhead.
+  expr_ranks <- apply(as.matrix(counts), 1, rank)
+  dist_rank  <- rank(dist_vec)
+  # cor() operates on the full matrix in one BLAS call, avoiding the per-gene
+  # cor.test() dispatch overhead that makes the loop slow at scale.
+  rho_vec <- cor(expr_ranks, dist_rank)[, 1]
+
+  # cor.test(..., exact = FALSE) uses this t-approximation internally; computing
+  # it here keeps p-values identical while staying vectorized.
+  t_stat   <- rho_vec * sqrt((n - 2) / (1 - rho_vec^2))
+  pval_vec <- 2 * pt(abs(t_stat), df = n - 2, lower.tail = FALSE)
+
+  results <- tibble(gene = names(rho_vec), rho = rho_vec, pval = pval_vec)
 
   results |>
     mutate(
@@ -267,15 +396,15 @@ cor_any <- compute_gene_distance_correlation(
 # qs2::qs_save(cor_any, "spatial/cor_any.qs2")
 ```
 
-```{r}
-#| label: load-distance-correlations
-cor_any <- qs2::qs_read("spatial/cor_any.qs2")
-```
+
 
 ```{r}
 #| label: compare-moran-vs-distance-correlation
 #| fig-height: 7
 #| fig-width: 7
+
+cor_any <- qs2::qs_read("spatial/cor_any.qs2")
+
 moran_vs_dist <- moran_mean |>
   inner_join(cor_any |> dplyr::select(gene, rho_flip, sig), by = "gene")
 
@@ -326,10 +455,21 @@ q_neither  <- sum(moran_vs_dist$mean_moran <  moran_med & moran_vs_dist$rho_flip
 
 To distinguish anatomy-driven from plaque-driven spatial gene expression, we combined Moran's I with the Spearman correlation between gene expression and distance to the nearest plaque (sign-flipped so positive values indicate enrichment near plaques). Genes partitioned into four quadrants. Of `r q_n_total` tested genes, `r q_sp_pl` fell in the "spatial + plaque" quadrant (above-median Moran's I and positive rho_flip), `r q_sp_only` in "spatial only," `r q_pl_only` in "plaque only," and `r q_neither` in "neither."   
 
-The labeled genes separate into two clear groups. First, the strongest global spatial genes were largely plaque-distant/anatomy-linked: *Ccdc153* (I=0.505, rho_flip=-0.088), *Car12* (0.464, -0.126), *Tmem212* (0.463, -0.078), *Calb1* (0.373, -0.130), *Chst1* (0.333, -0.126), *Ids* (0.293, -0.158), and *Fdft1* (0.228, -0.138), consistent with broad anatomical domains rather than plaque-local biology. Second, canonical DAM genes were strongly plaque-associated but only modestly spatial by Moran’s I: *Cst7* (0.161, 0.295), *Lyz2* (0.109, 0.220), *Trem2* (0.095, 0.216), *Bcl2a1b* (0.086, 0.208), and *Cd68* (0.080, 0.198), consistent with focal plaque-proximal microglial activation. *Mbp* was a notable exception: both highly spatial (I = 0.44) and modestly plaque-associated (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions.
+The labeled genes separate into two clear groups. First, the strongest global spatial genes were largely plaque-distant/anatomy-linked: *Car12* (I=0.265, rho_flip=−0.126), *Calb1* (0.223, −0.130), *Ccdc153* (0.222, −0.088), *Tmem212* (0.206, −0.078), *Ids* (0.200, −0.158), *Chst1* (0.196, −0.126), and *Fdft1* (0.141, −0.138), consistent with broad anatomical domains rather than plaque-local biology.  
+
+Second, canonical DAM genes were strongly plaque-associated but only modestly spatial by Moran’s I: *Cst7* (0.078, 0.295), *Lyz2* (0.051, 0.220), *Trem2* (0.044, 0.216), *Bcl2a1b* (0.039, 0.208), and *Cd68* (0.038, 0.198), consistent with focal plaque-proximal microglial activation. *Mbp* was notable as the highest-ranking gene combining strong spatial structure (I = 0.29, rank 2 overall) with meaningful plaque association (rho_flip = 0.12), likely because parenchymal plaques form preferentially in myelinated regions.
 
 
 # Treatment-stratified Moran's I
+
+::: {.callout-warning}
+## Giotto status — `spdepAutoCorr()` in parallel: **native with fine-tuning**
+
+- **`spdepAutoCorr()`** — Giotto-native Moran's I wrapper; works. Used here instead of the manual `compute_moran_direct()` to leverage its `future.apply` parallelisation.
+- **Zero-variance gene filter** — must be applied on the Seurat object *before* Giotto conversion. `spdepAutoCorr()` has no internal `tryCatch`; passing zero-variance genes causes it to crash with an uninformative error.
+- **`future` parallel session** — `plan(multisession, workers = 12)` + `options(future.globals.maxSize = 4 * 1024^3)` are required. Without raising the globals limit, future workers silently fail when serializing the large Giotto objects.
+- **`getExpression()` masking** — loading `library(future)` here masks `Giotto::getExpression()`. For this reason, the zero-variance filter is done on the Seurat counts matrix directly rather than extracting from the giotto object.
+:::
 
 Next we tested if spatial autocorrelation differ between Adu- and IgG-treated tissue. For that,  we subset **each slide** by treatment and recomputed Moran's I.
 
@@ -337,25 +477,45 @@ Next we tested if spatial autocorrelation differ between Adu- and IgG-treated ti
 #| label: treatment-stratified-moran
 #| eval: false
 
-compute_moran_for_subset <- function(seurat_obj, label) {
-  g <- seurat_to_giotto_manual(seurat_obj)
+# Suppress Giotto's Python initialisation attempts — analysis is pure R.
+options(giotto.py_path = NULL)
+
+# Uses spdepAutoCorr() (Giotto-native Moran's I wrapper) instead of the manual
+# compute_moran_direct(). Pre-filter zero-variance genes before calling since
+# spdepAutoCorr() has no internal tryCatch.
+
+# spdepAutoCorr() uses future.apply internally for gene-level iteration —
+# multisession lets each of the 4 group calls use all cores for its gene loop.
+# future.globals.maxSize raised here because each worker receives the full
+# Giotto object; 8 GiB set in setup is for the main session, not per-worker.
+library(future)
+plan(multisession, workers = 12)
+options(future.globals.maxSize = 4 * 1024^3)  # 4 GiB per worker
+
+run_treatment_moran <- function(seurat_subset, group_label) {
+  # Filter zero-variance genes on the Seurat object before Giotto conversion —
+  # avoids calling getExpression() on the giotto S4 class, which has dispatch
+  # issues in this Giotto version.
+  counts <- LayerData(seurat_subset, assay = DefaultAssay(seurat_subset), layer = "counts")
+  keep   <- rownames(counts)[apply(counts, 1, var) > 0]
+  seurat_subset <- seurat_subset[keep, ]
+
+  g <- seurat_to_giotto_manual(seurat_subset)
   g <- createSpatialNetwork(g, method = "kNN", k = 15, name = "knn15")
-  compute_moran_direct(g) |> mutate(group = label)
+  spdepAutoCorr(g, method = "moran.test", spatial_network_to_use = "knn15") |>
+    as_tibble() |>
+    dplyr::select(gene = feat_ID, moran_I = value) |>
+    mutate(group = group_label)
 }
 
-slide1_adu <- subset(slide1, subset = Treatment.Group == "Adu")
-slide1_igg <- subset(slide1, subset = Treatment.Group == "IgG")
-slide2_adu <- subset(slide2, subset = Treatment.Group == "Adu")
-slide2_igg <- subset(slide2, subset = Treatment.Group == "IgG")
-
 moran_adu <- bind_rows(
-  compute_moran_for_subset(slide1_adu, "Adu_slide1"),
-  compute_moran_for_subset(slide2_adu, "Adu_slide2")
+  run_treatment_moran(subset(slide1, subset = Treatment.Group == "Adu"), "Adu_slide1"),
+  run_treatment_moran(subset(slide2, subset = Treatment.Group == "Adu"), "Adu_slide2")
 )
 
 moran_igg <- bind_rows(
-  compute_moran_for_subset(slide1_igg, "IgG_slide1"),
-  compute_moran_for_subset(slide2_igg, "IgG_slide2")
+  run_treatment_moran(subset(slide1, subset = Treatment.Group == "IgG"), "IgG_slide1"),
+  run_treatment_moran(subset(slide2, subset = Treatment.Group == "IgG"), "IgG_slide2")
 )
 
 moran_by_treatment <- bind_rows(
@@ -364,6 +524,8 @@ moran_by_treatment <- bind_rows(
 ) |>
   group_by(gene, treatment) |>
   summarise(mean_moran = mean(moran_I, na.rm = TRUE), .groups = "drop")
+
+plan(sequential)  # release worker processes before rest of session
 
 # write_csv(moran_by_treatment, "spatial/moran_by_treatment.csv")
 ```
@@ -407,6 +569,12 @@ To detect treatment-sensitive spatial changes, we ranked genes by $(|I_{\mathrm{
 
 # Geary's C — complementary spatial measure
 
+::: {.callout-tip}
+## Giotto status — Geary's C pipeline: **native, works**
+
+Identical pipeline to Moran's I: `createSpatialWeightMatrix()` + `spdep::geary.test()`. The same `getExpression()` namespace note applies (load Giotto before future, or use `Giotto::getExpression()` explicitly), but otherwise no issues. No Giotto-specific workarounds required.
+:::
+
 Moran's I and Geary's C are both global measures of spatial autocorrelation computed on the same neighbor graph, but they emphasize different aspects of spatial structure. Moran's I is covariance/correlation-like and is most sensitive to broad spatial domains, whereas Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity and sharp boundaries.
 
 For Geary's C, C ~1 indicates no spatial autocorrelation, C < 1 indicates positive autocorrelation (neighbours are similar), and C > 1 indicates negative autocorrelation (neighbours are dissimilar).   
@@ -418,31 +586,24 @@ As a result, genes with high Moran's I often tend to have low Geary's C, so plot
 #| eval: false
 
 compute_geary_direct <- function(giotto_obj, network_name = "knn15") {
-  spat_net <- getSpatialNetwork(giotto_obj, name = network_name, output = "networkDT")
-  cell_ids <- spatIDs(giotto_obj)
-  n_cells  <- length(cell_ids)
-
-  from_idx <- match(spat_net$from, cell_ids)
-  to_idx   <- match(spat_net$to, cell_ids)
-  nb_list  <- map(seq_len(n_cells), \(i) {
-    neighbours <- as.integer(to_idx[from_idx == i])
-    if (length(neighbours) == 0) 0L else neighbours
-  })
-  class(nb_list) <- "nb"
-  attr(nb_list, "region.id") <- cell_ids
-  lw <- nb2listw(nb_list, style = "W", zero.policy = TRUE)
+  wm  <- createSpatialWeightMatrix(
+    giotto_obj, spatial_network_to_use = network_name,
+    method = "adjacency", return_gobject = FALSE, verbose = FALSE
+  )
+  lw  <- spdep::mat2listw(wm, style = "W", zero.policy = TRUE)
 
   expr_mat <- getExpression(giotto_obj, values = "normalized", output = "matrix")
-  gene_var <- apply(expr_mat, 1, var)
-  genes_to_test <- names(gene_var[gene_var > 0])
+  gene_var  <- apply(expr_mat, 1, var)
+  genes     <- names(gene_var[gene_var > 0])
 
-  map(genes_to_test, \(g) {
-    tryCatch({
-      gt <- geary.test(as.numeric(expr_mat[g, ]), lw, zero.policy = TRUE)
-      tibble(gene = g, geary_C = gt$estimate["Geary C statistic"], pval = gt$p.value)
-    }, error = \(e) tibble(gene = g, geary_C = NA_real_, pval = NA_real_))
-  }, .progress = "Geary's C") |>
-    bind_rows() |>
+  purrr::map(genes, \(g) tryCatch(
+    {
+      gt <- spdep::geary.test(as.numeric(expr_mat[g, ]), lw, zero.policy = TRUE)
+      tibble(gene = g, geary_C = gt$estimate[["Geary C statistic"]], pval = gt$p.value)
+    },
+    error = \(e) tibble(gene = g, geary_C = NA_real_, pval = NA_real_)
+  ), .progress = "Geary's C") |>
+    list_rbind() |>
     filter(!is.na(geary_C))
 }
 
@@ -483,4 +644,5 @@ ggplot(geary_vs_moran, aes(x = mean_moran, y = mean_geary)) +
 
 
 To validate the Moran's I findings, we computed Geary's C for all genes using the same kNN(15) spatial weight matrix. Geary's C is based on squared neighbour-to-neighbour differences and is therefore more sensitive to local heterogeneity than Moran's I, which captures global covariance structure. As expected, the two statistics showed a strong inverse relationship: genes with high Moran's I exhibited low Geary's C (positive autocorrelation confirmed by both measures), and vice versa. The tight inverse correlation between the two statistics indicates that the spatial autocorrelation rankings are robust and not artefacts of the specific test statistic used.
+
 
