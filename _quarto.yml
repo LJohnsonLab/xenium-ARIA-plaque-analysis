@@ -11,6 +11,10 @@ website:
     left:
       - text: Home
         href: index.qmd
+      - text: "Data quality"
+        menu:
+          - text: Plaque deduplication diagnostics
+            href: 1_plaque_deduplication_diagnostics.qmd
       - text: Co-registration
         href: 2_coregistration_Akhil.qmd
       - text: Gene expression-Distance

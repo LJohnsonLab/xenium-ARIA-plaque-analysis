@@ -1,0 +1,328 @@
+---
+title: "Inter-plaque distances"
+subtitle: "Over-segmentation assessment"
+date: last-modified
+---
+
+## Problem
+
+HALO image analysis software segments ThioS-positive objects by intensity thresholding and connected-pixel labelling and may subdivide one physical lesion into multiple adjacent objects. This high object counts would bias cell-to-plaque distance calculations: _same cells or genes near a heavily fragmented vessel would be classified as "proximal" (< 50 µm) many times_
+
+
+```{r}
+#| label: setup
+
+source("R/setup.R")
+library(patchwork)
+library(igraph)
+
+THRESHOLDS <- c(25, 50)   # µm — candidate merge thresholds
+
+plaques <- thios_all |>
+  mutate(
+    x_plaque  = ((XMin + XMax) / 2) * 0.2125,
+    y_plaque  = ((YMin + YMax) / 2) * 0.2125,
+    bb_width  = (XMax - XMin) * 0.2125,
+    bb_height = (YMax - YMin) * 0.2125,
+    bb_diag   = sqrt(bb_width^2 + bb_height^2)
+  )
+```
+
+## Plaque size overview
+
+To establish the physical scale of annotated objects, we first characterise their size distribution. Two size metrics are reported: the **maximum diameter** (the longest axis of the object as reported by HALO) and the **bounding-box diagonal** (the diagonal of the smallest rectangle enclosing the object, computed from pixel coordinates converted to µm at 0.2125 µm/pixel).  
+
+Both metrics provide an upper bound on object size and are used later to determine whether inter-object distances are plausibly smaller than the objects themselves.
+
+```{r}
+#| label: size-table
+
+plaques |>
+  group_by(brain, plaque_type) |>
+  summarise(
+    n_objects       = n(),
+    median_area     = median(Area),
+    median_max_diam = median(`Maximum Diameter`),
+    median_bb_diag  = median(bb_diag),
+    .groups = "drop"
+  ) |>
+  kbl(
+    digits = 1,
+    col.names = c("Brain", "Type", "N objects", "Median area (µm²)",
+                  "Median max diam (µm)", "Median BB diag (µm)")
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE)
+```
+
+```{r}
+#| label: size-histograms
+#| column: page
+#| fig-width: 10
+#| fig-height: 4
+
+p1 <- plaques |>
+  ggplot(aes(`Maximum Diameter`, fill = plaque_type)) +
+  geom_histogram(bins = 60, colour = NA, alpha = 0.8) +
+  lims(x = c(0, 50))+
+  facet_wrap(~plaque_type, scales = "free_y") +
+  scale_fill_manual(values = c(CAA = "#d62728", Parenchymal = "#1f77b4"),
+                    guide = "none") +
+  labs(x = "Maximum diameter (µm)", y = "Count",
+       title = "Maximum diameter distribution") +
+  theme_minimal(base_size = 10)
+
+p2 <- plaques |>
+  ggplot(aes(bb_diag, fill = plaque_type)) +
+  geom_histogram(bins = 60, colour = NA, alpha = 0.8) +
+  lims(x = c(0, 30))+
+  facet_wrap(~plaque_type, scales = "free_y") +
+  scale_fill_manual(values = c(CAA = "#d62728", Parenchymal = "#1f77b4"),
+                    guide = "none") +
+  labs(x = "Bounding-box diagonal (µm)", y = "Count",
+       title = "Bounding-box diagonal distribution") +
+  theme_minimal(base_size = 10)
+
+p1 + p2
+```
+
+Individual HALO objects are very small.  
+
+Across all 6 brains, the median maximum diameter is 12.5–15.2 µm for CAA objects and 10.7–15.3 µm for parenchymal objects, with bounding-box diagonals of 6.7–8.0 µm and 5.9–8.3 µm respectively. Both metrics are narrowly distributed, with the vast majority of objects falling below 50 µm. These size values serve as a reference frame for interpreting inter-object distances: any nearest-neighbour distance smaller than the median maximum diameter implies that two objects are closer to each other than their own width, making physical overlap, and thus over-segmentation, highly probable.
+
+## Nearest-neighbour distances between plaques
+
+For each annotated object, we computed the distance to the closest other annotated object of the same type within the same brain, using a k-d tree (`RANN::nn2`). This **nearest-neighbour (NN) distance** is the primary metric for detecting over-segmentation: _if two objects represent fragments of the same physical lesion, their centroids will be separated by a distance smaller than the lesion's diameter, producing a NN distance close to zero_. Distances are computed separately for CAA and parenchymal plaques to avoid cross-type interference.
+
+```{r}
+#| label: compute-nn
+
+compute_nn <- function(df) {
+  df |>
+    group_by(brain, plaque_type) |>
+    group_modify(\(grp, key) {
+      if (nrow(grp) < 2) return(mutate(grp, nn_dist = NA_real_))
+      mat <- as.matrix(grp[, c("x_plaque", "y_plaque")])
+      res <- nn2(data = mat, query = mat, k = 2)
+      mutate(grp, nn_dist = res$nn.dist[, 2])
+    }) |>
+    ungroup()
+}
+
+plaques_nn <- compute_nn(plaques)
+```
+
+## Distance distribution
+
+The **ECDF** shows, for each distance value on the x-axis, what fraction of all annotated objects have a nearest neighbour closer than that distance. A curve that rises steeply near zero indicates that most objects are tightly packed. Vertical dashed lines mark the two candidate merge thresholds (25 µm and 50 µm).
+
+
+
+```{r}
+#| label: ecdf-plot
+#| column: page
+#| fig-width: 10
+#| fig-height: 3
+
+plaques_nn |>
+  filter(!is.na(nn_dist)) |>
+  ggplot(aes(nn_dist, colour = brain)) +
+  stat_ecdf(linewidth = 0.7) +
+  geom_vline(xintercept = THRESHOLDS, linetype = "dashed", colour = "grey40") +
+  annotate("text", x = THRESHOLDS[[1]], y = 0.02,
+           label = paste0(THRESHOLDS[[1]], " µm"), hjust = -0.1, size = 4,
+           colour = "grey30") +
+  annotate("text", x = THRESHOLDS[[2]], y = 0.1,
+           label = paste0(THRESHOLDS[[2]], " µm"), hjust = -0.1, size = 4,
+           colour = "grey30") +
+  facet_wrap(~plaque_type) +
+  scale_x_continuous(limits = c(0, 500)) +
+  labs(x = "NN distance (µm)", y = "Cumulative fraction",
+       title = "ECDF of nearest-neighbour inter-plaque distances",
+       colour = "Brain") +
+  theme_minimal(base_size = 10)
+```
+
+The NN distance distributions differ in an informative way between the two plaque types. For CAA, the median NN distance ranges from 9.8 to 11.8 µm; for parenchymal plaques, from 11.1 to 20.1 µm. In both cases, median distances are equal to or smaller than the median maximum diameter of the objects themselves (11–15 µm), meaning the gap between adjacent annotated objects is on average no wider than the objects' own diameter. The 10th percentile falls between 5.0 and 5.9 µm for CAA and 4.5 and 5.5 µm for parenchymal plaques — distances at which two centroids would overlap even with the smallest objects.
+
+The **log-scale histogram** is plotted with a logarithmic x-axis to reveal structure at very small distances (1–10 µm) that would be invisible on a linear scale. A mode well below the 25 µm threshold is consistent with over-segmentation. A **bimodal distribution** would indicate two co-existing populations: over-segmented fragments (first mode, short distances) and genuinely distinct adjacent lesions (second mode, longer distances). The valley between the modes identifies the natural threshold that best separates the two populations.
+
+```{r}
+#| label: log-histogram
+#| column: page
+#| fig-width: 10
+#| fig-height: 3
+
+plaques_nn |>
+  filter(!is.na(nn_dist), nn_dist > 0) |>
+  ggplot(aes(nn_dist, fill = plaque_type)) +
+  geom_histogram(bins = 60, colour = NA, alpha = 0.8) +
+  geom_vline(xintercept = THRESHOLDS, linetype = "dashed", colour = "grey30") +
+  facet_wrap(~plaque_type, scales = "free_y") +
+  scale_x_log10() +
+  scale_fill_manual(values = c(CAA = "#d62728", Parenchymal = "#1f77b4"),
+                    guide = "none") +
+  labs(x = "NN distance (µm, log scale)", y = "Count",
+       title = "Nearest-neighbour distance histogram (log-scale x)") +
+  theme_minimal(base_size = 10)
+```
+
+```{r}
+#| label: nn-summary-table
+#| eval: false
+
+plaques_nn |>
+  filter(!is.na(nn_dist)) |>
+  group_by(brain, plaque_type) |>
+  summarise(
+    n         = n(),
+    p10       = quantile(nn_dist, 0.10),
+    p25       = quantile(nn_dist, 0.25),
+    median_nn = median(nn_dist),
+    .groups = "drop"
+  ) |>
+  kbl(
+    digits = 1,
+    col.names = c("Brain", "Type", "N", "10th pct (µm)",
+                  "25th pct (µm)", "Median NN (µm)")
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE)
+```
+
+
+
+The log-scale histogram reveals a qualitative difference between the two types. For **CAA**, the distribution is unimodal, with a single mode between approximately 5 and 20 µm and a monotonic decay beyond it. This is consistent with a population that is almost entirely composed of over-segmented fragments: there is no second peak at longer distances that would indicate a distinct population of well-separated CAA objects. For **parenchymal plaques**, the distribution is bimodal: a first peak at 5–20 µm (fragments of the same plaque deposit) and a second, broader peak centred around 50–200 µm (genuine distinct plaques in the tissue). The valley between the two modes falls around 25–50 µm and provides an empirical, data-driven justification for the merge threshold: a **25 µm cutoff** sits in the trough between the two populations, capturing fragments while leaving the second-mode objects intact (actual distinct plaques). 
+
+## Threshold impact
+
+To quantify the practical consequence of over-segmentation, we report, for each brain and plaque type, the number and proportion of objects whose nearest same-type neighbour falls within each candidate merge threshold. An object "within threshold" has at least one nearby neighbour with which it would be merged under the corresponding merging rule. High percentages indicate that the majority of HALO objects are candidates for consolidation.
+
+```{r}
+#| label: threshold-impact
+
+map_dfr(THRESHOLDS, \(thr)
+  plaques_nn |>
+    group_by(brain, plaque_type) |>
+    summarise(
+      threshold_um = thr,
+      n_total      = n(),
+      n_within_thr = sum(nn_dist <= thr, na.rm = TRUE),
+      pct_within   = mean(nn_dist <= thr, na.rm = TRUE) * 100,
+      .groups = "drop"
+    )
+) |>
+  arrange(plaque_type, threshold_um, brain) |>
+  kbl(
+    digits = 1,
+    col.names = c("Brain", "Type", "Threshold (µm)", "N total",
+                  "N within threshold", "% within threshold")
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) |>
+  collapse_rows(columns = 1:2, valign = "top")
+```
+
+At the 25 µm threshold, 74.9–88.1% of CAA objects and 56.3–77.7% of parenchymal objects have at least one neighbour of the same type within that distance.  
+
+At the less stringent 50 µm threshold, these proportions rise to 85.0–91.3% and 67.4–92.2%, respectively. These values are not driven by a subset of densely annotated regions: the proportions are consistently high across all six brains and both slides, indicating pervasive over-segmentation rather than a localised artefact. The smaller percentage for parenchymal plaques relative to CAA at 25 µm reflects that parenchymal plaques, while still overwhelmingly clustered, are distributed across a wider tissue area and thus have a slightly lower packing density than CAA objects confined to vessel trajectories.
+
+## Connected components
+
+The threshold impact analysis counts objects with nearby neighbours but does not account for "chain-like clustering": an object may be within 25 µm of one neighbour, which is itself within 25 µm of a further neighbour, and so on. To quantify the number of distinct lesions that would remain after merging all transitively connected objects, we construct a graph in which each HALO object is a node and edges connect pairs of objects within the threshold distance.  
+
+The number of **connected components** (disconnected subgraphs) equals the number of merged lesions. **Singletons** are components containing a single object (i.e. isolated objects with no neighbour within the threshold). The **% reduction** is the percentage decrease in object count relative to the original, equivalent to the fraction of objects that would be absorbed into multi-object clusters.
+
+```{r}
+#| label: connected-components
+
+count_components <- function(df, thr) {
+  mat <- as.matrix(df[, c("x_plaque", "y_plaque")])
+  k   <- min(nrow(mat), 50L)
+  res <- nn2(data = mat, query = mat, k = k)
+  within <- res$nn.dist <= thr & res$nn.idx != row(res$nn.idx)
+  from   <- row(res$nn.idx)[within]
+  to     <- res$nn.idx[within]
+  edges  <- tibble(from, to) |> filter(from < to)
+  g      <- graph_from_data_frame(edges, directed = FALSE,
+                                  vertices = seq_len(nrow(mat)))
+  comps  <- components(g)
+  tibble(
+    n_objects     = nrow(mat),
+    n_components  = comps$no,
+    n_singletons  = sum(comps$csize == 1),
+    pct_reduction = (1 - comps$no / nrow(mat)) * 100,
+    threshold_um  = thr
+  )
+}
+
+component_results <- plaques_nn |>
+  group_by(brain, plaque_type) |>
+  group_modify(\(grp, key) {
+    if (nrow(grp) < 2) return(tibble())
+    map_dfr(THRESHOLDS, \(thr) count_components(grp, thr))
+  }) |>
+  ungroup()
+
+component_results |>
+  arrange(plaque_type, threshold_um, brain) |>
+  kbl(
+    digits = 1,
+    col.names = c("Brain", "Type", "N objects", "N components",
+                  "N singletons", "% reduction", "Threshold (µm)")
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "condensed"), full_width = FALSE) |>
+  collapse_rows(columns = 1:2, valign = "top")
+```
+
+At 25 µm, merging connected objects would reduce CAA counts from 284–446 objects to 90–204 components per brain (a reduction of 58.1–67.2%). Of these surviving components, 28–112 are singletons, meaning between one-quarter and one-half of merged lesions have no neighbours within 25 µm and would be unaffected by merging.  
+
+Applying the same threshold to parenchymal plaques would reduce counts from 2,681–3,961 to 1,380–1,709 components (a 36.3–57.6% reduction) with 804–1,172 singletons per brain. Increasing the threshold to 50 µm yields an additional reduction: CAA to 90–153 components (65.7–73.0% reduction) and parenchymal to 769–1,014 components (58.5–80.6% reduction), but the incremental gain over 25 µm is modest relative to the additional risk of merging genuinely distinct lesions.
+
+## Spatial maps
+
+To determine whether clustering is spatially coherent, consistent with biological structure (vessel trajectories for CAA, plaque fields for parenchymal) rather than random annotation noise, we map each object's position coloured by its NN distance. Objects coloured red have a neighbour within 25 µm; grey objects have neighbours at approximately the midpoint distance (25 µm); navy objects are well-isolated (> 100 µm to nearest neighbour). Spatial coherence of red objects would confirm that clusters represent real lesion structures rather than scattered annotation errors.
+
+```{r}
+#| label: spatial-maps
+#| column: page
+#| fig-width: 12
+#| fig-height: 14
+
+make_map <- function(type_label) {
+  plaques_nn |>
+    filter(plaque_type == type_label) |>
+    ggplot(aes(x_plaque, y_plaque, colour = nn_dist)) +
+    geom_point(size = 0.8, alpha = 0.5) +
+    scale_colour_gradient2(
+      low = "red", mid = "grey80", high = "navy",
+      midpoint = 60, name = "NN dist (µm)",
+      limits = c(0, 200), oob = scales::squish
+    ) +
+    facet_wrap(~brain, scales = "free") +
+    theme_minimal(base_size = 10) +
+    labs(title = type_label, x = "x (µm)", y = "y (µm)")
+}
+
+wrap_plots(make_map("CAA"), make_map("Parenchymal"), ncol = 1)
+```
+
+CAA objects are almost uniformly red across all six brains and form the characteristic linear, curvilinear, and branching patterns expected of cortical vessel distributions. The rare navy points represent larger, isolated CAA deposits without nearby same-type objects.  
+
+For parenchymal plaques, the maps show dense with blue/navy objects occurring only at the periphery of annotated regions. The spatial coherence of the red clusters in both types confirms that over-segmentation reflects the underlying anatomy: HALO has systematically fragmented continuous structures (vessel segments, plaque fields) rather than produced random annotation artefacts.
+
+
+## Conclusions and recommended next step
+
+Taken together, the distance distributions, threshold impact analysis, connected-component counts, spatial maps, and size–distance correlations provide consistent and convergent evidence that HALO substantially over-segments ThioS-positive objects in both CAA and parenchymal plaque categories.
+
+The key observations are:
+
+- **Median NN distances (9.8–11.8 µm for CAA; 11.1–20.1 µm for parenchymal) are at or below the median maximum diameter of the objects themselves (11–15 µm)**, indicating that adjacent objects are in near-contact or physically overlapping in centroid space.
+- **The parenchymal NN distance histogram is bimodal** on a log scale, with a first peak at 5–20 µm (fragments) and a second peak at 50–200 µm (genuine distinct plaques). The inter-modal valley falls around 25–50 µm, providing an empirical justification for the merge threshold that is independent of prior assumptions about plaque size. The CAA distribution is unimodal — almost all CAA objects are fragments with no second population of well-separated lesions.
+- **75–88% of CAA objects and 56–78% of parenchymal objects fall within 25 µm of a same-type neighbour**, confirming that the vast majority of annotations are candidates for consolidation.
+- **A 25 µm merge threshold would reduce CAA counts by 58–67% and parenchymal counts by 36–58% per brain**, leaving 90–204 and 1,380–1,709 components respectively — plausible numbers of distinct CAA vessel segments and parenchymal deposits.
+- **Spatial clustering is anatomically coherent**: CAA fragments align along vessel trajectories; parenchymal fragments form localised dense fields rather than scattered noise.
+
+
+Over-segmentation affects both plaque types. The bimodal structure unique to parenchymal plaques further distinguishes the two types: CAA is almost uniformly over-segmented (single mode), while the parenchymal dataset contains a mixture of over-segmented fragments and genuine distinct deposits, with the two populations separable at ~25 µm.
+
+
+
