@@ -1,6 +1,6 @@
 ---
-title: "Global Spatial Autocorrelation"
-subtitle: "Moran's I, Geary's C, and binSpect — kNN(15) and Delaunay spatial networks"
+title: "Spatial autocorrelation metrics"
+subtitle: "Giotto implementation: Moran's I, Geary's C, and binSpect — kNN(15) and Delaunay spatial networks"
 date: last-modified
 ---
 
