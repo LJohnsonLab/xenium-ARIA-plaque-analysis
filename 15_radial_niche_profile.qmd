@@ -6,11 +6,9 @@ date: last-modified
 
 # Rationale
 
-Notebooks 11 and 11.1 characterise the niche composition within a fixed 50 µm radius
+Previous notebooks characterise the niche composition within a fixed 50 µm radius
 around plaques. Here we extend this to **concentric shells** to ask whether the
-three-layer glial response model has a spatial architecture: do microglia peak in the
-innermost shell, astrocytes in the middle shell, and oligodendrocytes in an outer
-shell, consistent with an initiation–amplification–remodeling relay?
+possible interaction microglia-astrocytes-oligos has a spatial architecture.
 
 **Shells** (distance to nearest plaque):
 
@@ -39,30 +37,27 @@ cell_distances_all <- data$distances_all
 # Add cell-type and sample metadata to the distance table
 meta_lookup <- bind_rows(
   slide1@meta.data |> as_tibble(rownames = "cell") |>
-    select(cell, annotatedclusters, sample_ID, Treatment.Group),
+    select(cell, annotatedclusters),
   slide2@meta.data |> as_tibble(rownames = "cell") |>
-    select(cell, annotatedclusters, sample_ID, Treatment.Group)
+    select(cell, annotatedclusters)
 )
 
 cells_with_meta <- cell_distances_all |>
   left_join(meta_lookup, by = "cell")
-```
 
+#############################
 ## Cell-type abundance check
-
-```{r}
-#| label: ct-counts
+#############################
 cells_with_meta |>
   count(annotatedclusters, Treatment.Group, name = "n") |>
   arrange(desc(n)) |>
   kbl(caption = "Total cells per annotated cluster and treatment") |>
   kable_styling("striped", full_width = FALSE)
-```
 
+###################
 # Shell assignment
+###################
 
-```{r}
-#| label: assign-shells
 shell_breaks <- c(0, 25, 50, 100, 200, Inf)
 shell_labels <- c("0-25", "25-50", "50-100", "100-200", ">200")
 
@@ -94,13 +89,11 @@ compute_shell_props <- function(shelled_df, plaque_type_col, shell_col) {
 
 props_caa   <- compute_shell_props(cells_shelled, "dist_caa",   "shell_caa")
 props_paren <- compute_shell_props(cells_shelled, "dist_paren",  "shell_paren")
-```
 
-# Aggregate across brains
-
-```{r}
-#| label: aggregate-props
+###########################################################
 # Mean proportion per shell × cell type × treatment group
+###########################################################
+
 summarise_props <- function(props_df, plaque_label) {
   props_df |>
     group_by(Treatment.Group, shell, annotatedclusters) |>
@@ -145,18 +138,18 @@ ggplot(summary_all, aes(x = shell, y = mean_prop, fill = annotatedclusters)) +
   )
 ```
 
-## Glial triad: microglia, astrocytes, oligodendrocytes
+## Changes in cell-type composition across distance shells
 
-To test the relay architecture, we focus on the three glial cell types predicted to
-dominate successive shells by the three-layer model.
+### no treatment effect
 
 ```{r}
 #| label: identify-glial-types
-all_types <- sort(unique(cells_shelled$annotatedclusters))
 
-ct_micro <- all_types[grepl("microglia|microglia", all_types, ignore.case = TRUE)]
-ct_astro <- all_types[grepl("astrocyte", all_types, ignore.case = TRUE)]
-ct_oligo <- all_types[grepl("oligodendrocyte", all_types, ignore.case = TRUE)]
+## Identify cell-types of interest
+
+ct_astro <- "Astrocyte"
+ct_oligo <- "Oligodendrocyte"
+ct_micro <- "Microglia"
 
 message("Microglia:        ", paste(ct_micro, collapse = ", "))
 message("Astrocytes:       ", paste(ct_astro, collapse = ", "))
@@ -175,7 +168,7 @@ glial_labels <- setNames(
 # Recompute proportions with collapsed glial categories
 cells_glial <- cells_shelled |>
   filter(annotatedclusters %in% glial_types) |>
-  mutate(glia_type = glial_labels[annotatedclusters])
+  mutate(glia_type = glial_labels[as.character(annotatedclusters)])
 
 props_glial_caa <- cells_glial |>
   rename(shell = shell_caa) |>
@@ -251,7 +244,7 @@ ggplot(props_glial,
   )
 ```
 
-## Adu vs IgG comparison: does treatment shift the glial profile?
+### Adu vs IgG comparison
 
 ```{r}
 #| label: glial-treatment-comparison
