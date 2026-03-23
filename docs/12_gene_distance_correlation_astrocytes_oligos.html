@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-22">
+
+<title>Gene-distance correlation — astrocytes and oligodendrocytes – ThioS Plaque Spatial Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ThioS Plaque Spatial Analysis</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./2_coregistration_Akhil.html"> 
+<span class="menu-text">Co-registration</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Expression-Distance correlations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-expression-distance-correlations">    
+        <li>
+    <a class="dropdown-item" href="./6_gene_distance_correlation.html">
+ <span class="dropdown-text">All cell types</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./6.1_cell_type_distance_ridges.html">
+ <span class="dropdown-text">Cell-type ridge plots</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./7_gene_distance_correlation_microglia.html">
+ <span class="dropdown-text">Microglia correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./8_microglia_proximal_treatment_DE.html">
+ <span class="dropdown-text">Microglia proximal DE</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./12_gene_distance_correlation_astrocytes_oligos.html">
+ <span class="dropdown-text">Astros &amp; Oligos correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./13_astro-oligo_proximal_treatment_DE.html">
+ <span class="dropdown-text">Astros &amp; Oligos proximal DE</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-autocorrelation" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Autocorrelation</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-autocorrelation">    
+        <li>
+    <a class="dropdown-item" href="./10_global_spatial_autocorrelation.html">
+ <span class="dropdown-text">Global autocorrelation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./10.2_spatial_coexpression_modules.html">
+ <span class="dropdown-text">Spatial co-expression modules</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./11.5_bivariate_lee_relay.html">
+ <span class="dropdown-text">Bivariate Lee’s L relay</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-neighbors--niches" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Neighbors &amp; Niches</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-neighbors--niches">    
+        <li>
+    <a class="dropdown-item" href="./11_neighborhood_enrichment.html">
+ <span class="dropdown-text">Neighborhood enrichment</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./11.1_niche_pseudobulk_treatment.html">
+ <span class="dropdown-text">Niche pseudobulk treatment</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./15_radial_niche_profile.html">
+ <span class="dropdown-text">Radial niche profile</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#rationale" id="toc-rationale" class="nav-link active" data-scroll-target="#rationale">Rationale</a></li>
+  <li><a href="#setup-and-data-loading" id="toc-setup-and-data-loading" class="nav-link" data-scroll-target="#setup-and-data-loading">Setup and data loading</a>
+  <ul class="collapse">
+  <li><a href="#subset-objects-and-distances" id="toc-subset-objects-and-distances" class="nav-link" data-scroll-target="#subset-objects-and-distances">Subset objects and distances</a></li>
+  <li><a href="#cell-counts-per-group" id="toc-cell-counts-per-group" class="nav-link" data-scroll-target="#cell-counts-per-group">Cell counts per group</a></li>
+  </ul></li>
+  <li><a href="#gene-distance-correlation-functions" id="toc-gene-distance-correlation-functions" class="nav-link" data-scroll-target="#gene-distance-correlation-functions">Gene-distance correlation functions</a></li>
+  <li><a href="#astrocyte-gene-distance-correlations" id="toc-astrocyte-gene-distance-correlations" class="nav-link" data-scroll-target="#astrocyte-gene-distance-correlations">Astrocyte gene-distance correlations</a>
+  <ul class="collapse">
+  <li><a href="#rank-plots-astrocytes" id="toc-rank-plots-astrocytes" class="nav-link" data-scroll-target="#rank-plots-astrocytes">Rank plots — astrocytes</a></li>
+  <li><a href="#top-astrocyte-genes" id="toc-top-astrocyte-genes" class="nav-link" data-scroll-target="#top-astrocyte-genes">Top astrocyte genes</a></li>
+  <li><a href="#venn-diagram-astrocyte-enriched-near-overlap" id="toc-venn-diagram-astrocyte-enriched-near-overlap" class="nav-link" data-scroll-target="#venn-diagram-astrocyte-enriched-near-overlap">Venn diagram — astrocyte enriched-near overlap</a></li>
+  </ul></li>
+  <li><a href="#oligodendrocyte-gene-distance-correlations" id="toc-oligodendrocyte-gene-distance-correlations" class="nav-link" data-scroll-target="#oligodendrocyte-gene-distance-correlations">Oligodendrocyte gene-distance correlations</a>
+  <ul class="collapse">
+  <li><a href="#rank-plots-oligodendrocytes" id="toc-rank-plots-oligodendrocytes" class="nav-link" data-scroll-target="#rank-plots-oligodendrocytes">Rank plots — oligodendrocytes</a></li>
+  <li><a href="#top-oligodendrocyte-genes" id="toc-top-oligodendrocyte-genes" class="nav-link" data-scroll-target="#top-oligodendrocyte-genes">Top oligodendrocyte genes</a></li>
+  <li><a href="#venn-diagram-oligodendrocyte-enriched-near-overlap" id="toc-venn-diagram-oligodendrocyte-enriched-near-overlap" class="nav-link" data-scroll-target="#venn-diagram-oligodendrocyte-enriched-near-overlap">Venn diagram — oligodendrocyte enriched-near overlap</a></li>
+  </ul></li>
+  <li><a href="#cross-cell-type-comparison" id="toc-cross-cell-type-comparison" class="nav-link" data-scroll-target="#cross-cell-type-comparison">Cross-cell-type comparison</a>
+  <ul class="collapse">
+  <li><a href="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" id="toc-astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" class="nav-link" data-scroll-target="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes — candidate gene heatmap</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Gene-distance correlation — astrocytes and oligodendrocytes</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 22, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="rationale" class="level1">
+<h1>Rationale</h1>
+<p>Notebook 7 established that microglia activate a DAM transcriptional programme near parenchymal plaques and a distinct cholesterol/lipid programme near CAA. This constitutes spatial evidence for <strong>Layer 1 (Initiation)</strong> of the proposed three-layer glial response model.</p>
+<p>Here we extend the same gene-distance correlation approach to <strong>astrocytes</strong> and <strong>oligodendrocytes</strong> to test whether Layers 2 and 3 also show plaque-proximity gradients:</p>
+<ul>
+<li><strong>Layer 2 — Amplification (Astrocytes)</strong>: Ifitm3, Ccl2, Ccl12, Cxcl10, Tnf, Agt</li>
+<li><strong>Layer 3 — Remodeling (Oligodendrocytes)</strong>: Abca1, Abcg1, Apod, Srebf1, Got1↓, Ldhb↓</li>
+</ul>
+<p>By restricting the analysis to a single cell type at a time we remove the cell-type composition confound: any residual gene-distance relationship reflects transcriptional changes within that cell type rather than differential abundance near plaques.</p>
+</section>
+<section id="setup-and-data-loading" class="level1">
+<h1>Setup and data loading</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"R/setup.R"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggVennDiagram)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">load_slides_and_distances</span>(<span class="st">"full"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>slide1 <span class="ot">&lt;-</span> data<span class="sc">$</span>slide1; slide2 <span class="ot">&lt;-</span> data<span class="sc">$</span>slide2</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>cell_distances_all <span class="ot">&lt;-</span> data<span class="sc">$</span>distances_all</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="do">## Identify cell-types of interest</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>ct_astro <span class="ot">&lt;-</span> <span class="st">"Astrocyte"</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>ct_oligo <span class="ot">&lt;-</span> <span class="st">"Oligodendrocyte"</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>ct_opc   <span class="ot">&lt;-</span> <span class="st">"OPC"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="subset-objects-and-distances" class="level2">
+<h2 class="anchored" data-anchor-id="subset-objects-and-distances">Subset objects and distances</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Subset Seurat objects to target cell type</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>subset_by_type <span class="ot">&lt;-</span> <span class="cf">function</span>(slide_list, cell_types) {</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map</span>(slide_list, \(obj) {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    keep <span class="ot">&lt;-</span> obj<span class="sc">$</span>annotatedclusters <span class="sc">%in%</span> cell_types</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">subset</span>(obj, <span class="at">cells =</span> <span class="fu">colnames</span>(obj)[keep])</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>slides_astro <span class="ot">&lt;-</span> <span class="fu">subset_by_type</span>(<span class="fu">list</span>(slide1, slide2), ct_astro)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>slides_oligo <span class="ot">&lt;-</span> <span class="fu">subset_by_type</span>(<span class="fu">list</span>(slide1, slide2), ct_oligo)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Subset distance table to matching cells</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>dist_astro <span class="ot">&lt;-</span> cell_distances_all <span class="sc">|&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cell <span class="sc">%in%</span> <span class="fu">unlist</span>(<span class="fu">map</span>(slides_astro, colnames)))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>dist_oligo <span class="ot">&lt;-</span> cell_distances_all <span class="sc">|&gt;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(cell <span class="sc">%in%</span> <span class="fu">unlist</span>(<span class="fu">map</span>(slides_oligo, colnames)))</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="fu">sprintf</span>(<span class="st">"Astrocytes: %d cells"</span>, <span class="fu">nrow</span>(dist_astro)))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="fu">sprintf</span>(<span class="st">"Oligodendrocytes: %d cells"</span>, <span class="fu">nrow</span>(dist_oligo)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="cell-counts-per-group" class="level2">
+<h2 class="anchored" data-anchor-id="cell-counts-per-group">Cell counts per group</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>build_count_table <span class="ot">&lt;-</span> <span class="cf">function</span>(dist_df, label) {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  dist_df <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="at">prox_caa   =</span> <span class="fu">if_else</span>(dist_caa <span class="sc">&lt;</span> <span class="dv">50</span>,   <span class="st">"proximal"</span>, <span class="st">"distal"</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="at">prox_paren =</span> <span class="fu">if_else</span>(dist_paren <span class="sc">&lt;</span> <span class="dv">50</span>,  <span class="st">"proximal"</span>, <span class="st">"distal"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(sample_ID, Treatment.Group) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">n_total       =</span> <span class="fu">n</span>(),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">n_prox_caa    =</span> <span class="fu">sum</span>(prox_caa <span class="sc">==</span> <span class="st">"proximal"</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">n_prox_paren  =</span> <span class="fu">sum</span>(prox_paren <span class="sc">==</span> <span class="st">"proximal"</span>),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">cell_type =</span> label)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">build_count_table</span>(dist_astro, <span class="st">"Astrocytes"</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">build_count_table</span>(dist_oligo, <span class="st">"Oligodendrocytes"</span>)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">caption =</span> <span class="st">"Cell counts per sample and proximity group"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="st">"striped"</span>, <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Cell counts per sample and proximity group</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">sample_ID</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Treatment.Group</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n_total</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n_prox_caa</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n_prox_paren</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">cell_type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">KK4_464</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">7801</td>
+<td style="text-align: right;">443</td>
+<td style="text-align: right;">3154</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_465</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">8786</td>
+<td style="text-align: right;">518</td>
+<td style="text-align: right;">4686</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KK4_492</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">9639</td>
+<td style="text-align: right;">668</td>
+<td style="text-align: right;">3670</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_496</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">8020</td>
+<td style="text-align: right;">606</td>
+<td style="text-align: right;">4009</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KK4_502</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">6675</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: right;">3490</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_504</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">7568</td>
+<td style="text-align: right;">640</td>
+<td style="text-align: right;">3244</td>
+<td style="text-align: left;">Astrocytes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KK4_464</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">11742</td>
+<td style="text-align: right;">260</td>
+<td style="text-align: right;">4864</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_465</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">12517</td>
+<td style="text-align: right;">246</td>
+<td style="text-align: right;">6789</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KK4_492</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">13575</td>
+<td style="text-align: right;">482</td>
+<td style="text-align: right;">5757</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_496</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">10452</td>
+<td style="text-align: right;">377</td>
+<td style="text-align: right;">5367</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KK4_502</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">11872</td>
+<td style="text-align: right;">371</td>
+<td style="text-align: right;">6107</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">KK4_504</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">10166</td>
+<td style="text-align: right;">406</td>
+<td style="text-align: right;">4766</td>
+<td style="text-align: left;">Oligodendrocytes</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="gene-distance-correlation-functions" class="level1">
+<h1>Gene-distance correlation functions</h1>
+<p>These functions are identical to notebook 7. For each gene we compute a Spearman rank correlation between per-cell raw expression counts and distance to the nearest plaque of the specified type. The sign is flipped so that positive <code>rho_flip</code> = enriched near plaques.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>compute_gene_distance_correlation <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    seurat_list,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    cell_distances,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">distance_col =</span> <span class="st">"dist_any"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_expressing_cells =</span> <span class="dv">50</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  count_list <span class="ot">&lt;-</span> <span class="fu">map</span>(seurat_list, \(obj) {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">LayerData</span>(obj, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(obj), <span class="at">layer =</span> <span class="st">"counts"</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  shared_genes <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(intersect, <span class="fu">map</span>(count_list, rownames))</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">map</span>(count_list, \(m) m[shared_genes, ]))</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  shared_cells <span class="ot">&lt;-</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(counts), cell_distances<span class="sc">$</span>cell)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> counts[, shared_cells]</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  dist_vec <span class="ot">&lt;-</span> cell_distances <span class="sc">|&gt;</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(cell <span class="sc">%in%</span> shared_cells) <span class="sc">|&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">match</span>(cell, shared_cells)) <span class="sc">|&gt;</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(<span class="sc">!!</span><span class="fu">sym</span>(distance_col))</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  n_expressing <span class="ot">&lt;-</span> Matrix<span class="sc">::</span><span class="fu">rowSums</span>(counts <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  keep <span class="ot">&lt;-</span> n_expressing <span class="sc">&gt;=</span> min_expressing_cells</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> counts[keep, ]</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="fu">sprintf</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Kept %d / %d genes (&gt;= %d expressing cells)"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sum</span>(keep), <span class="fu">length</span>(keep), min_expressing_cells</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(counts)), \(i) {</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    gene_expr <span class="ot">&lt;-</span> counts[i, ]</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    ct <span class="ot">&lt;-</span> <span class="fu">cor.test</span>(<span class="fu">as.numeric</span>(gene_expr), dist_vec,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>                   <span class="at">method =</span> <span class="st">"spearman"</span>, <span class="at">exact =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tibble</span>(<span class="at">gene =</span> <span class="fu">rownames</span>(counts)[i], <span class="at">rho =</span> ct<span class="sc">$</span>estimate, <span class="at">pval =</span> ct<span class="sc">$</span>p.value)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">.progress =</span> <span class="st">"Spearman correlations"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>()</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  results <span class="sc">|&gt;</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">padj     =</span> <span class="fu">p.adjust</span>(pval, <span class="at">method =</span> <span class="st">"BH"</span>),</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">rho_flip =</span> <span class="sc">-</span>rho,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">rank     =</span> <span class="fu">rank</span>(<span class="sc">-</span>rho_flip, <span class="at">ties.method =</span> <span class="st">"first"</span>),</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>      <span class="at">sig      =</span> <span class="fu">case_when</span>(</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_near"</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_far"</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>                        <span class="sc">~</span> <span class="st">"ns"</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(rank)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_gene_distance_correlation <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    results,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">title          =</span> <span class="st">"Gene-distance correlation"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_top          =</span> <span class="dv">5</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">genes_to_label =</span> <span class="cn">NULL</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  top_pos    <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_near"</span>) <span class="sc">|&gt;</span> <span class="fu">slice_min</span>(rank, <span class="at">n =</span> n_top)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  top_neg    <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_far"</span>)  <span class="sc">|&gt;</span> <span class="fu">slice_max</span>(rank, <span class="at">n =</span> n_top)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  auto_label <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(top_pos, top_neg)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.null</span>(genes_to_label)) {</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    user_genes <span class="ot">&lt;-</span> results <span class="sc">|&gt;</span> <span class="fu">filter</span>(gene <span class="sc">%in%</span> genes_to_label)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    auto_label <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(auto_label, user_genes) <span class="sc">|&gt;</span> <span class="fu">distinct</span>(gene, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  colour_map <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"#E07B39"</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">"enriched_far"</span>  <span class="ot">=</span> <span class="st">"#7B68AE"</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ns"</span>            <span class="ot">=</span> <span class="st">"grey70"</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> rank, <span class="at">y =</span> rho_flip)) <span class="sc">+</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> sig), <span class="at">size =</span> <span class="dv">2</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text_repel</span>(</span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>      <span class="at">data        =</span> auto_label,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(<span class="at">label =</span> gene, <span class="at">colour =</span> sig),</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>      <span class="at">size        =</span> <span class="dv">5</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>      <span class="at">fontface    =</span> <span class="st">"italic"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">box.padding =</span> <span class="fl">0.4</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">max.overlaps =</span> <span class="dv">20</span>,</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">show.legend =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">seed =</span> <span class="dv">23</span></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>      <span class="at">values =</span> colour_map,</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">c</span>(</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>        <span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"Enriched near plaque (padj &lt; 0.05)"</span>,</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>        <span class="st">"enriched_far"</span>  <span class="ot">=</span> <span class="st">"Enriched far from plaque (padj &lt; 0.05)"</span>,</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ns"</span>            <span class="ot">=</span> <span class="st">"Not significant"</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">title  =</span> title,</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>      <span class="at">x      =</span> <span class="st">"Gene rank"</span>,</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">y      =</span> <span class="st">"Spearman rho (flipped)"</span>,</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>      <span class="at">colour =</span> <span class="cn">NULL</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position    =</span> <span class="st">"bottom"</span>,</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.grid.minor   =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.grid.major.x =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="astrocyte-gene-distance-correlations" class="level1 page-columns page-full">
+<h1>Astrocyte gene-distance correlations</h1>
+<p>Candidate genes from DEG_consolidated model (Layer 2 — Amplification): - Near plaque: Ifitm3, Ccl2, Ccl12, Cxcl10, Agt, Gfap, Vim, S100b - Far from plaque: homeostatic astrocyte markers</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>astro_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Ifitm3"</span>, <span class="st">"Ccl2"</span>, <span class="st">"Ccl12"</span>, <span class="st">"Cxcl10"</span>, <span class="st">"Agt"</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Gfap"</span>, <span class="st">"Vim"</span>, <span class="st">"S100b"</span>, <span class="st">"Apod"</span>, <span class="st">"Abca1"</span>, <span class="st">"Plin4"</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>cor_caa_astro <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  slides_astro, dist_astro, <span class="at">distance_col =</span> <span class="st">"dist_caa"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>cor_paren_astro <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  slides_astro, dist_astro, <span class="at">distance_col =</span> <span class="st">"dist_paren"</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="rank-plots-astrocytes" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="rank-plots-astrocytes">Rank plots — astrocytes</h2>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>p_caa_astro   <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  cor_caa_astro,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Astrocytes — CAA"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> astro_candidate_genes</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>p_paren_astro <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  cor_paren_astro,</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Astrocytes — Parenchymal"</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> astro_candidate_genes</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>(p_caa_astro <span class="sc">|</span> p_paren_astro) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="st">"Astrocyte gene-distance correlation"</span>) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>) <span class="sc">&amp;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/plot-astro-caa-paren-1.svg" class="img-fluid figure-img column-page" width="960"></p>
+<figcaption>Spearman gene-distance correlation for astrocytes. Positive rho_flip = enriched near plaque. Top 5 enriched-near and enriched-far genes are automatically labeled; candidate Layer 2 genes (Ifitm3, Ccl2, Ccl12, Cxcl10, Agt, Gfap, Vim) are additionally labeled if significant.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="top-astrocyte-genes" class="level2">
+<h2 class="anchored" data-anchor-id="top-astrocyte-genes">Top astrocyte genes</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>show_top <span class="ot">&lt;-</span> <span class="cf">function</span>(results, label, <span class="at">n =</span> <span class="dv">10</span>) {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    results <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_near"</span>) <span class="sc">|&gt;</span> <span class="fu">slice_min</span>(rank, <span class="at">n =</span> n),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    results <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_far"</span>)  <span class="sc">|&gt;</span> <span class="fu">slice_max</span>(rank, <span class="at">n =</span> n)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(gene, rho, rho_flip, pval, padj, rank, sig) <span class="sc">|&gt;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">across</span>(<span class="fu">c</span>(rho, rho_flip), \(x) <span class="fu">round</span>(x, <span class="dv">4</span>)),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">across</span>(<span class="fu">c</span>(pval, padj), \(x) <span class="fu">ifelse</span>(x <span class="sc">&lt;</span> <span class="fl">1e-300</span>, <span class="st">"&lt; 1e-300"</span>, <span class="fu">formatC</span>(x, <span class="at">format =</span> <span class="st">"e"</span>, <span class="at">digits =</span> <span class="dv">2</span>)))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kbl</span>(<span class="at">caption =</span> label) <span class="sc">|&gt;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>(<span class="st">"striped"</span>, <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_caa_astro,   <span class="st">"Top genes — astrocytes, distance to CAA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Top genes — astrocytes, distance to CAA</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">gene</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho_flip</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">pval</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">padj</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rank</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sig</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Hmgcs1</td>
+<td style="text-align: right;">-0.1234</td>
+<td style="text-align: right;">0.1234</td>
+<td style="text-align: left;">1.04e-163</td>
+<td style="text-align: left;">1.59e-161</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glul</td>
+<td style="text-align: right;">-0.1183</td>
+<td style="text-align: right;">0.1183</td>
+<td style="text-align: left;">1.08e-150</td>
+<td style="text-align: left;">9.89e-149</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Slc17a7</td>
+<td style="text-align: right;">-0.1074</td>
+<td style="text-align: right;">0.1074</td>
+<td style="text-align: left;">2.37e-124</td>
+<td style="text-align: left;">1.35e-122</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fdft1</td>
+<td style="text-align: right;">-0.0993</td>
+<td style="text-align: right;">0.0993</td>
+<td style="text-align: left;">1.67e-106</td>
+<td style="text-align: left;">7.64e-105</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Reln</td>
+<td style="text-align: right;">-0.0928</td>
+<td style="text-align: right;">0.0928</td>
+<td style="text-align: left;">2.86e-93</td>
+<td style="text-align: left;">1.00e-91</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Msmo1</td>
+<td style="text-align: right;">-0.0926</td>
+<td style="text-align: right;">0.0926</td>
+<td style="text-align: left;">7.58e-93</td>
+<td style="text-align: left;">2.48e-91</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mrc1</td>
+<td style="text-align: right;">-0.0920</td>
+<td style="text-align: right;">0.0920</td>
+<td style="text-align: left;">1.17e-91</td>
+<td style="text-align: left;">3.57e-90</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Vtn</td>
+<td style="text-align: right;">-0.0846</td>
+<td style="text-align: right;">0.0846</td>
+<td style="text-align: left;">8.46e-78</td>
+<td style="text-align: left;">2.15e-76</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gfap</td>
+<td style="text-align: right;">-0.0843</td>
+<td style="text-align: right;">0.0843</td>
+<td style="text-align: left;">3.74e-77</td>
+<td style="text-align: left;">9.00e-76</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cux2</td>
+<td style="text-align: right;">-0.0798</td>
+<td style="text-align: right;">0.0798</td>
+<td style="text-align: left;">2.44e-69</td>
+<td style="text-align: left;">5.07e-68</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mbp</td>
+<td style="text-align: right;">0.1661</td>
+<td style="text-align: right;">-0.1661</td>
+<td style="text-align: left;">4.82e-297</td>
+<td style="text-align: left;">2.20e-294</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cst3</td>
+<td style="text-align: right;">0.1302</td>
+<td style="text-align: right;">-0.1302</td>
+<td style="text-align: left;">3.43e-182</td>
+<td style="text-align: left;">7.84e-180</td>
+<td style="text-align: right;">456</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Abca1</td>
+<td style="text-align: right;">0.1223</td>
+<td style="text-align: right;">-0.1223</td>
+<td style="text-align: left;">7.72e-161</td>
+<td style="text-align: left;">8.82e-159</td>
+<td style="text-align: right;">455</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Agt</td>
+<td style="text-align: right;">0.1137</td>
+<td style="text-align: right;">-0.1137</td>
+<td style="text-align: left;">3.55e-139</td>
+<td style="text-align: left;">2.70e-137</td>
+<td style="text-align: right;">454</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cd81</td>
+<td style="text-align: right;">0.1129</td>
+<td style="text-align: right;">-0.1129</td>
+<td style="text-align: left;">3.04e-137</td>
+<td style="text-align: left;">1.98e-135</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Srebf1</td>
+<td style="text-align: right;">0.1045</td>
+<td style="text-align: right;">-0.1045</td>
+<td style="text-align: left;">9.48e-118</td>
+<td style="text-align: left;">4.81e-116</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pgm1</td>
+<td style="text-align: right;">0.0973</td>
+<td style="text-align: right;">-0.0973</td>
+<td style="text-align: left;">2.69e-102</td>
+<td style="text-align: left;">1.12e-100</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Folh1</td>
+<td style="text-align: right;">0.0941</td>
+<td style="text-align: right;">-0.0941</td>
+<td style="text-align: left;">1.00e-95</td>
+<td style="text-align: left;">3.82e-94</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Vcam1</td>
+<td style="text-align: right;">0.0873</td>
+<td style="text-align: right;">-0.0873</td>
+<td style="text-align: left;">1.42e-82</td>
+<td style="text-align: left;">4.05e-81</td>
+<td style="text-align: right;">449</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Nts</td>
+<td style="text-align: right;">0.0872</td>
+<td style="text-align: right;">-0.0872</td>
+<td style="text-align: left;">1.61e-82</td>
+<td style="text-align: left;">4.33e-81</td>
+<td style="text-align: right;">448</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_paren_astro, <span class="st">"Top genes — astrocytes, distance to parenchymal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Top genes — astrocytes, distance to parenchymal</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">gene</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho_flip</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">pval</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">padj</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rank</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sig</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Serpina3n</td>
+<td style="text-align: right;">-0.3880</td>
+<td style="text-align: right;">0.3880</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gfap</td>
+<td style="text-align: right;">-0.3184</td>
+<td style="text-align: right;">0.3184</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ctsd</td>
+<td style="text-align: right;">-0.2286</td>
+<td style="text-align: right;">0.2286</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mbp</td>
+<td style="text-align: right;">-0.2224</td>
+<td style="text-align: right;">0.2224</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gpnmb</td>
+<td style="text-align: right;">-0.1947</td>
+<td style="text-align: right;">0.1947</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ctsb</td>
+<td style="text-align: right;">-0.1910</td>
+<td style="text-align: right;">0.1910</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Tmsb4x</td>
+<td style="text-align: right;">-0.1686</td>
+<td style="text-align: right;">0.1686</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Vim</td>
+<td style="text-align: right;">-0.1675</td>
+<td style="text-align: right;">0.1675</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">1.44e-300</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lpl</td>
+<td style="text-align: right;">-0.1661</td>
+<td style="text-align: right;">0.1661</td>
+<td style="text-align: left;">4.14e-297</td>
+<td style="text-align: left;">9.96e-296</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ftl1</td>
+<td style="text-align: right;">-0.1660</td>
+<td style="text-align: right;">0.1660</td>
+<td style="text-align: left;">1.10e-296</td>
+<td style="text-align: left;">2.52e-295</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gja1</td>
+<td style="text-align: right;">0.3079</td>
+<td style="text-align: right;">-0.3079</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glul</td>
+<td style="text-align: right;">0.2747</td>
+<td style="text-align: right;">-0.2747</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">456</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cbs</td>
+<td style="text-align: right;">0.2328</td>
+<td style="text-align: right;">-0.2328</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">455</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Htra1</td>
+<td style="text-align: right;">0.2182</td>
+<td style="text-align: right;">-0.2182</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">454</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Phgdh</td>
+<td style="text-align: right;">0.2140</td>
+<td style="text-align: right;">-0.2140</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glud1</td>
+<td style="text-align: right;">0.2010</td>
+<td style="text-align: right;">-0.2010</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pygb</td>
+<td style="text-align: right;">0.1965</td>
+<td style="text-align: right;">-0.1965</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fdft1</td>
+<td style="text-align: right;">0.1763</td>
+<td style="text-align: right;">-0.1763</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Msmo1</td>
+<td style="text-align: right;">0.1747</td>
+<td style="text-align: right;">-0.1747</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">449</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Plpp3</td>
+<td style="text-align: right;">0.1703</td>
+<td style="text-align: right;">-0.1703</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">448</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="venn-diagram-astrocyte-enriched-near-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="venn-diagram-astrocyte-enriched-near-overlap">Venn diagram — astrocyte enriched-near overlap</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>near_caa_astro   <span class="ot">&lt;-</span> cor_caa_astro   <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>near_paren_astro <span class="ot">&lt;-</span> cor_paren_astro <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggVennDiagram</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">CAA =</span> near_caa_astro, <span class="at">Parenchymal =</span> near_paren_astro),</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_alpha =</span> <span class="dv">0</span>, <span class="at">label =</span> <span class="st">"count"</span>, <span class="at">shape_id =</span> <span class="st">"201"</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Astrocytes — enriched-near genes (padj &lt; 0.05)"</span>) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_distiller</span>(<span class="at">palette =</span> <span class="st">"RdBu"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/astro-venn-1.svg" class="img-fluid figure-img" width="576"></p>
+<figcaption>Overlap of genes significantly enriched near plaques (padj &lt; 0.05, rho_flip &gt; 0) in astrocytes, between CAA and parenchymal analyses.</figcaption>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Common enriched-near astrocyte genes (CAA and parenchymal):</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">intersect</span>(near_caa_astro, near_paren_astro), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Common enriched-near astrocyte genes (CAA and parenchymal):
+ Gfap, Vim, Cox4i1, Whrn, Ifitm3, Gpnmb, Ifitm2, Lyz2, Uba52, Aqp4, Cd44, Cerk, Cd63, App, Spp1, Cx3cr1, C1qc, Hk2, Pvalb, St3gal6, Ldha, Chst11, Cd14, Flt1, Fxyd5, Ftl1, C1qa, Tshz2, Pdha1, Ogdh, Jund, Bcl2a1b, C3, Tmsb4x, Pkm, Ccl3, Mt2, Cd68, Tagln, B3gat3, Arsb, Trem2, Abca7, Hexb, Dlst, Ocln, Gns, Got2, Lgals3, Cxcl10, Pgd</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="oligodendrocyte-gene-distance-correlations" class="level1 page-columns page-full">
+<h1>Oligodendrocyte gene-distance correlations</h1>
+<p>Candidate genes from DEG_consolidated model (Layer 3 — Remodeling): - Near plaque: Abca1, Abcg1, Srebf1, Apod, Aspa, Mbp, Plp1 - Far from plaque: Got1, Ldhb, Mdh2, Hk1 (metabolic downregulation)</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>oligo_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Srebf1"</span>, <span class="st">"Apod"</span>, <span class="st">"Aspa"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Mbp"</span>, <span class="st">"Plp1"</span>, <span class="st">"Got1"</span>, <span class="st">"Ldhb"</span>, <span class="st">"Mdh2"</span>, <span class="st">"Hk1"</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>cor_caa_oligo <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_caa"</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>cor_paren_oligo <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_paren"</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="rank-plots-oligodendrocytes" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="rank-plots-oligodendrocytes">Rank plots — oligodendrocytes</h2>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>p_caa_oligo   <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — CAA"</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>p_paren_oligo <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — Parenchymal"</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>(p_caa_oligo <span class="sc">|</span> p_paren_oligo) <span class="sc">+</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="st">"Oligodendrocyte gene-distance correlation"</span>) <span class="sc">+</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>) <span class="sc">&amp;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/plot-oligo-caa-paren-1.svg" class="img-fluid figure-img column-page" width="960"></p>
+<figcaption>Spearman gene-distance correlation for oligodendrocytes. Top 5 enriched-near and enriched-far genes are automatically labeled; candidate Layer 3 genes (Abca1, Abcg1, Srebf1, Apod, Got1, Ldhb) are additionally labeled if present.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="top-oligodendrocyte-genes" class="level2">
+<h2 class="anchored" data-anchor-id="top-oligodendrocyte-genes">Top oligodendrocyte genes</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_caa_oligo,   <span class="st">"Top genes — oligodendrocytes, distance to CAA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Top genes — oligodendrocytes, distance to CAA</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">gene</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho_flip</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">pval</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">padj</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rank</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sig</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ttr</td>
+<td style="text-align: right;">-0.0897</td>
+<td style="text-align: right;">0.0897</td>
+<td style="text-align: left;">1.25e-125</td>
+<td style="text-align: left;">2.87e-123</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Slc17a7</td>
+<td style="text-align: right;">-0.0654</td>
+<td style="text-align: right;">0.0654</td>
+<td style="text-align: left;">1.74e-67</td>
+<td style="text-align: left;">1.59e-65</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ptgds</td>
+<td style="text-align: right;">-0.0513</td>
+<td style="text-align: right;">0.0513</td>
+<td style="text-align: left;">3.17e-42</td>
+<td style="text-align: left;">1.62e-40</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Opcml</td>
+<td style="text-align: right;">-0.0504</td>
+<td style="text-align: right;">0.0504</td>
+<td style="text-align: left;">9.37e-41</td>
+<td style="text-align: left;">4.29e-39</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Grin2a</td>
+<td style="text-align: right;">-0.0488</td>
+<td style="text-align: right;">0.0488</td>
+<td style="text-align: left;">2.24e-38</td>
+<td style="text-align: left;">8.53e-37</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Lamp5</td>
+<td style="text-align: right;">-0.0473</td>
+<td style="text-align: right;">0.0473</td>
+<td style="text-align: left;">4.53e-36</td>
+<td style="text-align: left;">1.60e-34</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Slc17a6</td>
+<td style="text-align: right;">-0.0437</td>
+<td style="text-align: right;">0.0437</td>
+<td style="text-align: left;">3.86e-31</td>
+<td style="text-align: left;">1.18e-29</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Snap25</td>
+<td style="text-align: right;">-0.0404</td>
+<td style="text-align: right;">0.0404</td>
+<td style="text-align: left;">9.29e-27</td>
+<td style="text-align: left;">2.50e-25</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Atp1b2</td>
+<td style="text-align: right;">-0.0387</td>
+<td style="text-align: right;">0.0387</td>
+<td style="text-align: left;">1.05e-24</td>
+<td style="text-align: left;">2.41e-23</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Whrn</td>
+<td style="text-align: right;">-0.0386</td>
+<td style="text-align: right;">0.0386</td>
+<td style="text-align: left;">1.24e-24</td>
+<td style="text-align: left;">2.70e-23</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Apod</td>
+<td style="text-align: right;">0.0913</td>
+<td style="text-align: right;">-0.0913</td>
+<td style="text-align: left;">4.27e-130</td>
+<td style="text-align: left;">1.96e-127</td>
+<td style="text-align: right;">458</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tac1</td>
+<td style="text-align: right;">0.0833</td>
+<td style="text-align: right;">-0.0833</td>
+<td style="text-align: left;">1.81e-108</td>
+<td style="text-align: left;">2.76e-106</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Nts</td>
+<td style="text-align: right;">0.0811</td>
+<td style="text-align: right;">-0.0811</td>
+<td style="text-align: left;">6.86e-103</td>
+<td style="text-align: left;">7.85e-101</td>
+<td style="text-align: right;">456</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mbp</td>
+<td style="text-align: right;">0.0582</td>
+<td style="text-align: right;">-0.0582</td>
+<td style="text-align: left;">8.17e-54</td>
+<td style="text-align: left;">6.24e-52</td>
+<td style="text-align: right;">455</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ermn</td>
+<td style="text-align: right;">0.0575</td>
+<td style="text-align: right;">-0.0575</td>
+<td style="text-align: left;">1.30e-52</td>
+<td style="text-align: left;">8.48e-51</td>
+<td style="text-align: right;">454</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tmsb4x</td>
+<td style="text-align: right;">0.0538</td>
+<td style="text-align: right;">-0.0538</td>
+<td style="text-align: left;">3.67e-46</td>
+<td style="text-align: left;">2.10e-44</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Prdx1</td>
+<td style="text-align: right;">0.0494</td>
+<td style="text-align: right;">-0.0494</td>
+<td style="text-align: left;">3.02e-39</td>
+<td style="text-align: left;">1.26e-37</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Serpina3n</td>
+<td style="text-align: right;">0.0461</td>
+<td style="text-align: right;">-0.0461</td>
+<td style="text-align: left;">1.94e-34</td>
+<td style="text-align: left;">6.34e-33</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ptges3</td>
+<td style="text-align: right;">0.0431</td>
+<td style="text-align: right;">-0.0431</td>
+<td style="text-align: left;">3.02e-30</td>
+<td style="text-align: left;">8.64e-29</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cldn11</td>
+<td style="text-align: right;">0.0400</td>
+<td style="text-align: right;">-0.0400</td>
+<td style="text-align: left;">2.63e-26</td>
+<td style="text-align: left;">6.70e-25</td>
+<td style="text-align: right;">449</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_paren_oligo, <span class="st">"Top genes — oligodendrocytes, distance to parenchymal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Top genes — oligodendrocytes, distance to parenchymal</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">gene</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho_flip</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">pval</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">padj</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rank</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">sig</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Cst7</td>
+<td style="text-align: right;">-0.2317</td>
+<td style="text-align: right;">0.2317</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fabp5</td>
+<td style="text-align: right;">-0.1570</td>
+<td style="text-align: right;">0.1570</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ogdhl</td>
+<td style="text-align: right;">-0.1453</td>
+<td style="text-align: right;">0.1453</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ctsb</td>
+<td style="text-align: right;">-0.1429</td>
+<td style="text-align: right;">0.1429</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Serpina3n</td>
+<td style="text-align: right;">-0.1427</td>
+<td style="text-align: right;">0.1427</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ctsd</td>
+<td style="text-align: right;">-0.1413</td>
+<td style="text-align: right;">0.1413</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Gpnmb</td>
+<td style="text-align: right;">-0.1410</td>
+<td style="text-align: right;">0.1410</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: left;">&lt; 1e-300</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">App</td>
+<td style="text-align: right;">-0.1311</td>
+<td style="text-align: right;">0.1311</td>
+<td style="text-align: left;">6.09e-267</td>
+<td style="text-align: left;">3.48e-265</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cd68</td>
+<td style="text-align: right;">-0.1204</td>
+<td style="text-align: right;">0.1204</td>
+<td style="text-align: left;">1.80e-225</td>
+<td style="text-align: left;">8.24e-224</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bcl2a1b</td>
+<td style="text-align: right;">-0.1178</td>
+<td style="text-align: right;">0.1178</td>
+<td style="text-align: left;">8.35e-216</td>
+<td style="text-align: left;">3.48e-214</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">enriched_near</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ubc</td>
+<td style="text-align: right;">0.1279</td>
+<td style="text-align: right;">-0.1279</td>
+<td style="text-align: left;">4.30e-254</td>
+<td style="text-align: left;">2.19e-252</td>
+<td style="text-align: right;">458</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Phgdh</td>
+<td style="text-align: right;">0.1140</td>
+<td style="text-align: right;">-0.1140</td>
+<td style="text-align: left;">4.66e-202</td>
+<td style="text-align: left;">1.78e-200</td>
+<td style="text-align: right;">457</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pygb</td>
+<td style="text-align: right;">0.0921</td>
+<td style="text-align: right;">-0.0921</td>
+<td style="text-align: left;">2.42e-132</td>
+<td style="text-align: left;">4.81e-131</td>
+<td style="text-align: right;">456</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cbs</td>
+<td style="text-align: right;">0.0792</td>
+<td style="text-align: right;">-0.0792</td>
+<td style="text-align: left;">2.86e-98</td>
+<td style="text-align: left;">3.97e-97</td>
+<td style="text-align: right;">455</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aldh2</td>
+<td style="text-align: right;">0.0742</td>
+<td style="text-align: right;">-0.0742</td>
+<td style="text-align: left;">1.69e-86</td>
+<td style="text-align: left;">2.03e-85</td>
+<td style="text-align: right;">454</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gja1</td>
+<td style="text-align: right;">0.0724</td>
+<td style="text-align: right;">-0.0724</td>
+<td style="text-align: left;">2.23e-82</td>
+<td style="text-align: left;">2.49e-81</td>
+<td style="text-align: right;">453</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Clu</td>
+<td style="text-align: right;">0.0717</td>
+<td style="text-align: right;">-0.0717</td>
+<td style="text-align: left;">9.27e-81</td>
+<td style="text-align: left;">1.01e-79</td>
+<td style="text-align: right;">452</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ttr</td>
+<td style="text-align: right;">0.0714</td>
+<td style="text-align: right;">-0.0714</td>
+<td style="text-align: left;">3.35e-80</td>
+<td style="text-align: left;">3.57e-79</td>
+<td style="text-align: right;">451</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Psap</td>
+<td style="text-align: right;">0.0703</td>
+<td style="text-align: right;">-0.0703</td>
+<td style="text-align: left;">9.83e-78</td>
+<td style="text-align: left;">9.79e-77</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chst1</td>
+<td style="text-align: right;">0.0688</td>
+<td style="text-align: right;">-0.0688</td>
+<td style="text-align: left;">1.52e-74</td>
+<td style="text-align: left;">1.48e-73</td>
+<td style="text-align: right;">449</td>
+<td style="text-align: left;">enriched_far</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="venn-diagram-oligodendrocyte-enriched-near-overlap" class="level2">
+<h2 class="anchored" data-anchor-id="venn-diagram-oligodendrocyte-enriched-near-overlap">Venn diagram — oligodendrocyte enriched-near overlap</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>near_caa_oligo   <span class="ot">&lt;-</span> cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>near_paren_oligo <span class="ot">&lt;-</span> cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggVennDiagram</span>(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">CAA =</span> near_caa_oligo, <span class="at">Parenchymal =</span> near_paren_oligo),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_alpha =</span> <span class="dv">0</span>, <span class="at">label =</span> <span class="st">"count"</span>, <span class="at">shape_id =</span> <span class="st">"201"</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Oligodendrocytes — enriched-near genes (padj &lt; 0.05)"</span>) <span class="sc">+</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_distiller</span>(<span class="at">palette =</span> <span class="st">"RdBu"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/oligo-venn-1.svg" class="img-fluid figure-img" width="576"></p>
+<figcaption>Overlap of genes significantly enriched near plaques (padj &lt; 0.05, rho_flip &gt; 0) in oligodendrocytes.</figcaption>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Common enriched-near oligodendrocyte genes (CAA and parenchymal):</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">intersect</span>(near_caa_oligo, near_paren_oligo), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Common enriched-near oligodendrocyte genes (CAA and parenchymal):
+ Slc17a7, Ptgds, Opcml, Slc17a6, Snap25, Extl3, Bhlhe40, Gls, B3gat3, Pvalb, Acly, Pkm, Timp3, Arsb, Cerk, Got1, Ldhb, Mdh1, Cux2, Oxct1, Cox4i1, Glul, Got2, Ogdhl, Hbb-bs, Akt1, Pank3, Chst11, Hk1, Flt1, Cd74, Gns, Tshz2, Uqcrc1, Plcb4, H2-Eb1, Acsl4, Rorb, Hsd11b1, Pdhb, Pmm1, Sgpl1, Gpnmb, Cldn5, Abhd17a, Fezf2, Pdha1, Smpd1, Maf, Sorl1</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="cross-cell-type-comparison" class="level1">
+<h1>Cross-cell-type comparison</h1>
+<section id="astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" class="level2">
+<h2 class="anchored" data-anchor-id="astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes — candidate gene heatmap</h2>
+<p>Visualise the rho_flip values for all DEG_consolidated candidate genes across both cell types and both plaque types in a single heatmap.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>all_candidates <span class="ot">&lt;-</span> <span class="fu">union</span>(astro_candidate_genes, oligo_candidate_genes)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>heatmap_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  cor_caa_astro   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  cor_paren_astro <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gene <span class="sc">%in%</span> all_candidates) <span class="sc">|&gt;</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">facet =</span> <span class="fu">paste</span>(cell_type, plaque, <span class="at">sep =</span> <span class="st">" — "</span>),</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">sig_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span>,</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(heatmap_df, <span class="fu">aes</span>(<span class="at">x =</span> facet, <span class="at">y =</span> gene, <span class="at">fill =</span> rho_flip)) <span class="sc">+</span></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sig_label), <span class="at">size =</span> <span class="dv">4</span>, <span class="at">vjust =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">low  =</span> <span class="st">"#7B68AE"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#E07B39"</span>,</span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">midpoint =</span> <span class="dv">0</span>,</span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"rho_flip</span><span class="sc">\n</span><span class="st">(+ = near plaque)"</span></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Candidate gene-distance correlations"</span>,</span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"* padj &lt; 0.05  ** padj &lt; 0.01  *** padj &lt; 0.001"</span>,</span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/candidate-gene-heatmap-1.svg" class="img-fluid figure-img" width="768"></p>
+<figcaption>Spearman rho_flip for candidate Layer 2 (astrocyte) and Layer 3 (oligodendrocyte) genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Grey fill = gene not tested (&lt; 50 expressing cells).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

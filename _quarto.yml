@@ -13,7 +13,7 @@ website:
         href: index.qmd
       - text: Co-registration
         href: 2_coregistration_Akhil.qmd
-      - text: Gene expression-Distance
+      - text: Expression-Distance correlations
         menu:
           - text: All cell types
             href: 6_gene_distance_correlation.qmd
@@ -25,19 +25,25 @@ website:
           - text: Microglia proximal DE
             href: 8_microglia_proximal_treatment_DE.qmd
           - text: "---"
-          - text: Glia correlations (Layers 2+3)
-            href: 12_glia_gene_distance.qmd
-          - text: Glia proximal DE (Layers 2+3)
-            href: 13_glia_proximal_treatment_DE.qmd
-      - text: Spatial Analysis
+          - text: Astros & Oligos correlations
+            href: 12_gene_distance_correlation_astrocytes_oligos.qmd
+          - text: Astros & Oligos proximal DE
+            href: 13_astro-oligo_proximal_treatment_DE.qmd
+      - text: Autocorrelation
         menu:
           - text: Global autocorrelation
             href: 10_global_spatial_autocorrelation.qmd
+          - text: Spatial co-expression modules
+            href: 10.2_spatial_coexpression_modules.qmd
+          - text: Bivariate Lee's L relay
+            href: 11.5_bivariate_lee_relay.qmd
+      - text: Neighbors & Niches
+        menu:
           - text: Neighborhood enrichment
             href: 11_neighborhood_enrichment.qmd
+          - text: "---"
           - text: Niche pseudobulk treatment
             href: 11.1_niche_pseudobulk_treatment.qmd
-          - text: "---"
           - text: Radial niche profile
             href: 15_radial_niche_profile.qmd
 

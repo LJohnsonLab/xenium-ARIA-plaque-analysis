@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-22">
+
+<title>Bivariate Spatial Cross-Correlation – ThioS Plaque Spatial Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ThioS Plaque Spatial Analysis</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./2_coregistration_Akhil.html"> 
+<span class="menu-text">Co-registration</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Expression-Distance correlations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-expression-distance-correlations">    
+        <li>
+    <a class="dropdown-item" href="./6_gene_distance_correlation.html">
+ <span class="dropdown-text">All cell types</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./6.1_cell_type_distance_ridges.html">
+ <span class="dropdown-text">Cell-type ridge plots</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./7_gene_distance_correlation_microglia.html">
+ <span class="dropdown-text">Microglia correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./8_microglia_proximal_treatment_DE.html">
+ <span class="dropdown-text">Microglia proximal DE</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./12_gene_distance_correlation_astrocytes_oligos.html">
+ <span class="dropdown-text">Astros &amp; Oligos correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./13_astro-oligo_proximal_treatment_DE.html">
+ <span class="dropdown-text">Astros &amp; Oligos proximal DE</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-autocorrelation" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Autocorrelation</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-autocorrelation">    
+        <li>
+    <a class="dropdown-item" href="./10_global_spatial_autocorrelation.html">
+ <span class="dropdown-text">Global autocorrelation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./10.2_spatial_coexpression_modules.html">
+ <span class="dropdown-text">Spatial co-expression modules</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./11.5_bivariate_lee_relay.html">
+ <span class="dropdown-text">Bivariate Lee’s L relay</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-neighbors--niches" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Neighbors &amp; Niches</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-neighbors--niches">    
+        <li>
+    <a class="dropdown-item" href="./11_neighborhood_enrichment.html">
+ <span class="dropdown-text">Neighborhood enrichment</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./11.1_niche_pseudobulk_treatment.html">
+ <span class="dropdown-text">Niche pseudobulk treatment</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./15_radial_niche_profile.html">
+ <span class="dropdown-text">Radial niche profile</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#hypothesis" id="toc-hypothesis" class="nav-link" data-scroll-target="#hypothesis">Hypothesis</a>
+  <ul class="collapse">
+  <li><a href="#gene-selection-rationale" id="toc-gene-selection-rationale" class="nav-link" data-scroll-target="#gene-selection-rationale">Gene selection rationale</a></li>
+  </ul></li>
+  <li><a href="#functions" id="toc-functions" class="nav-link" data-scroll-target="#functions">Functions</a></li>
+  <li><a href="#run-lees-l-per-sample" id="toc-run-lees-l-per-sample" class="nav-link" data-scroll-target="#run-lees-l-per-sample">Run Lee’s L per sample</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#table" id="toc-table" class="nav-link" data-scroll-target="#table">Table</a></li>
+  <li><a href="#dot-plot" id="toc-dot-plot" class="nav-link" data-scroll-target="#dot-plot">Dot plot</a></li>
+  </ul></li>
+  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bivariate Spatial Cross-Correlation</h1>
+<p class="subtitle lead">Lee’s L per sample (brain) for treatment comparison — kNN(15) spatial weights</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 22, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"R/setup.R"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(spdep)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data   <span class="ot">&lt;-</span> <span class="fu">load_slides_and_distances</span>(<span class="st">"full"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>slide1 <span class="ot">&lt;-</span> data<span class="sc">$</span>slide1</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>slide2 <span class="ot">&lt;-</span> data<span class="sc">$</span>slide2</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="do">## Identify cell-types of interest</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ct_astro <span class="ot">&lt;-</span> <span class="st">"Astrocyte"</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ct_oligo <span class="ot">&lt;-</span> <span class="st">"Oligodendrocyte"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ct_micro <span class="ot">&lt;-</span> <span class="st">"Microglia"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="hypothesis" class="level1">
+<h1>Hypothesis</h1>
+<p>The three-layer glial response model proposes a spatial relay: microglia activation (Layer 1) drives astrocyte amplification (Layer 2), which in turn triggers oligodendrocyte remodeling (Layer 3).</p>
+<p>If this relay is spatially structured rather than three independent regional responses, then activated microglia and reactive astrocytes should be spatially co-located: where one finds a microglial <em>Ccl12</em> hotspot, one should also find a <em>Cxcl10</em>-expressing astrocyte hotspot nearby.</p>
+<p><strong>Lee’s L statistic</strong> is the bivariate generalisation of Moran’s I: it quantifies whether two spatial variables are jointly clustered. We use it to test the following pairs:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 20%">
+<col style="width: 13%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Pair</th>
+<th>Gene X</th>
+<th>Cell type X</th>
+<th>Gene Y</th>
+<th>Cell type Y</th>
+<th>Hypothesis</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><em>Ccl12</em></td>
+<td>Microglia</td>
+<td><em>Cxcl10</em></td>
+<td>Astrocytes</td>
+<td>Layer 1 → Layer 2 co-activation</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><em>Cxcl10</em></td>
+<td>Astrocytes</td>
+<td><em>Opcml</em></td>
+<td>Oligodendrocytes</td>
+<td>Layer 2 → Layer 3 relay</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><em>Ccl12</em></td>
+<td>Microglia</td>
+<td><em>Opcml</em></td>
+<td>Oligodendrocytes</td>
+<td>Long-range Layer 1 → Layer 3</td>
+</tr>
+</tbody>
+</table>
+<p>For each pair we create two per-cell expression vectors: the gene’s raw count if the cell belongs to the relevant cell type, zero otherwise. Lee’s L of these two vectors tests whether the spatial patterns are concordant (L &gt; 0) or discordant (L &lt; 0) beyond what is expected by chance. Significance is assessed by Monte Carlo permutation (n = 499 shuffles) while keeping cell coordinates fixed.</p>
+<section id="gene-selection-rationale" class="level2">
+<h2 class="anchored" data-anchor-id="gene-selection-rationale">Gene selection rationale</h2>
+<p>Each gene was chosen as the strongest spatially-validated marker for its layer in this dataset, based on the upstream plaque-proximity and pseudobulk DE analyses:</p>
+<ul>
+<li><p><strong><em>Ccl12</em> (Microglia — Layer 1)</strong>: the most statistically significant gene enriched in the proximity of parenchymal plaques in Aducanumab-treated brains (notebook 8, pseudobulk DESeq2 in plaque-proximal microglia). It also appears as the most cross-regionally consistent microglial signal in the DEG_consolidated regional model, significant in both hippocampus and white matter microglia.</p></li>
+<li><p><strong><em>Cxcl10</em> (Astrocytes — Layer 2)</strong>: a marker of astrocyte subcluster 6, which is expanded in Aducanumab-treated brains relative to IgG controls. <em>Cxcl10</em> encodes an interferon-γ-inducible chemokine (IP-10) produced by reactive astrocytes, linking microglial inflammatory signalling to an astrocyte activation state that is treatment-sensitive. This makes it the most informative astrocyte gene to test for spatial co-localization with microglial <em>Ccl12</em>.</p></li>
+<li><p><strong><em>Opcml</em> (Oligodendrocytes — Layer 3)</strong>: the most statistically significant gene enriched near parenchymal plaques upon Aducanumab treatment in the oligodendrocyte gene-distance correlation analysis (notebook 12). It is an established oligodendrocyte lineage marker and its plaque-proximal upregulation provides the strongest Layer 3 spatial signal in this dataset.</p></li>
+</ul>
+</section>
+</section>
+<section id="functions" class="level1">
+<h1>Functions</h1>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Build a per-cell expression vector for gene G in cell type T:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># value = raw count if cell is of type T, 0 otherwise.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cells_ordered must match the order of nodes in the spatial weight matrix (lw).</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>build_ct_expr_vector <span class="ot">&lt;-</span> <span class="cf">function</span>(seurat_obj, gene, cell_types, <span class="at">cells_ordered =</span> <span class="fu">colnames</span>(seurat_obj)) {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  meta       <span class="ot">&lt;-</span> seurat_obj<span class="sc">@</span>meta.data</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  counts_mat <span class="ot">&lt;-</span> <span class="fu">LayerData</span>(seurat_obj, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(seurat_obj), <span class="at">layer =</span> <span class="st">"counts"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  n    <span class="ot">&lt;-</span> <span class="fu">length</span>(cells_ordered)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  expr <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (gene <span class="sc">%in%</span> <span class="fu">rownames</span>(counts_mat)) {</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    in_mat       <span class="ot">&lt;-</span> cells_ordered <span class="sc">%in%</span> <span class="fu">colnames</span>(counts_mat)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    expr[in_mat] <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(counts_mat[gene, cells_ordered[in_mat]])</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  ct_cells <span class="ot">&lt;-</span> <span class="fu">rownames</span>(meta)[meta<span class="sc">$</span>annotatedclusters <span class="sc">%in%</span> cell_types]</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  expr[<span class="sc">!</span>cells_ordered <span class="sc">%in%</span> ct_cells] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  expr</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run Lee's L with Monte Carlo permutation for one gene pair.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>run_lee <span class="ot">&lt;-</span> <span class="cf">function</span>(seurat_obj, lw, gene_x, ct_x, gene_y, ct_y, <span class="at">nsim =</span> <span class="dv">499</span>) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  lw_cells <span class="ot">&lt;-</span> <span class="fu">attr</span>(lw<span class="sc">$</span>neighbours, <span class="st">"region.id"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">build_ct_expr_vector</span>(seurat_obj, gene_x, ct_x, lw_cells)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">build_ct_expr_vector</span>(seurat_obj, gene_y, ct_y, lw_cells)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">sum</span>(x <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&lt;</span> <span class="dv">10</span> <span class="sc">||</span> <span class="fu">sum</span>(y <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">&lt;</span> <span class="dv">10</span>) {</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">tibble</span>(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">gene_x =</span> gene_x, <span class="at">ct_x =</span> <span class="fu">paste</span>(ct_x, <span class="at">collapse =</span> <span class="st">"/"</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      <span class="at">gene_y =</span> gene_y, <span class="at">ct_y =</span> <span class="fu">paste</span>(ct_y, <span class="at">collapse =</span> <span class="st">"/"</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">lee_L  =</span> <span class="cn">NA_real_</span>, <span class="at">pval =</span> <span class="cn">NA_real_</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      <span class="at">n_x    =</span> <span class="fu">sum</span>(x <span class="sc">&gt;</span> <span class="dv">0</span>), <span class="at">n_y =</span> <span class="fu">sum</span>(y <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  mc_res <span class="ot">&lt;-</span> <span class="fu">lee.mc</span>(x, y, <span class="at">listw =</span> lw, <span class="at">nsim =</span> nsim, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">gene_x =</span> gene_x, <span class="at">ct_x =</span> <span class="fu">paste</span>(ct_x, <span class="at">collapse =</span> <span class="st">"/"</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">gene_y =</span> gene_y, <span class="at">ct_y =</span> <span class="fu">paste</span>(ct_y, <span class="at">collapse =</span> <span class="st">"/"</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">lee_L  =</span> mc_res<span class="sc">$</span>statistic,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">pval   =</span> mc_res<span class="sc">$</span>p.value,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_x    =</span> <span class="fu">sum</span>(x <span class="sc">&gt;</span> <span class="dv">0</span>),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_y    =</span> <span class="fu">sum</span>(y <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="run-lees-l-per-sample" class="level1">
+<h1>Run Lee’s L per sample</h1>
+<p>Each of the 6 brains is processed independently: subset the slide-level Seurat object to one sample’s cells, rebuild a kNN(15) spatial weight matrix from that sample’s cell coordinates, then run Lee’s L for the 3 relay pairs. This gives 18 rows (6 samples x 3 pairs) and enables direct Adu vs IgG comparison (n = 3 per group).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>relay_pairs <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">gene_x =</span> <span class="st">"Ccl12"</span>, <span class="at">ct_x =</span> ct_micro, <span class="at">gene_y =</span> <span class="st">"Cxcl10"</span>, <span class="at">ct_y =</span> ct_astro),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">gene_x =</span> <span class="st">"Cxcl10"</span>, <span class="at">ct_x =</span> ct_astro, <span class="at">gene_y =</span> <span class="st">"Opcml"</span>, <span class="at">ct_y =</span> ct_oligo),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">gene_x =</span> <span class="st">"Ccl12"</span>, <span class="at">ct_x =</span> ct_micro, <span class="at">gene_y =</span> <span class="st">"Opcml"</span>, <span class="at">ct_y =</span> ct_oligo)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>t0 <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>lee_results <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(sample_dict)), \(i) {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  t_start <span class="ot">&lt;-</span> <span class="fu">Sys.time</span>()</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  sid       <span class="ot">&lt;-</span> sample_dict<span class="sc">$</span>sample[i]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  treatment <span class="ot">&lt;-</span> sample_dict<span class="sc">$</span>treatment[i]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  slide_num <span class="ot">&lt;-</span> sample_dict<span class="sc">$</span>slide[i]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  slide_obj <span class="ot">&lt;-</span> <span class="cf">if</span> (slide_num <span class="sc">==</span> <span class="dv">1</span>) slide1 <span class="cf">else</span> slide2</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Subset to this sample's cells</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  cells_i <span class="ot">&lt;-</span> <span class="fu">colnames</span>(slide_obj)[slide_obj<span class="sc">$</span>sample_ID <span class="sc">==</span> sid]</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  sub_obj <span class="ot">&lt;-</span> <span class="fu">subset</span>(slide_obj, <span class="at">cells =</span> cells_i)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Build per-sample kNN(15) spatial weight matrix</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  coords <span class="ot">&lt;-</span> <span class="fu">GetTissueCoordinates</span>(sub_obj) <span class="sc">|&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(x, y) <span class="sc">|&gt;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.matrix</span>()</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  nn      <span class="ot">&lt;-</span> <span class="fu">nn2</span>(coords, coords, <span class="at">k =</span> <span class="dv">16</span>)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  nb_list <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="fu">seq_len</span>(<span class="fu">nrow</span>(coords)), \(j) <span class="fu">as.integer</span>(nn<span class="sc">$</span>nn.idx[j, <span class="sc">-</span><span class="dv">1</span>]))</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">class</span>(nb_list) <span class="ot">&lt;-</span> <span class="st">"nb"</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">attr</span>(nb_list, <span class="st">"region.id"</span>) <span class="ot">&lt;-</span> cells_i</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  lw_i <span class="ot">&lt;-</span> <span class="fu">nb2listw</span>(nb_list, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  res <span class="ot">&lt;-</span> <span class="fu">map</span>(relay_pairs, \(pair) {</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">run_lee</span>(sub_obj, lw_i, pair<span class="sc">$</span>gene_x, pair<span class="sc">$</span>ct_x, pair<span class="sc">$</span>gene_y, pair<span class="sc">$</span>ct_y) <span class="sc">|&gt;</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">sample_ID =</span> sid, <span class="at">treatment =</span> treatment)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  }) <span class="sc">|&gt;</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>()</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  elapsed <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(<span class="fu">Sys.time</span>(), t_start, <span class="at">units =</span> <span class="st">"mins"</span>))</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="fu">sprintf</span>(<span class="st">"[%d/%d] %s (%s) — %.1f min"</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>                  i, <span class="fu">nrow</span>(sample_dict), sid, treatment, elapsed))</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  res</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>()</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a><span class="fu">message</span>(<span class="fu">sprintf</span>(<span class="st">"Done. Total: %.1f min"</span>, <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(<span class="fu">Sys.time</span>(), t0, <span class="at">units =</span> <span class="st">"mins"</span>))))</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(lee_results, "spatial/lee_bivariate.csv")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="results" class="level1 page-columns page-full">
+<h1>Results</h1>
+<section id="table" class="level2">
+<h2 class="anchored" data-anchor-id="table">Table</h2>
+<p><code>n_x</code> and <code>n_y</code> are the number of cells with non-zero raw counts for gene X and gene Y, respectively, <strong>within their designated cell type</strong>. Because the expression vectors are zeroed out for all cells outside the target cell type, these counts reflect only the spatially active signal entering Lee’s L — they are the effective sample sizes for each variable. A very small n (&lt; 10) causes the test to be skipped (reported as NA).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>lee_results <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/lee_bivariate.csv"</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>lee_results <span class="sc">|&gt;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">pair  =</span> <span class="fu">paste0</span>(gene_x, <span class="st">" ("</span>, ct_x, <span class="st">")</span><span class="sc">\n</span><span class="st">× "</span>, gene_y, <span class="st">" ("</span>, ct_y, <span class="st">")"</span>),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">lee_L =</span> <span class="fu">round</span>(lee_L, <span class="dv">4</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">pval  =</span> <span class="fu">formatC</span>(pval, <span class="at">format =</span> <span class="st">"f"</span>, <span class="at">digits =</span> <span class="dv">3</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(pair, sample_ID, treatment, lee_L, pval, n_x, n_y) <span class="sc">|&gt;</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"Bivariate Lee's L — three-layer relay pairs (per sample)"</span>,</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Pair"</span>, <span class="st">"Sample"</span>, <span class="st">"Treatment"</span>, <span class="st">"Lee's L"</span>, <span class="st">"p-value (MC)"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"n_x (expressing cells)"</span>, <span class="st">"n_y (expressing cells)"</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="st">"striped"</span>, <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped caption-top table-sm small">
+<caption>Bivariate Lee's L — three-layer relay pairs (per sample)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Pair</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Sample</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Treatment</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Lee's L</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">p-value (MC)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n_x (expressing cells)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">n_y (expressing cells)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_465</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">0.0069</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">225</td>
+<td style="text-align: right;">272</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_465</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">0.0014</td>
+<td style="text-align: left;">0.004</td>
+<td style="text-align: right;">272</td>
+<td style="text-align: right;">5628</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_465</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">-0.0006</td>
+<td style="text-align: left;">0.418</td>
+<td style="text-align: right;">225</td>
+<td style="text-align: right;">5628</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_492</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">0.0158</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">701</td>
+<td style="text-align: right;">476</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_492</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0040</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">476</td>
+<td style="text-align: right;">6116</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_492</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0044</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">701</td>
+<td style="text-align: right;">6116</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_504</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">0.0202</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">361</td>
+<td style="text-align: right;">466</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_504</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">0.0007</td>
+<td style="text-align: left;">0.020</td>
+<td style="text-align: right;">466</td>
+<td style="text-align: right;">5297</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_504</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">-0.0041</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">361</td>
+<td style="text-align: right;">5297</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_496</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">0.0179</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">411</td>
+<td style="text-align: right;">320</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_496</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">-0.0048</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">320</td>
+<td style="text-align: right;">5600</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_496</td>
+<td style="text-align: left;">IgG</td>
+<td style="text-align: right;">-0.0034</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">411</td>
+<td style="text-align: right;">5600</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_502</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">0.0113</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">371</td>
+<td style="text-align: right;">383</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_502</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0036</td>
+<td style="text-align: left;">0.998</td>
+<td style="text-align: right;">383</td>
+<td style="text-align: right;">5196</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_502</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0033</td>
+<td style="text-align: left;">0.994</td>
+<td style="text-align: right;">371</td>
+<td style="text-align: right;">5196</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Cxcl10 (Astrocyte)</td>
+<td style="text-align: left;">KK4_464</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">0.0253</td>
+<td style="text-align: left;">0.002</td>
+<td style="text-align: right;">720</td>
+<td style="text-align: right;">532</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cxcl10 (Astrocyte) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_464</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0011</td>
+<td style="text-align: left;">0.592</td>
+<td style="text-align: right;">532</td>
+<td style="text-align: right;">5436</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ccl12 (Microglia) × Opcml (Oligodendrocyte)</td>
+<td style="text-align: left;">KK4_464</td>
+<td style="text-align: left;">Adu</td>
+<td style="text-align: right;">-0.0014</td>
+<td style="text-align: left;">0.620</td>
+<td style="text-align: right;">720</td>
+<td style="text-align: right;">5436</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="dot-plot" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="dot-plot">Dot plot</h2>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lee_plot <span class="ot">&lt;-</span> lee_results <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pair =</span> <span class="fu">paste0</span>(gene_x, <span class="st">" ("</span>, ct_x, <span class="st">")</span><span class="sc">\n</span><span class="st">× "</span>, gene_y, <span class="st">" ("</span>, ct_y, <span class="st">")"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">treatment =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"IgG"</span>, <span class="st">"Adu"</span>))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(lee_plot, <span class="fu">aes</span>(<span class="at">x =</span> treatment, <span class="at">y =</span> lee_L, <span class="at">colour =</span> treatment, <span class="at">size =</span> <span class="sc">-</span><span class="fu">log10</span>(pval))) <span class="sc">+</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.1</span>, <span class="at">height =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">stat_summary</span>(<span class="at">fun =</span> mean, <span class="at">geom =</span> <span class="st">"crossbar"</span>, <span class="at">width =</span> <span class="fl">0.4</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">colour =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> pair, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"IgG"</span> <span class="ot">=</span> <span class="st">"#4A90D9"</span>, <span class="st">"Adu"</span> <span class="ot">=</span> <span class="st">"#E07B39"</span>)) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_size_continuous</span>(<span class="at">name =</span> <span class="st">"-log10(p)"</span>, <span class="at">range =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">6</span>)) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">title  =</span> <span class="st">"Bivariate Lee's L "</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x      =</span> <span class="cn">NULL</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y      =</span> <span class="st">"Lee's L"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Treatment"</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">15</span>) <span class="sc">+</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>),</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid.minor =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">#panel.grid.major = element_blank(),</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="quarto-figure quarto-figure-center page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="11.5_bivariate_lee_relay_files/figure-html/lee-results-dotplot-1.svg" class="img-fluid figure-img column-page" width="960"></p>
+<figcaption>Lee’s L per brain, faceted by relay pair. Each point is one brain; colour indicates treatment group. Positive L supports spatial co-activation; dashed line at L = 0 (null). Adu brains above IgG would indicate treatment-enhanced relay coupling.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="interpretation" class="level1">
+<h1>Interpretation</h1>
+<p>Running Lee’s L per sample (brain) rather than per slide enables treatment-level comparison with n = 3 biological replicates per group.</p>
+<p>A <strong>positive and significant Lee’s L</strong> for the <em>Ccl12</em>(microglia) × <em>Cxcl10</em>(astrocyte) pair indicates that regions of microglial <em>Ccl12</em> activation are spatially concordant with <em>Cxcl10</em>-expressing astrocytes — direct spatial evidence for the Layer 1 → Layer 2 relay. A positive L for <em>Cxcl10</em>(astrocyte) × <em>Opcml</em>(oligodendrocyte) supports the Layer 2 → Layer 3 step. If both pairs show L &gt; 0 but the <em>Ccl12</em> × <em>Opcml</em> pair (skipping Layer 2) shows weaker L, this provides spatial evidence for a sequential relay rather than independent parallel responses.</p>
+<p>If Aducanumab-treated brains show consistently higher Lee’s L than IgG controls, this would indicate that anti-amyloid treatment strengthens the spatial coupling between glial response layers — the relay is not merely present but treatment-modulated.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

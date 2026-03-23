@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-08">
+<meta name="dcterms.date" content="2026-03-23">
 
 <title>Project Overview – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -99,10 +99,10 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Co-registration</span></a>
   </li>  
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-gene-expression-distance" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Gene expression-Distance</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Expression-Distance correlations</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-gene-expression-distance">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-expression-distance-correlations">    
         <li>
     <a class="dropdown-item" href="./6_gene_distance_correlation.html">
  <span class="dropdown-text">All cell types</span></a>
@@ -120,20 +120,53 @@ ul.task-list li input[type="checkbox"] {
     <a class="dropdown-item" href="./8_microglia_proximal_treatment_DE.html">
  <span class="dropdown-text">Microglia proximal DE</span></a>
   </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./12_gene_distance_correlation_astrocytes_oligos.html">
+ <span class="dropdown-text">Astros &amp; Oligos correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./13_astro-oligo_proximal_treatment_DE.html">
+ <span class="dropdown-text">Astros &amp; Oligos proximal DE</span></a>
+  </li>  
     </ul>
   </li>
   <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-spatial-analysis" role="link" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">Spatial Analysis</span>
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-autocorrelation" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Autocorrelation</span>
     </a>
-    <ul class="dropdown-menu" aria-labelledby="nav-menu-spatial-analysis">    
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-autocorrelation">    
         <li>
     <a class="dropdown-item" href="./10_global_spatial_autocorrelation.html">
  <span class="dropdown-text">Global autocorrelation</span></a>
   </li>  
         <li>
+    <a class="dropdown-item" href="./10.2_spatial_coexpression_modules.html">
+ <span class="dropdown-text">Spatial co-expression modules</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./11.5_bivariate_lee_relay.html">
+ <span class="dropdown-text">Bivariate Lee’s L relay</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-neighbors--niches" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Neighbors &amp; Niches</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-neighbors--niches">    
+        <li>
     <a class="dropdown-item" href="./11_neighborhood_enrichment.html">
  <span class="dropdown-text">Neighborhood enrichment</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./11.1_niche_pseudobulk_treatment.html">
+ <span class="dropdown-text">Niche pseudobulk treatment</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./15_radial_niche_profile.html">
+ <span class="dropdown-text">Radial niche profile</span></a>
   </li>  
     </ul>
   </li>
@@ -148,8 +181,14 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#methodological-note-halo-plaque-fragmentation" id="toc-methodological-note-halo-plaque-fragmentation" class="nav-link active" data-scroll-target="#methodological-note-halo-plaque-fragmentation">Methodological note: HALO plaque fragmentation</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -168,7 +207,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 8, 2026</p>
+      <p class="date">March 23, 2026</p>
     </div>
   </div>
   
@@ -185,8 +224,19 @@ ul.task-list li input[type="checkbox"] {
 <p>Co-registration of HALO annotations with the Xenium coordinate system is performed by computing plaque centroids from bounding-box coordinates and converting pixel units to micrometres (factor 0.2125 µm/pixel). Cell-to-plaque distances are calculated for all detected cells using k-d trees (<code>RANN::nn2</code>), and cells are stratified into proximal (&lt; 50 µm) and distal (≥ 50 µm) compartments relative to CAA and parenchymal plaques separately.</p>
 <p>Spearman rank correlations between normalised gene expression and continuous plaque-distance values (sign-flipped so that positive rho indicates enrichment near plaques) are computed across all 22 annotated cell types and within the microglia subset. Pseudobulk differential expression (DESeq2 Wald test, aggregated per brain) compares Aducanumab-treated and IgG-control microglia in plaque-proximal versus plaque-distal compartments. Additional spatial analyses include multi-plaque neighbourhood modelling to disentangle proximity from local plaque density, global spatial autocorrelation via Moran’s I and Geary’s C (spdep, kNN-15 weights), and cell-type neighbourhood enrichment near plaques using Giotto Suite.</p>
 <p>Taken together, these analyses provide a systematic, quantitative account of how plaque proximity and Aducanumab treatment jointly shape transcriptional states across cell types in the Alzheimer’s disease brain, with particular emphasis on microglial reactivity at the two distinct plaque compartments.</p>
+<section id="methodological-note-halo-plaque-fragmentation" class="level2">
+<h2 class="anchored" data-anchor-id="methodological-note-halo-plaque-fragmentation">Methodological note: HALO plaque fragmentation</h2>
+<p>A known limitation of threshold-based fluorescence segmenters such as HALO is that a single biological plaque can be reported as multiple distinct objects (<em>fragments</em>) when local intensity minima within the plaque fall below the detection threshold, or when tissue folds introduce dark bands across the signal. In this dataset each HALO row is treated as an independent plaque unit, so a heavily fragmented plaque contributes several closely-spaced centroids to the reference set used by <code>RANN::nn2</code>.</p>
+<p>This has three principal consequences for the analyses:</p>
+<ol type="1">
+<li><p><strong>Distance underestimation.</strong> Cells near a fragmented plaque are assigned to the nearest fragment centroid rather than to the biological plaque centre, systematically reducing their computed distance. The effect is strongest for high-burden brains where fragmentation is most prevalent.</p></li>
+<li><p><strong>Attenuation of gene-distance correlations.</strong> The compressed distance ranks increase within-group variance without shifting the mean, attenuating Spearman rho toward zero. Reported enrichment signals (e.g.&nbsp;Module 6, DAM genes near parenchymal plaques) are therefore conservative underestimates of the true plaque-proximity effect.</p></li>
+<li><p><strong>Proximal-group contamination.</strong> The 50 µm proximity threshold admits cells that are biologically distal but within range of a fragment centroid, diluting the transcriptional contrast in pseudobulk DE comparisons.</p></li>
+</ol>
+<p>Permutation-based tests (where cell-type labels are shuffled against a fixed spatial graph) are not affected by these distance artefacts, because the null distribution inherits the same fragmentation structure as the real data. However, the absolute distance values, Spearman rho estimates, and proximal/distal group assignments used elsewhere should be interpreted with this caveat in mind. Potential mitigations — fragment merging via DBSCAN or complete-linkage clustering, or conversion to a continuous plaque-density covariate (C-SIDE approach) — are documented in <code>notebooklm/halo_plaque_fragmentation.md</code>.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
