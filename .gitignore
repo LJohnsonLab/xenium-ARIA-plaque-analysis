@@ -41,3 +41,5 @@ notebooklm/*
 
 /.quarto/
 **/*.quarto_ipynb
+
+giotto_setup.md

@@ -1,0 +1,2030 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-03-23">
+
+<title>Spatial co-expression modules – ThioS Plaque Spatial Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">ThioS Plaque Spatial Analysis</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./2_coregistration_Akhil.html"> 
+<span class="menu-text">Co-registration</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Expression-Distance correlations</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-expression-distance-correlations">    
+        <li>
+    <a class="dropdown-item" href="./6_gene_distance_correlation.html">
+ <span class="dropdown-text">All cell types</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./6.1_cell_type_distance_ridges.html">
+ <span class="dropdown-text">Cell-type ridge plots</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./7_gene_distance_correlation_microglia.html">
+ <span class="dropdown-text">Microglia correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./8_microglia_proximal_treatment_DE.html">
+ <span class="dropdown-text">Microglia proximal DE</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./12_gene_distance_correlation_astrocytes_oligos.html">
+ <span class="dropdown-text">Astros &amp; Oligos correlations</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./13_astro-oligo_proximal_treatment_DE.html">
+ <span class="dropdown-text">Astros &amp; Oligos proximal DE</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-autocorrelation" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Autocorrelation</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-autocorrelation">    
+        <li>
+    <a class="dropdown-item" href="./10_global_spatial_autocorrelation.html">
+ <span class="dropdown-text">Global autocorrelation</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./10.2_spatial_coexpression_modules.html">
+ <span class="dropdown-text">Spatial co-expression modules</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./11.5_bivariate_lee_relay.html">
+ <span class="dropdown-text">Bivariate Lee’s L relay</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-neighbors--niches" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Neighbors &amp; Niches</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-neighbors--niches">    
+        <li>
+    <a class="dropdown-item" href="./11_neighborhood_enrichment.html">
+ <span class="dropdown-text">Neighborhood enrichment</span></a>
+  </li>  
+        <li><hr class="dropdown-divider"></li>
+        <li>
+    <a class="dropdown-item" href="./11.1_niche_pseudobulk_treatment.html">
+ <span class="dropdown-text">Niche pseudobulk treatment</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./15_radial_niche_profile.html">
+ <span class="dropdown-text">Radial niche profile</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#giotto-issues" id="toc-giotto-issues" class="nav-link" data-scroll-target="#giotto-issues">Giotto issues</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#module-overview" id="toc-module-overview" class="nav-link" data-scroll-target="#module-overview">Module overview</a></li>
+  <li><a href="#plaque-type-association" id="toc-plaque-type-association" class="nav-link" data-scroll-target="#plaque-type-association">Plaque-type association</a></li>
+  <li><a href="#sec-treatment" id="toc-sec-treatment" class="nav-link" data-scroll-target="#sec-treatment">Treatment effect (Adu vs IgG)</a></li>
+  <li><a href="#sec-characterisation" id="toc-sec-characterisation" class="nav-link" data-scroll-target="#sec-characterisation">Module characterization</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Spatial co-expression modules</h1>
+<p class="subtitle lead">Module detection, plaque-type association, treatment effects, and module characterization</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 23, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="background" class="level2">
+<h2 class="anchored" data-anchor-id="background">Background</h2>
+<p>Genes that are individually spatially autocorrelated often co-vary across space in coherent groups, reflecting shared regulatory context: cell-type co-localisation, shared niche signals, or co-expressed gene programs. Detecting such groups requires computing gene–gene spatial correlations that account for the physical layout of cells in tissue, rather than simple Pearson or Spearman correlations across cells.</p>
+<p>We implemented this analysis using the <strong>Giotto Suite</strong> package <span class="citation" data-cites="dries2021giotto">[@dries2021giotto]</span>, which provides a dedicated spatial co-expression workflow built on three functions:</p>
+<ul>
+<li><p><code>detectSpatialCorFeats()</code> computes spatially smoothed gene–gene correlations by averaging expression over each cell’s neighbourhood on the Delaunay triangulation network, then computing pairwise correlations on those smoothed profiles — a process that weights co-expression by spatial proximity.</p></li>
+<li><p><code>clusterSpatialCorFeats()</code> groups genes into co-expression modules by hierarchical clustering on the resulting gene–gene correlation matrix.</p></li>
+<li><p><code>createMetafeats()</code> is then intended to summarise each module as a single per-cell metagene score (the mean normalised expression of the module’s member genes), which can be related back to spatial coordinates, cell-type annotations, and plaque distances.</p></li>
+</ul>
+<p>This notebook addresses three questions:</p>
+<ol type="1">
+<li><strong>Plaque-type association</strong> — Are spatial programs associated specifically with CAA (vascular amyloid), parenchymal plaques, or both?</li>
+<li><strong>Treatment effect</strong> — Do Aducanumab-treated brains show different module–plaque associations compared with IgG controls?</li>
+<li><strong>Module characterisation</strong> — What genes define each module, and which cell types drive it?</li>
+</ol>
+</section>
+<section id="giotto-issues" class="level2">
+<h2 class="anchored" data-anchor-id="giotto-issues">Giotto issues</h2>
+<p>Giotto’s spatial co-expression workflow is partially broken across its v1 → v2 → GiottoClass/v3 migration. The code in this notebook deviates from the documented API in several places. This section records every workaround so that future debugging is not done from scratch.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Documented behaviour</th>
+<th>Actual behaviour</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>detectSpatialCorFeats</code></td>
+<td>Returns updated giotto object with spatCorObject stored inside</td>
+<td>Returns a bare <code>spatCorObject</code>; assigning back to the giotto variable destroys it</td>
+<td>Store return in a separate variable (<code>spat_cor1</code>); keep giotto object untouched</td>
+</tr>
+<tr class="even">
+<td><code>clusterSpatialCorFeats</code></td>
+<td>Called on the giotto object</td>
+<td>Must be called on the <code>spatCorObject</code> directly</td>
+<td>Pass <code>spat_cor1</code>, not <code>giotto1</code></td>
+</tr>
+<tr class="odd">
+<td><code>createMetafeats</code> — <code>spat_cor_matrix</code> arg</td>
+<td><code>spat_cor_matrix = spat_cor1</code> passes the spatCorObject</td>
+<td>Parameter does not exist → <em>unused argument</em> error</td>
+<td>Removed; cluster vector passed directly</td>
+</tr>
+<tr class="even">
+<td><code>createMetafeats</code> — <code>feat_clusters</code> arg</td>
+<td><code>feat_clusters = "spat_cor_feats"</code> (string name)</td>
+<td>String lookup fails; requires the actual named integer vector</td>
+<td>Extract manually: <code>spat_cor1$cor_clusters$spat_cor_feats</code></td>
+</tr>
+<tr class="odd">
+<td><code>getSpatialCorFeats</code></td>
+<td>Retrieves spatCorObject from within the giotto object</td>
+<td>Fails — spatCorObject is never stored inside the giotto object</td>
+<td>Abandoned; <code>spat_cor1</code> saved to disk separately and loaded directly</td>
+</tr>
+<tr class="even">
+<td><code>getExpression</code></td>
+<td><code>getExpression(giotto1, ...)</code></td>
+<td><code>future::getExpression</code> masks <code>Giotto::getExpression</code> when <code>future</code> is loaded, dispatching to the wrong method</td>
+<td>Use explicit namespace: <code>Giotto::getExpression()</code></td>
+</tr>
+<tr class="odd">
+<td>Zero-variance gene filter</td>
+<td>Not required by docs</td>
+<td><code>stats::cor()</code> returns NA for zero-variance genes → <code>hclust</code> crashes with <em>NA/NaN/Inf in foreign function call</em></td>
+<td>Filter genes with <code>apply(expr, 1, var) &gt; 0</code> before calling <code>detectSpatialCorFeats</code></td>
+</tr>
+<tr class="even">
+<td><code>createMetafeats</code> — persistence</td>
+<td>Metagene scores stored in expression or metadata slots of the giotto object</td>
+<td>After saving and reloading the giotto object, neither <code>showGiottoExpression()</code> nor <code>getCellMetadata()</code> shows the scores — <code>feat_type = "spatial_modules"</code> does not exist</td>
+<td>Recompute manually: <code>Matrix::colMeans</code> over normalised expression matrix for each module’s gene set</td>
+</tr>
+<tr class="odd">
+<td><code>getExpression</code> — <code>feat_type = "spatial_modules"</code></td>
+<td><code>values = "normalized"</code> retrieves stored metagene scores</td>
+<td>Fails: <em>Normalized expression not found. First run normalization step</em> — even <code>values = "raw"</code> fails because the feat_type was never written</td>
+<td>Abandoned; metagene scores recomputed directly from expression matrix</td>
+</tr>
+<tr class="even">
+<td><code>cor_DT$variable</code> type</td>
+<td>Character gene names</td>
+<td>Stored as factor or integer; direct string joins fail silently</td>
+<td>Coerce before joining: <code>mutate(variable = as.character(variable))</code></td>
+</tr>
+<tr class="odd">
+<td><code>as_tibble()</code> on transposed metagene matrix</td>
+<td>Numeric column names preserved</td>
+<td>R prefixes purely-numeric column names with <code>"V"</code> (e.g.&nbsp;module <code>1</code> becomes <code>"V1"</code>), breaking integer joins downstream</td>
+<td>Strip prefix when needed: <code>as.integer(sub("^V", "", module))</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>5 of 7 core functions or operations required undocumented workarounds.</strong> The <code>spatCorObject</code> internal structure (<code>$cor_clusters$&lt;name&gt;</code>) was reverse-engineered from <code>str()</code> output. The root cause is an incomplete API migration across Giotto versions with no deprecation warnings or updated vignettes.</p>
+</section>
+<section id="setup" class="level2">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"R/setup.R"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Giotto)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>data               <span class="ot">&lt;-</span> <span class="fu">load_slides_and_distances</span>(<span class="st">"full"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>slide1             <span class="ot">&lt;-</span> data<span class="sc">$</span>slide1</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>slide2             <span class="ot">&lt;-</span> data<span class="sc">$</span>slide2</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>cell_distances_all <span class="ot">&lt;-</span> data<span class="sc">$</span>distances_all</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>giotto1     <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/giotto1_modules.qs2"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>giotto2     <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/giotto2_modules.qs2"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>spat_cor1   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/spat_cor1.qs2"</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>spat_cor2   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/spat_cor2.qs2"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>mod_unified <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/mod_unified.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>cor_DT_avg  <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/cor_DT_avg.csv"</span>,  <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>cor_any   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/cor_any.qs2"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>cor_caa   <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/cor_caa.csv"</span>,   <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>cor_paren <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/cor_paren.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gene-distance correlation helper.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Computes Spearman rho between expression rank and distance rank across all</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># cells, then flips the sign so rho_flip &gt; 0 means enriched near plaques.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>compute_gene_distance_correlation <span class="ot">&lt;-</span> <span class="cf">function</span>(seurat_list, distances,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                              distance_col,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                              <span class="at">min_expressing_cells =</span> <span class="dv">5</span>) {</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">lapply</span>(seurat_list, \(s)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">LayerData</span>(s, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(s), <span class="at">layer =</span> <span class="st">"counts"</span>)))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  shared_cells <span class="ot">&lt;-</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(counts), distances<span class="sc">$</span>cell)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  counts       <span class="ot">&lt;-</span> counts[, shared_cells]</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  dist_vec <span class="ot">&lt;-</span> distances <span class="sc">|&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(cell <span class="sc">%in%</span> shared_cells) <span class="sc">|&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">match</span>(cell, shared_cells)) <span class="sc">|&gt;</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(<span class="sc">!!</span><span class="fu">sym</span>(distance_col))</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  n_expressing <span class="ot">&lt;-</span> Matrix<span class="sc">::</span><span class="fu">rowSums</span>(counts <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  keep   <span class="ot">&lt;-</span> n_expressing <span class="sc">&gt;=</span> min_expressing_cells</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> counts[keep, ]</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  n          <span class="ot">&lt;-</span> <span class="fu">ncol</span>(counts)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  expr_ranks <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">as.matrix</span>(counts), <span class="dv">1</span>, rank)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  dist_rank  <span class="ot">&lt;-</span> <span class="fu">rank</span>(dist_vec)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  rho_vec    <span class="ot">&lt;-</span> <span class="fu">cor</span>(expr_ranks, dist_rank)[, <span class="dv">1</span>]</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  t_stat     <span class="ot">&lt;-</span> rho_vec <span class="sc">*</span> <span class="fu">sqrt</span>((n <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> rho_vec<span class="sc">^</span><span class="dv">2</span>))</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  pval_vec   <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(<span class="fu">abs</span>(t_stat), <span class="at">df =</span> n <span class="sc">-</span> <span class="dv">2</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">gene =</span> <span class="fu">names</span>(rho_vec), <span class="at">rho =</span> rho_vec, <span class="at">pval =</span> pval_vec) <span class="sc">|&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>      <span class="at">padj     =</span> <span class="fu">p.adjust</span>(pval, <span class="at">method =</span> <span class="st">"BH"</span>),</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>      <span class="at">rho_flip =</span> <span class="sc">-</span>rho,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>      <span class="at">sig      =</span> <span class="fu">case_when</span>(</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_near"</span>,</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_far"</span>,</span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>                        <span class="sc">~</span> <span class="st">"ns"</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Module detection ##################################################################</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>Run this chunk once to compute spatial correlations, cluster genes into modules, add metagene scores to the Giotto objects, and save all outputs to disk. All subsequent sections load from those saved files. See the Giotto API notes above <span class="cf">for</span> why each workaround is needed.</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="do">#######################################################################################</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"R/setup.R"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Slide 1 ──────────────────────────────────────────────────────────────────</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>giotto1     <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/giotto1.qs2"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>expr1       <span class="ot">&lt;-</span> Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto1, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Zero-variance genes produce NA correlations → hclust crashes; remove them first.</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>keep_feats1 <span class="ot">&lt;-</span> <span class="fu">rownames</span>(expr1)[<span class="fu">apply</span>(expr1, <span class="dv">1</span>, var) <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>spat_cor1 <span class="ot">&lt;-</span> <span class="fu">detectSpatialCorFeats</span>(</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  giotto1,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">method               =</span> <span class="st">"network"</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">spatial_network_name =</span> <span class="st">"delaunay"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">expression_values    =</span> <span class="st">"normalized"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">subset_feats         =</span> keep_feats1</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># clusterSpatialCorFeats takes the spatCorObject, not the giotto object.</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>spat_cor1 <span class="ot">&lt;-</span> <span class="fu">clusterSpatialCorFeats</span>(spat_cor1, <span class="at">name =</span> <span class="st">"spat_cor_feats"</span>, <span class="at">k =</span> <span class="dv">6</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># feat_clusters must be the actual named integer vector, not a string name.</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>giotto1 <span class="ot">&lt;-</span> <span class="fu">createMetafeats</span>(giotto1,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>                            <span class="at">feat_clusters =</span> spat_cor1<span class="sc">$</span>cor_clusters<span class="sc">$</span>spat_cor_feats,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>                            <span class="at">name =</span> <span class="st">"spatial_modules"</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Slide 2 ──────────────────────────────────────────────────────────────────</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>giotto2     <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/giotto2.qs2"</span>)</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>expr2       <span class="ot">&lt;-</span> Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto2, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>keep_feats2 <span class="ot">&lt;-</span> <span class="fu">rownames</span>(expr2)[<span class="fu">apply</span>(expr2, <span class="dv">1</span>, var) <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>spat_cor2 <span class="ot">&lt;-</span> <span class="fu">detectSpatialCorFeats</span>(</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  giotto2,</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>  <span class="at">method               =</span> <span class="st">"network"</span>,</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="at">spatial_network_name =</span> <span class="st">"delaunay"</span>,</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  <span class="at">expression_values    =</span> <span class="st">"normalized"</span>,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  <span class="at">subset_feats         =</span> keep_feats2</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>spat_cor2 <span class="ot">&lt;-</span> <span class="fu">clusterSpatialCorFeats</span>(spat_cor2, <span class="at">name =</span> <span class="st">"spat_cor_feats"</span>, <span class="at">k =</span> <span class="dv">6</span>)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>giotto2 <span class="ot">&lt;-</span> <span class="fu">createMetafeats</span>(giotto2,</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>                            <span class="at">feat_clusters =</span> spat_cor2<span class="sc">$</span>cor_clusters<span class="sc">$</span>spat_cor_feats,</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>                            <span class="at">name =</span> <span class="st">"spatial_modules"</span>)</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Unified modules (average spatial correlations across both slides) ─────────</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="co"># Running detection independently per slide produces non-comparable module labels.</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co"># We average the pairwise spatial correlation tables, recluster, and derive a</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="co"># single gene→module mapping used by all downstream sections.</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>cor_DT_avg <span class="ot">&lt;-</span> <span class="fu">full_join</span>(</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(spat_cor1<span class="sc">$</span>cor_DT) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">variable =</span> <span class="fu">as.character</span>(variable)),</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(spat_cor2<span class="sc">$</span>cor_DT) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">variable =</span> <span class="fu">as.character</span>(variable)),</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  <span class="at">by      =</span> <span class="fu">c</span>(<span class="st">"feat_ID"</span>, <span class="st">"variable"</span>),</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="at">suffix  =</span> <span class="fu">c</span>(<span class="st">"_1"</span>, <span class="st">"_2"</span>)</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">spat_cor =</span> <span class="fu">rowMeans</span>(<span class="fu">cbind</span>(spat_cor_1, spat_cor_2), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(feat_ID, variable, spat_cor)</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Rebuild a symmetric gene×gene matrix and cluster with hclust (ward.D2).</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>all_genes   <span class="ot">&lt;-</span> <span class="fu">union</span>(cor_DT_avg<span class="sc">$</span>feat_ID, cor_DT_avg<span class="sc">$</span>variable)</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>avg_mat     <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, <span class="at">nrow =</span> <span class="fu">length</span>(all_genes), <span class="at">ncol =</span> <span class="fu">length</span>(all_genes),</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>                      <span class="at">dimnames =</span> <span class="fu">list</span>(all_genes, all_genes))</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="fu">diag</span>(avg_mat) <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(cor_DT_avg))) {</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>  g1 <span class="ot">&lt;-</span> cor_DT_avg<span class="sc">$</span>feat_ID[i]; g2 <span class="ot">&lt;-</span> cor_DT_avg<span class="sc">$</span>variable[i]</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>  v  <span class="ot">&lt;-</span> cor_DT_avg<span class="sc">$</span>spat_cor[i]</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>  avg_mat[g1, g2] <span class="ot">&lt;-</span> v; avg_mat[g2, g1] <span class="ot">&lt;-</span> v</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>hc              <span class="ot">&lt;-</span> <span class="fu">hclust</span>(<span class="fu">as.dist</span>(<span class="dv">1</span> <span class="sc">-</span> avg_mat), <span class="at">method =</span> <span class="st">"ward.D2"</span>)</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>unified_clusters <span class="ot">&lt;-</span> <span class="fu">cutree</span>(hc, <span class="at">k =</span> <span class="dv">6</span>)</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>mod_unified <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene   =</span> <span class="fu">names</span>(unified_clusters),</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  <span class="at">module =</span> <span class="fu">as.integer</span>(unified_clusters)</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a><span class="co"># ── Save to disk ──────────────────────────────────────────────────────────────</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto1, <span class="st">"spatial/giotto1_modules.qs2"</span>)</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto2, <span class="st">"spatial/giotto2_modules.qs2"</span>)</span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a><span class="co"># spatCorObjects are not stored inside giotto objects in this Giotto version;</span></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="co"># save them separately so downstream sections can load them directly.</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(spat_cor1, <span class="st">"spatial/spat_cor1.qs2"</span>)</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(spat_cor2, <span class="st">"spatial/spat_cor2.qs2"</span>)</span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(mod_unified, <span class="st">"spatial/mod_unified.csv"</span>)</span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(cor_DT_avg,  <span class="st">"spatial/cor_DT_avg.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+<section id="module-overview" class="level2">
+<h2 class="anchored" data-anchor-id="module-overview">Module overview</h2>
+<p>Spatial correlations were computed per slide using each slide’s Delaunay triangulation network, then the pairwise gene–gene correlation tables were averaged across both slides to produce a single consensus correlation matrix. This pooling step ensures that module identities reflect spatial co-expression structure common to both tissue sections rather than being biased by the spatial layout of one slide.</p>
+<p>Modules were then defined by Ward’s minimum-variance hierarchical clustering on this averaged matrix. Hierarchical clustering operates on a dissimilarity matrix derived from the correlations (distance = 1 − rho), and at each step merges the pair of clusters whose combination minimises the total within-cluster variance (Ward’s D2 criterion). The algorithm produces a full dendrogram — a nested tree of gene groupings ordered from the most tightly correlated pairs at the bottom to the full gene set at the top. Cutting the dendrogram at k = 6 partitions all genes into six groups such that genes within the same group have high average pairwise spatial correlation with each other, and low correlation with genes in other groups. The choice of k = 6 was made to yield biologically interpretable modules without over-fragmenting the panel; a larger k would split existing modules into sub-programs, while a smaller k would merge biologically distinct programs. The bar chart below shows how many genes are assigned to each module.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mod_unified <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(module) <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="fu">factor</span>(module), n)) <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">fill =</span> <span class="st">"#1f77b4"</span>) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Module"</span>, <span class="at">y =</span> <span class="st">"Number of genes"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Genes per unified spatial co-expression module"</span>) <span class="sc">+</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">11</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="10.2_spatial_coexpression_modules_files/figure-html/module-counts-1.svg" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Hierarchical clustering on the slide-averaged spatial correlation matrix partitioned the 474-gene Xenium panel into six modules ranging in size from 41 to 155 genes (Modules 1 and 6 being the most compact, Module 2 the largest). Module sizes reflect the intrinsic co-expression topology of the tissue rather than an artefact of a single sample, since the correlation structure was averaged across both slides before clustering. The tight modules (1 and 6) contain genes with high pairwise spatial correlations (mean within-module rho &gt; 0.45), indicative of strong spatial co-localisation, whereas the larger Module 2 has markedly lower within-module correlations (mean rho ≈ 0.05–0.07), suggesting a more diffuse or heterogeneous spatial pattern. Gene set identity of each module is discussed in the <strong>Module characterisation</strong> section below.</p>
+</section>
+<section id="plaque-type-association" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="plaque-type-association">Plaque-type association</h2>
+<p>To determine whether spatial programs are specifically associated with CAA, parenchymal plaques, or both, we compute Spearman gene-distance correlations for <code>dist_any</code>, <code>dist_caa</code>, and <code>dist_paren</code> (all pre-computed once and loaded from disk above). The sign is flipped so rho_flip &gt; 0 means enriched near that plaque type. We then overlay each gene’s module membership with its rho_flip for all three distance types.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cor_caa   <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1, slide2), cell_distances_all, <span class="at">distance_col =</span> <span class="st">"dist_caa"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>cor_paren <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1, slide2), cell_distances_all, <span class="at">distance_col =</span> <span class="st">"dist_paren"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(cor_caa,   <span class="st">"spatial/cor_caa.csv"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(cor_paren, <span class="st">"spatial/cor_paren.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine all three distance types into a single long table for faceting.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>plaque_type_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  mod_unified <span class="sc">|&gt;</span> <span class="fu">left_join</span>(cor_any   <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, rho_flip), <span class="at">by =</span> <span class="st">"gene"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"Any"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  mod_unified <span class="sc">|&gt;</span> <span class="fu">left_join</span>(cor_caa   <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, rho_flip), <span class="at">by =</span> <span class="st">"gene"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  mod_unified <span class="sc">|&gt;</span> <span class="fu">left_join</span>(cor_paren <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, rho_flip), <span class="at">by =</span> <span class="st">"gene"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(rho_flip)) <span class="sc">|&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="fu">factor</span>(plaque, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Any"</span>, <span class="st">"CAA"</span>, <span class="st">"Parenchymal"</span>)))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plaque_type_df,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(module), <span class="at">y =</span> rho_flip, <span class="at">fill =</span> plaque)) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.size =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.75</span>,</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>               <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.8</span>), <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="at">Any =</span> <span class="st">"grey60"</span>, <span class="at">CAA =</span> <span class="st">"#d62728"</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>                                <span class="at">Parenchymal =</span> <span class="st">"#1f77b4"</span>)) <span class="sc">+</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Plaque-type association by spatial co-expression module"</span>,</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"rho_flip &gt; 0: enriched near that plaque type"</span>,</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Spatial module"</span>, <span class="at">y =</span> <span class="st">"Spearman rho (flipped)"</span>, <span class="at">fill =</span> <span class="st">"Plaque type"</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="10.2_spatial_coexpression_modules_files/figure-html/plaque-type-module-plot-1.svg" class="img-fluid figure-img column-page" width="1152"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plaque_type_df <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(module, plaque) <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_genes      =</span> <span class="fu">n</span>(),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_rho   =</span> <span class="fu">median</span>(rho_flip, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">pct_enriched =</span> <span class="fu">mean</span>(rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">*</span> <span class="dv">100</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(plaque, module) <span class="sc">|&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Module"</span>, <span class="st">"Plaque type"</span>, <span class="st">"N genes"</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"Median rho_flip"</span>, <span class="st">"% enriched near"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"condensed"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collapse_rows</span>(<span class="at">columns =</span> <span class="dv">2</span>, <span class="at">valign =</span> <span class="st">"top"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">Module</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Plaque type</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">N genes</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Median rho_flip</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">% enriched near</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td rowspan="6" style="text-align: left; vertical-align: top !important;">Any</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">0.021</td>
+<td style="text-align: right;">68.293</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">146</td>
+<td style="text-align: right;">-0.013</td>
+<td style="text-align: right;">34.247</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">-0.074</td>
+<td style="text-align: right;">1.905</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">-0.027</td>
+<td style="text-align: right;">20.755</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">0.022</td>
+<td style="text-align: right;">80.952</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">0.119</td>
+<td style="text-align: right;">100.000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td rowspan="6" style="text-align: left; vertical-align: top !important;">CAA</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">-0.052</td>
+<td style="text-align: right;">9.756</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">155</td>
+<td style="text-align: right;">-0.002</td>
+<td style="text-align: right;">45.161</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">68.571</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">-0.007</td>
+<td style="text-align: right;">35.849</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">0.026</td>
+<td style="text-align: right;">92.063</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">-0.009</td>
+<td style="text-align: right;">17.647</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td rowspan="6" style="text-align: left; vertical-align: top !important;">Parenchymal</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">0.031</td>
+<td style="text-align: right;">68.293</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">155</td>
+<td style="text-align: right;">-0.010</td>
+<td style="text-align: right;">36.774</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">-0.060</td>
+<td style="text-align: right;">4.762</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">-0.034</td>
+<td style="text-align: right;">16.981</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">-0.008</td>
+<td style="text-align: right;">39.683</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">0.107</td>
+<td style="text-align: right;">98.039</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The plaque-type association analysis reveals a clear functional dissociation between the two amyloid lesion subtypes.</p>
+<p><strong>Module 6</strong>, defined by canonical microglial genes (<em>Cx3cr1</em>, <em>Trem2</em>, <em>C1qa/c</em>, <em>P2ry12</em>, <em>Hexb</em>). displays the strongest spatial enrichment of any module near plaques (median rho_flip = 0.119 for any plaque), and this response is almost entirely attributable to parenchymal amyloid (rho_paren = 0.107) rather than CAA (rho_CAA = −0.009). Conversely, <strong>Module 5</strong>, characterized by vascular and extracellular matrix genes (<em>Flt1</em>, <em>Mgp</em>, <em>Vtn</em>, <em>Col1a2</em>, <em>Timp3</em>) together with the interferon-stimulated transmembrane proteins <em>Ifitm2</em> and <em>Ifitm3</em>, shows a modest but consistent selectivity for CAA (rho_CAA = 0.026, rho_paren = −0.008). This vascular/ECM module likely reflects reactive changes in the mural cell and perivascular fibroblast compartment adjacent to amyloid-laden vessels, distinct from the parenchymal microglial response.</p>
+<p><strong>Modules 2, 3, and 4</strong>, representing neuronal and astrocytic programs, are all mildly depleted near plaques (rho_any range: −0.013 to −0.074), consistent with local loss of neuronal processes and synaptic terminals in the periplaque environment. Notably, <strong>Module 3</strong> (synaptic/glutamatergic genes: <em>Grin2a/b</em>, <em>Snap25</em>, metabolic enzymes) shows the strongest depletion (rho_any = −0.074, rho_paren = −0.060), pointing specifically to loss of excitatory synaptic machinery near parenchymal plaques. <strong>Module 4</strong>, the astrocytic module (<em>Gja1</em>, <em>Aqp4</em>, <em>Aldh1l1</em>, <em>Clu</em>), is also modestly depleted (rho_paren = −0.034), suggesting that the canonical homeostatic astrocyte program, rather than reactive astrogliosis, is reduced in plaque-proximal tissue; the reactive astrocyte signature would require additional markers (e.g., <em>Gfap</em>, <em>Vim</em>) not fully captured by this module. Module 1 (oligodendrocyte/myelin: <em>Mog</em>, <em>Mag</em>, <em>Aspa</em>, <em>Pllp</em>) occupies an intermediate position, slightly enriched near parenchymal plaques (rho_paren = 0.031) but depleted near CAA (rho_CAA = −0.052), which may reflect myelin damage and oligodendrocyte vulnerability in the white-matter-adjacent parenchymal amyloid niche.</p>
+</section>
+<section id="sec-treatment" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="sec-treatment">Treatment effect (Adu vs IgG)</h2>
+<p>To test whether Aducanumab reshapes the spatial transcriptional response to plaques, we repeat the gene-distance correlation after stratifying cells by treatment group. The <code>cell_distances_all</code> table retains <code>Treatment.Group</code> from the Seurat metadata. We compute <code>cor_any</code> separately for Adu and IgG cells, then compare rho_flip per module between treatments. A module with higher rho_flip in Adu than IgG is more strongly recruited near plaques after treatment; lower rho_flip in Adu suggests treatment attenuates the plaque-proximal program.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dist_adu <span class="ot">&lt;-</span> cell_distances_all <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>dist_igg <span class="ot">&lt;-</span> cell_distances_all <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter seurat objects to matching cells before passing to the correlation function.</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>slide1_adu <span class="ot">&lt;-</span> <span class="fu">subset</span>(slide1, <span class="at">cells =</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(slide1), dist_adu<span class="sc">$</span>cell))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>slide2_adu <span class="ot">&lt;-</span> <span class="fu">subset</span>(slide2, <span class="at">cells =</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(slide2), dist_adu<span class="sc">$</span>cell))</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>slide1_igg <span class="ot">&lt;-</span> <span class="fu">subset</span>(slide1, <span class="at">cells =</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(slide1), dist_igg<span class="sc">$</span>cell))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>slide2_igg <span class="ot">&lt;-</span> <span class="fu">subset</span>(slide2, <span class="at">cells =</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(slide2), dist_igg<span class="sc">$</span>cell))</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>cor_adu <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1_adu, slide2_adu), dist_adu, <span class="at">distance_col =</span> <span class="st">"dist_any"</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>cor_igg <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1_igg, slide2_igg), dist_igg, <span class="at">distance_col =</span> <span class="st">"dist_any"</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>treatment_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  mod_unified <span class="sc">|&gt;</span> <span class="fu">left_join</span>(cor_adu <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, rho_flip), <span class="at">by =</span> <span class="st">"gene"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"Adu"</span>),</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  mod_unified <span class="sc">|&gt;</span> <span class="fu">left_join</span>(cor_igg <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, rho_flip), <span class="at">by =</span> <span class="st">"gene"</span>) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"IgG"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(rho_flip)) <span class="sc">|&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"IgG"</span>, <span class="st">"Adu"</span>)))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(treatment_df,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(module), <span class="at">y =</span> rho_flip, <span class="at">fill =</span> treatment)) <span class="sc">+</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.size =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.75</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>               <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="fl">0.8</span>), <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="at">IgG =</span> <span class="st">"#7f7f7f"</span>, <span class="at">Adu =</span> <span class="st">"#2ca02c"</span>)) <span class="sc">+</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Module–plaque association by treatment"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"rho_flip: Spearman correlation with nearness to any plaque, split by treatment"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Spatial module"</span>, <span class="at">y =</span> <span class="st">"Spearman rho (flipped)"</span>, <span class="at">fill =</span> <span class="st">"Treatment"</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">11</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="10.2_spatial_coexpression_modules_files/figure-html/treatment-module-plot-1.svg" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Delta rho per module: Adu − IgG. Positive = stronger plaque recruitment after treatment.</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>delta_df <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  cor_adu <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, <span class="at">rho_adu =</span> rho_flip),</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  cor_igg <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, <span class="at">rho_igg =</span> rho_flip),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">by =</span> <span class="st">"gene"</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">delta_rho =</span> rho_adu <span class="sc">-</span> rho_igg) <span class="sc">|&gt;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(mod_unified <span class="sc">|&gt;</span> <span class="fu">select</span>(gene, module), <span class="at">by =</span> <span class="st">"gene"</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>delta_df <span class="sc">|&gt;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">n_genes    =</span> <span class="fu">n</span>(),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">median_delta =</span> <span class="fu">median</span>(delta_rho),</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Module"</span>, <span class="st">"N genes"</span>, <span class="st">"Median Δrho (Adu − IgG)"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"condensed"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">Module</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">N genes</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Median Δrho (Adu − IgG)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">-0.001</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">151</td>
+<td style="text-align: right;">0.003</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">105</td>
+<td style="text-align: right;">-0.002</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">-0.001</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">0.000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">0.008</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(delta_df, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(module), <span class="at">y =</span> delta_rho, <span class="at">fill =</span> <span class="fu">factor</span>(module))) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.size =</span> <span class="fl">0.5</span>, <span class="at">alpha =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey40"</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Treatment effect on module–plaque association (Adu − IgG)"</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Δrho &gt; 0: module more strongly recruited near plaques in Adu-treated tissue"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Spatial module"</span>, <span class="at">y =</span> <span class="st">"Δrho (Adu − IgG)"</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div class="page-columns page-full">
+<figure class="figure page-columns page-full">
+<p class="page-columns page-full"><img src="10.2_spatial_coexpression_modules_files/figure-html/delta-rho-plot-1.svg" class="img-fluid figure-img column-page" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Aducanumab treatment did not substantially alter the spatial transcriptional organisation of any module relative to plaques.</p>
+<p>Median Δrho (Adu − IgG) across all six modules ranged from −0.002 to +0.008, <em>well below any threshold of biological relevance</em>; the largest positive shift was seen in Module 6 (Δrho = +0.008, microglia/DAM), suggesting a marginal trend toward stronger microglial recruitment near residual plaques in treated animals, but this effect is negligible at the current sample size (n = 3 per group).</p>
+</section>
+<section id="sec-characterisation" class="level2">
+<h2 class="anchored" data-anchor-id="sec-characterisation">Module characterization</h2>
+<section id="top-genes-per-module" class="level3">
+<h3 class="anchored" data-anchor-id="top-genes-per-module">Top genes per module</h3>
+<p>For each module we list the genes with the highest within-module spatial correlation (i.e.&nbsp;the genes that are most tightly co-expressed with the rest of the module). These are the genes that most faithfully represent the spatial program.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Within-module gene ranking: for each gene, its mean spatial correlation with</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># all other genes in the same module (from the averaged pairwise cor_DT table).</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>top_genes_per_module <span class="ot">&lt;-</span> cor_DT_avg <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Keep only within-module pairs</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(mod_unified <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">feat_ID =</span> gene, <span class="at">mod_A =</span> module), <span class="at">by =</span> <span class="st">"feat_ID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(mod_unified <span class="sc">|&gt;</span> <span class="fu">rename</span>(<span class="at">variable =</span> gene, <span class="at">mod_B =</span> module), <span class="at">by =</span> <span class="st">"variable"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(mod_A <span class="sc">==</span> mod_B, feat_ID <span class="sc">!=</span> variable) <span class="sc">|&gt;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(<span class="at">module =</span> mod_A, <span class="at">gene =</span> feat_ID) <span class="sc">|&gt;</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_spat_cor =</span> <span class="fu">mean</span>(spat_cor, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(module, <span class="fu">desc</span>(mean_spat_cor)) <span class="sc">|&gt;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(mean_spat_cor, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">by =</span> module)</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>top_genes_per_module <span class="sc">|&gt;</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Module"</span>, <span class="st">"Gene"</span>, <span class="st">"Mean within-module spatial cor"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"condensed"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collapse_rows</span>(<span class="at">columns =</span> <span class="dv">1</span>, <span class="at">valign =</span> <span class="st">"top"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">Module</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Gene</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Mean within-module spatial cor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">1</td>
+<td style="text-align: left;">Mog</td>
+<td style="text-align: right;">0.484</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cldn11</td>
+<td style="text-align: right;">0.483</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ermn</td>
+<td style="text-align: right;">0.482</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aspa</td>
+<td style="text-align: right;">0.471</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mag</td>
+<td style="text-align: right;">0.470</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gatm</td>
+<td style="text-align: right;">0.456</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Apod</td>
+<td style="text-align: right;">0.449</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pllp</td>
+<td style="text-align: right;">0.446</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lap3</td>
+<td style="text-align: right;">0.397</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cers2</td>
+<td style="text-align: right;">0.397</td>
+</tr>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">2</td>
+<td style="text-align: left;">Calb1</td>
+<td style="text-align: right;">0.070</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Dgkd</td>
+<td style="text-align: right;">0.057</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lamp5</td>
+<td style="text-align: right;">0.055</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cux2</td>
+<td style="text-align: right;">0.052</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lypd1</td>
+<td style="text-align: right;">0.050</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Comt</td>
+<td style="text-align: right;">0.050</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Jund</td>
+<td style="text-align: right;">0.049</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Egr1</td>
+<td style="text-align: right;">0.049</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Akt1</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bhlhe40</td>
+<td style="text-align: right;">0.048</td>
+</tr>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">3</td>
+<td style="text-align: left;">Opcml</td>
+<td style="text-align: right;">0.413</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Grin2b</td>
+<td style="text-align: right;">0.412</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Got1</td>
+<td style="text-align: right;">0.406</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Snap25</td>
+<td style="text-align: right;">0.398</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mdh1</td>
+<td style="text-align: right;">0.396</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pkm</td>
+<td style="text-align: right;">0.388</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Grin2a</td>
+<td style="text-align: right;">0.386</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chst1</td>
+<td style="text-align: right;">0.383</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Got2</td>
+<td style="text-align: right;">0.381</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pgam1</td>
+<td style="text-align: right;">0.379</td>
+</tr>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">4</td>
+<td style="text-align: left;">Gja1</td>
+<td style="text-align: right;">0.352</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Aqp4</td>
+<td style="text-align: right;">0.351</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pla2g7</td>
+<td style="text-align: right;">0.346</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mt2</td>
+<td style="text-align: right;">0.322</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Clu</td>
+<td style="text-align: right;">0.319</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Prodh</td>
+<td style="text-align: right;">0.286</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Cbs</td>
+<td style="text-align: right;">0.281</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Plpp3</td>
+<td style="text-align: right;">0.280</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Aldh1l1</td>
+<td style="text-align: right;">0.277</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gstm1</td>
+<td style="text-align: right;">0.277</td>
+</tr>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">5</td>
+<td style="text-align: left;">Ifitm3</td>
+<td style="text-align: right;">0.327</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ifitm2</td>
+<td style="text-align: right;">0.294</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Vtn</td>
+<td style="text-align: right;">0.281</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bgn</td>
+<td style="text-align: right;">0.279</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Vim</td>
+<td style="text-align: right;">0.271</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Flt1</td>
+<td style="text-align: right;">0.270</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Timp3</td>
+<td style="text-align: right;">0.265</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Col1a2</td>
+<td style="text-align: right;">0.261</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Clec2d</td>
+<td style="text-align: right;">0.255</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mgp</td>
+<td style="text-align: right;">0.252</td>
+</tr>
+<tr class="odd">
+<td rowspan="10" style="text-align: right; vertical-align: top !important;">6</td>
+<td style="text-align: left;">Cx3cr1</td>
+<td style="text-align: right;">0.527</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">C1qa</td>
+<td style="text-align: right;">0.522</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">C1qc</td>
+<td style="text-align: right;">0.520</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Trem2</td>
+<td style="text-align: right;">0.509</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hexb</td>
+<td style="text-align: right;">0.501</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Gpr34</td>
+<td style="text-align: right;">0.500</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Bcl2a1b</td>
+<td style="text-align: right;">0.492</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Ly86</td>
+<td style="text-align: right;">0.491</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P2ry12</td>
+<td style="text-align: right;">0.488</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cd68</td>
+<td style="text-align: right;">0.474</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The top-gene lists permit biological annotation of all six modules:</p>
+<p><strong>Module 1</strong> is an <strong>oligodendrocyte/myelin module</strong>: its highest-ranked genes; <em>Mog</em> (myelin oligodendrocyte glycoprotein), <em>Mag</em> (myelin-associated glycoprotein), <em>Aspa</em> (aspartoacylase), <em>Pllp</em> (plasma membrane proteolipid), and <em>Cers2</em> (ceramide synthase 2),are collectively required for myelin synthesis and maintenance, and are exclusively expressed by mature oligodendrocytes. The exceptionally high within-module spatial correlations (mean rho &gt; 0.45) reflect the tight spatial co-localisation of oligodendrocyte soma in white matter tracts. <em>Apod</em> (apolipoprotein D), also prominent in Module 1, is a lipid transport protein upregulated in oligodendrocytes under stress, suggesting the module captures a combined homeostatic-to-stressed oligodendrocyte continuum.</p>
+<p><strong>Module 2</strong> is a broad <strong>neuronal module</strong> with low within-module coherence (mean rho ≈ 0.05), encompassing upper-layer cortical markers (<em>Cux2</em>, <em>Calb1</em>), calcium signalling (<em>Dgkd</em>), neurotransmitter metabolism (<em>Comt</em>), and immediate-early gene activity (<em>Egr1</em>, <em>Jund</em>). The large size (155 genes) and low pairwise correlations indicate this module captures a diffuse pan-neuronal expression background rather than a tightly co-regulated spatial program, which is consistent with its near-zero plaque association.</p>
+<p><strong>Module 3</strong> is a <strong>glutamatergic/synaptic module</strong>: <em>Snap25</em> (synaptic vesicle fusion), <em>Grin2a</em> and <em>Grin2b</em> (NMDA receptor subunits), <em>Opcml</em> (opioid binding protein with synaptogenic function), alongside mitochondrial metabolic enzymes (<em>Got1</em>, <em>Got2</em>, <em>Mdh1</em>) and glycolytic enzymes (<em>Pkm</em>, <em>Pgam1</em>) that support the high energy demands of excitatory synapses. The co-enrichment of synaptic and metabolic genes in a single spatial module points to the tight coupling between glutamatergic neurotransmission and local metabolic support — a coupling that is disrupted near plaques (rho_any = −0.074), confirming synaptic loss as a major spatial feature of the periplaque microenvironment.</p>
+<p><strong>Module 4</strong> is an <strong>astrocyte module</strong>: <em>Gja1</em> (connexin 43, astrocyte gap junctions), <em>Aqp4</em> (aquaporin 4, the defining astrocyte water channel), <em>Aldh1l1</em> (pan-astrocyte marker), and <em>Clu</em> (clusterin/ApoJ, an Alzheimer’s GWAS risk gene expressed by astrocytes) define this cluster unambiguously. <em>Mt2</em> (metallothionein 2, a metal-chelating and anti-oxidant protein induced in reactive astrocytes) and <em>Gstm1</em> (glutathione transferase) further suggest a homeostatic astrocyte signature with mild oxidative stress response capacity. The presence of <em>Clu</em> is noteworthy: as a secreted chaperone that facilitates amyloid clearance and a major genetic risk factor for late-onset Alzheimer’s disease, its spatial co-regulation with canonical astrocyte markers implicates the homeostatic astrocyte compartment in local amyloid proteostasis.</p>
+<p><strong>Module 5</strong> is a <strong>vascular/ECM/innate immune module</strong>: <em>Flt1</em> (VEGF receptor 1, endothelial), <em>Mgp</em> (matrix Gla protein, smooth muscle/pericyte), <em>Vtn</em> (vitronectin, ECM), <em>Col1a2</em> (collagen I), <em>Bgn</em> (biglycan), and <em>Timp3</em> (TIMP metalloproteinase inhibitor) define a perivascular niche. The co-occurrence of <em>Ifitm2</em> and <em>Ifitm3</em> (interferon-induced transmembrane proteins with broad antiviral and anti-inflammatory functions) within this vascular/ECM module is intriguing: both proteins are upregulated in reactive vascular endothelium and have been independently identified in spatial transcriptomic studies of the Alzheimer’s brain. Their selective enrichment near CAA (rho_CAA = 0.026) suggests an interferon-like innate immune activation specifically in the vascular wall adjacent to cerebrovascular amyloid.</p>
+<p><strong>Module 6</strong> is a <strong>microglia/DAM (disease-associated microglia) module</strong>: it is defined by the canonical DAM gene signature including <em>Cx3cr1</em>, <em>Trem2</em>, <em>C1qa</em>, <em>C1qc</em>, <em>P2ry12</em>, <em>Hexb</em>, <em>Gpr34</em>, and <em>Cd68</em>. The combination of homeostatic (<em>P2ry12</em>, <em>Cx3cr1</em>) and DAM markers (<em>Trem2</em>, <em>C1q</em>) within a single spatially coherent module suggests these cells occupy a transitional state between homeostatic surveillance and phagocytic activation, consistent with the spectrum of microglial states described around plaques by single-cell RNA-seq studies. The tight within-module spatial correlations (mean rho &gt; 0.49) confirm that these genes are expressed in the same spatial domains with high fidelity.</p>
+</section>
+<section id="cell-type-enrichment-per-module" class="level3">
+<h3 class="anchored" data-anchor-id="cell-type-enrichment-per-module">Cell-type enrichment per module</h3>
+<p>Per-cell metagene scores were computed by averaging normalised expression across all genes in each module, pooling cells from both slides. We average this score across annotated cell types to reveal which cell types are the primary drivers of each module. High average metagene score in a cell type means that cell type tends to be in spatial regions where the module is strongly expressed.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute metagene scores for all cells from both slides.</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Pool expression and cell metadata; use unified module assignments.</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>expr_norm <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto1, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto2, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>meta_both <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getCellMetadata</span>(giotto1, <span class="at">output =</span> <span class="st">"data.table"</span>) <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>(),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">getCellMetadata</span>(giotto2, <span class="at">output =</span> <span class="st">"data.table"</span>) <span class="sc">|&gt;</span> <span class="fu">as_tibble</span>()</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Keep only genes present in both the module list and the expression matrix.</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>shared_genes <span class="ot">&lt;-</span> <span class="fu">intersect</span>(mod_unified<span class="sc">$</span>gene, <span class="fu">rownames</span>(expr_norm))</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>expr_sub     <span class="ot">&lt;-</span> expr_norm[shared_genes, , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>mod_sub      <span class="ot">&lt;-</span> mod_unified <span class="sc">|&gt;</span> <span class="fu">filter</span>(gene <span class="sc">%in%</span> shared_genes)</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>metagene_scores <span class="ot">&lt;-</span> <span class="fu">imap</span>(</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">split</span>(mod_sub<span class="sc">$</span>gene, mod_sub<span class="sc">$</span>module),   <span class="co"># list: module → gene names</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  \(genes, mod) Matrix<span class="sc">::</span><span class="fu">colMeans</span>(expr_sub[genes, , <span class="at">drop =</span> <span class="cn">FALSE</span>])</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>(<span class="at">rownames =</span> <span class="st">"cell_ID"</span>)</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Join with cell-type annotation.</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>module_cols <span class="ot">&lt;-</span> <span class="fu">setdiff</span>(<span class="fu">names</span>(metagene_scores), <span class="st">"cell_ID"</span>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>celltype_scores <span class="ot">&lt;-</span> metagene_scores <span class="sc">|&gt;</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(meta_both <span class="sc">|&gt;</span> <span class="fu">select</span>(cell_ID, annotatedclusters), <span class="at">by =</span> <span class="st">"cell_ID"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(annotatedclusters)) <span class="sc">|&gt;</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">all_of</span>(module_cols),</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"module"</span>, <span class="at">values_to =</span> <span class="st">"score"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(annotatedclusters, module) <span class="sc">|&gt;</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_score =</span> <span class="fu">mean</span>(score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Heatmap: cell types × modules</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>celltype_scores <span class="sc">|&gt;</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> module, <span class="at">y =</span> annotatedclusters, <span class="at">fill =</span> mean_score)) <span class="sc">+</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.3</span>) <span class="sc">+</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>()<span class="sc">+</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(<span class="at">low =</span> <span class="st">"#2166ac"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#d6604d"</span>,</span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>                       <span class="at">midpoint =</span> <span class="dv">0</span>, <span class="at">name =</span> <span class="st">"Mean</span><span class="sc">\n</span><span class="st">metagene"</span>) <span class="sc">+</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mean spatial module score by cell type"</span>,</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"High score = cell type concentrated in spatial regions where the module is active"</span>,</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Module"</span>, <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="10.2_spatial_coexpression_modules_files/figure-html/celltype-metagene-1.svg" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>celltype_scores <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> module, <span class="at">values_from =</span> mean_score) <span class="sc">|&gt;</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(annotatedclusters) <span class="sc">|&gt;</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(<span class="at">digits =</span> <span class="dv">3</span>, <span class="at">caption =</span> <span class="st">"Mean metagene score per cell type and module"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"condensed"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">font_size =</span> <span class="dv">11</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<caption>Mean metagene score per cell type and module</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">annotatedclusters</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V5</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">V6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CP</td>
+<td style="text-align: right;">1.821</td>
+<td style="text-align: right;">0.982</td>
+<td style="text-align: right;">2.852</td>
+<td style="text-align: right;">1.744</td>
+<td style="text-align: right;">0.988</td>
+<td style="text-align: right;">1.290</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Endothelial</td>
+<td style="text-align: right;">2.101</td>
+<td style="text-align: right;">0.888</td>
+<td style="text-align: right;">2.410</td>
+<td style="text-align: right;">1.461</td>
+<td style="text-align: right;">1.774</td>
+<td style="text-align: right;">1.058</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ependymal</td>
+<td style="text-align: right;">1.948</td>
+<td style="text-align: right;">0.943</td>
+<td style="text-align: right;">2.595</td>
+<td style="text-align: right;">3.027</td>
+<td style="text-align: right;">1.024</td>
+<td style="text-align: right;">0.912</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Fibroblast</td>
+<td style="text-align: right;">2.382</td>
+<td style="text-align: right;">0.846</td>
+<td style="text-align: right;">2.088</td>
+<td style="text-align: right;">1.598</td>
+<td style="text-align: right;">1.973</td>
+<td style="text-align: right;">1.351</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pericyte</td>
+<td style="text-align: right;">2.043</td>
+<td style="text-align: right;">0.955</td>
+<td style="text-align: right;">2.633</td>
+<td style="text-align: right;">1.614</td>
+<td style="text-align: right;">1.545</td>
+<td style="text-align: right;">1.196</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">VLMC</td>
+<td style="text-align: right;">2.352</td>
+<td style="text-align: right;">0.959</td>
+<td style="text-align: right;">2.442</td>
+<td style="text-align: right;">1.706</td>
+<td style="text-align: right;">1.757</td>
+<td style="text-align: right;">1.298</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">VSMC</td>
+<td style="text-align: right;">2.080</td>
+<td style="text-align: right;">0.866</td>
+<td style="text-align: right;">2.240</td>
+<td style="text-align: right;">1.567</td>
+<td style="text-align: right;">1.878</td>
+<td style="text-align: right;">1.213</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BAM</td>
+<td style="text-align: right;">2.166</td>
+<td style="text-align: right;">0.819</td>
+<td style="text-align: right;">1.897</td>
+<td style="text-align: right;">1.494</td>
+<td style="text-align: right;">1.721</td>
+<td style="text-align: right;">2.717</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Microglia</td>
+<td style="text-align: right;">2.056</td>
+<td style="text-align: right;">0.837</td>
+<td style="text-align: right;">1.925</td>
+<td style="text-align: right;">1.019</td>
+<td style="text-align: right;">0.442</td>
+<td style="text-align: right;">3.878</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">T Cell</td>
+<td style="text-align: right;">1.994</td>
+<td style="text-align: right;">1.125</td>
+<td style="text-align: right;">2.631</td>
+<td style="text-align: right;">1.557</td>
+<td style="text-align: right;">0.808</td>
+<td style="text-align: right;">1.831</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Astrocyte</td>
+<td style="text-align: right;">2.121</td>
+<td style="text-align: right;">0.720</td>
+<td style="text-align: right;">2.622</td>
+<td style="text-align: right;">2.963</td>
+<td style="text-align: right;">0.606</td>
+<td style="text-align: right;">1.031</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oligodendrocyte</td>
+<td style="text-align: right;">4.272</td>
+<td style="text-align: right;">0.783</td>
+<td style="text-align: right;">2.560</td>
+<td style="text-align: right;">1.262</td>
+<td style="text-align: right;">0.298</td>
+<td style="text-align: right;">0.799</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OPC</td>
+<td style="text-align: right;">2.340</td>
+<td style="text-align: right;">1.177</td>
+<td style="text-align: right;">3.170</td>
+<td style="text-align: right;">1.826</td>
+<td style="text-align: right;">0.467</td>
+<td style="text-align: right;">1.170</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GABAergic Neuron 1</td>
+<td style="text-align: right;">1.441</td>
+<td style="text-align: right;">1.175</td>
+<td style="text-align: right;">3.937</td>
+<td style="text-align: right;">1.225</td>
+<td style="text-align: right;">0.258</td>
+<td style="text-align: right;">0.799</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GABAergic Neuron 2</td>
+<td style="text-align: right;">1.409</td>
+<td style="text-align: right;">1.123</td>
+<td style="text-align: right;">3.833</td>
+<td style="text-align: right;">1.151</td>
+<td style="text-align: right;">0.249</td>
+<td style="text-align: right;">0.824</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GABAergic Neuron 3</td>
+<td style="text-align: right;">1.348</td>
+<td style="text-align: right;">1.149</td>
+<td style="text-align: right;">3.872</td>
+<td style="text-align: right;">1.280</td>
+<td style="text-align: right;">0.231</td>
+<td style="text-align: right;">0.858</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GABAergic Neuron 4</td>
+<td style="text-align: right;">1.435</td>
+<td style="text-align: right;">1.231</td>
+<td style="text-align: right;">4.006</td>
+<td style="text-align: right;">1.194</td>
+<td style="text-align: right;">0.293</td>
+<td style="text-align: right;">0.906</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glutamatergic Neuron 1</td>
+<td style="text-align: right;">1.141</td>
+<td style="text-align: right;">0.994</td>
+<td style="text-align: right;">4.136</td>
+<td style="text-align: right;">0.941</td>
+<td style="text-align: right;">0.194</td>
+<td style="text-align: right;">0.688</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Glutamatergic Neuron 2</td>
+<td style="text-align: right;">1.215</td>
+<td style="text-align: right;">1.109</td>
+<td style="text-align: right;">4.018</td>
+<td style="text-align: right;">0.965</td>
+<td style="text-align: right;">0.203</td>
+<td style="text-align: right;">0.676</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glutamatergic Neuron 3</td>
+<td style="text-align: right;">1.453</td>
+<td style="text-align: right;">1.127</td>
+<td style="text-align: right;">4.017</td>
+<td style="text-align: right;">1.028</td>
+<td style="text-align: right;">0.227</td>
+<td style="text-align: right;">0.679</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Glutamatergic Neuron 4</td>
+<td style="text-align: right;">1.318</td>
+<td style="text-align: right;">1.104</td>
+<td style="text-align: right;">3.964</td>
+<td style="text-align: right;">1.022</td>
+<td style="text-align: right;">0.206</td>
+<td style="text-align: right;">0.740</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Glutamatergic Neuron 5</td>
+<td style="text-align: right;">1.511</td>
+<td style="text-align: right;">1.211</td>
+<td style="text-align: right;">4.010</td>
+<td style="text-align: right;">0.974</td>
+<td style="text-align: right;">0.222</td>
+<td style="text-align: right;">0.719</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The cell-type enrichment heatmap confirms and extends the gene-based module annotations. Oligodendrocytes score highest on Module 1 (mean metagene = 4.27), consistent with their exclusive expression of myelin genes. Glutamatergic and GABAergic neurons dominate Module 3 (mean scores 3.9–4.1), validating its synaptic identity. Module 4 is most strongly enriched in astrocytes (mean = 2.96) and also in OPCs (2.34) and vascular cell types — a pattern expected given that <em>Aqp4</em> and <em>Gja1</em> are also expressed at lower levels in perivascular glia. Module 6 is most highly expressed in microglia (mean = 3.88) and brain-associated macrophages (BAM, mean = 2.72), confirming the DAM identity; the relatively high BAM score is consistent with recent evidence that meningeal and perivascular macrophages share transcriptional features with parenchymal DAM.</p>
+<p>Module 5 shows its highest mean scores in non-neuronal cell types: fibroblasts (1.97), VSMC (1.88), VLMC (1.76), and endothelial cells (1.77), consistent with a vascular/stromal origin. Notably, Module 2 displays the lowest metagene scores across virtually all cell types, suggesting it captures a dispersed low-level expression background rather than a concentrated spatial program — and reinforcing the interpretation that this module does not represent a functionally coherent spatial unit.</p>
+<p>A cross-cutting observation is that vascular cell types (pericytes, VSMC, VLMC, endothelial) score consistently highly on Module 1 (means 2.04–2.38), despite Module 1 being defined by myelin genes. This likely reflects spatial proximity between white matter tracts and penetrating vessels, rather than direct expression of myelin genes by vascular cells, and underscores a general limitation of metagene scores: they capture spatial co-localisation, not necessarily direct transcriptional expression in the scoring cell type.</p>
+</section>
+<section id="moduleplaquecell-type-summary" class="level3">
+<h3 class="anchored" data-anchor-id="moduleplaquecell-type-summary">Module–plaque–cell-type summary</h3>
+<p>Finally, we cross the three dimensions: which modules are plaque-associated (rho_flip &gt; 0 for CAA or parenchymal), which are treatment-responsive (|Δrho| &gt; 0.02), and which cell types drive them.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Aggregate per-module: plaque association, treatment delta, top cell type</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>module_summary <span class="ot">&lt;-</span> plaque_type_df <span class="sc">|&gt;</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(plaque <span class="sc">==</span> <span class="st">"Any"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">rho_any =</span> <span class="fu">median</span>(rho_flip, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    plaque_type_df <span class="sc">|&gt;</span> <span class="fu">filter</span>(plaque <span class="sc">==</span> <span class="st">"CAA"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">rho_caa =</span> <span class="fu">median</span>(rho_flip, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"module"</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    plaque_type_df <span class="sc">|&gt;</span> <span class="fu">filter</span>(plaque <span class="sc">==</span> <span class="st">"Parenchymal"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">rho_paren =</span> <span class="fu">median</span>(rho_flip, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"module"</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    delta_df <span class="sc">|&gt;</span></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span> <span class="fu">summarise</span>(<span class="at">delta_rho =</span> <span class="fu">median</span>(delta_rho, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>),</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"module"</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    celltype_scores <span class="sc">|&gt;</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>      <span class="co"># module column is "V1"..."V6" because as_tibble() prefixes numeric names with "V"</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">module =</span> <span class="fu">as.integer</span>(<span class="fu">sub</span>(<span class="st">"^V"</span>, <span class="st">""</span>, module))) <span class="sc">|&gt;</span></span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span></span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">slice_max</span>(mean_score, <span class="at">n =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(module, <span class="at">top_celltype =</span> annotatedclusters),</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"module"</span></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>    top_genes_per_module <span class="sc">|&gt;</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">group_by</span>(module) <span class="sc">|&gt;</span></span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">slice_max</span>(mean_spat_cor, <span class="at">n =</span> <span class="dv">3</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">summarise</span>(<span class="at">top_genes =</span> <span class="fu">paste</span>(gene, <span class="at">collapse =</span> <span class="st">", "</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>),</span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"module"</span></span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>module_summary <span class="sc">|&gt;</span></span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kbl</span>(</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">digits =</span> <span class="dv">3</span>,</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">"Module"</span>, <span class="st">"rho (any)"</span>, <span class="st">"rho (CAA)"</span>, <span class="st">"rho (paren)"</span>,</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"Δrho (Adu−IgG)"</span>, <span class="st">"Top cell type"</span>, <span class="st">"Top 3 genes"</span>)</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">"striped"</span>, <span class="st">"condensed"</span>), <span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-striped table-condensed caption-top table-sm small">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">Module</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho (any)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho (CAA)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">rho (paren)</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">Δrho (Adu−IgG)</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Top cell type</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Top 3 genes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.021</td>
+<td style="text-align: right;">-0.052</td>
+<td style="text-align: right;">0.031</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: left;">Oligodendrocyte</td>
+<td style="text-align: left;">Mog, Cldn11, Ermn</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">-0.013</td>
+<td style="text-align: right;">-0.002</td>
+<td style="text-align: right;">-0.010</td>
+<td style="text-align: right;">0.003</td>
+<td style="text-align: left;">GABAergic Neuron 4</td>
+<td style="text-align: left;">Calb1, Dgkd, Lamp5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">-0.074</td>
+<td style="text-align: right;">0.010</td>
+<td style="text-align: right;">-0.060</td>
+<td style="text-align: right;">-0.002</td>
+<td style="text-align: left;">Glutamatergic Neuron 1</td>
+<td style="text-align: left;">Opcml, Grin2b, Got1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">-0.027</td>
+<td style="text-align: right;">-0.007</td>
+<td style="text-align: right;">-0.034</td>
+<td style="text-align: right;">-0.001</td>
+<td style="text-align: left;">Ependymal</td>
+<td style="text-align: left;">Gja1, Aqp4, Pla2g7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.022</td>
+<td style="text-align: right;">0.026</td>
+<td style="text-align: right;">-0.008</td>
+<td style="text-align: right;">0.000</td>
+<td style="text-align: left;">Fibroblast</td>
+<td style="text-align: left;">Ifitm3, Ifitm2, Vtn</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.119</td>
+<td style="text-align: right;">-0.009</td>
+<td style="text-align: right;">0.107</td>
+<td style="text-align: right;">0.008</td>
+<td style="text-align: left;">Microglia</td>
+<td style="text-align: left;">Cx3cr1, C1qa, C1qc</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Taken together, the spatial co-expression module analysis identifies two biologically coherent plaque-responsive programs and four programs whose spatial exclusion from the plaque microenvironment reflects the cellular damage caused by amyloid accumulation.</p>
+<p>The strongest signal in the dataset is the microglial/DAM module (Module 6), which is selectively and robustly recruited to parenchymal plaques, consistent with its role as the primary phagocytic responder to fibrillar amyloid, while remaining absent from CAA lesions. The vascular module (Module 5) provides the reciprocal signal: a modest but selective enrichment near CAA, suggesting a spatially distinct innate immune and ECM remodelling response in the perivascular amyloid niche. The three depleted modules (neuronal/synaptic Modules 2–3, astrocytic Module 4) collectively reflect the progressive loss of parenchymal homeostasis in plaque-proximal tissue.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
