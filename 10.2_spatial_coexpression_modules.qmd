@@ -69,49 +69,6 @@ cor_caa   <- read_csv("spatial/cor_caa.csv",   show_col_types = FALSE)
 cor_paren <- read_csv("spatial/cor_paren.csv", show_col_types = FALSE)
 ```
 
-```{r}
-#| label: shared-helpers
-
-# Gene-distance correlation helper.
-# Computes Spearman rho between expression rank and distance rank across all
-# cells, then flips the sign so rho_flip > 0 means enriched near plaques.
-compute_gene_distance_correlation <- function(seurat_list, distances,
-                                              distance_col,
-                                              min_expressing_cells = 5) {
-  counts <- do.call(cbind, lapply(seurat_list, \(s)
-    LayerData(s, assay = DefaultAssay(s), layer = "counts")))
-
-  shared_cells <- intersect(colnames(counts), distances$cell)
-  counts       <- counts[, shared_cells]
-
-  dist_vec <- distances |>
-    filter(cell %in% shared_cells) |>
-    arrange(match(cell, shared_cells)) |>
-    pull(!!sym(distance_col))
-
-  n_expressing <- Matrix::rowSums(counts > 0)
-  keep   <- n_expressing >= min_expressing_cells
-  counts <- counts[keep, ]
-
-  n          <- ncol(counts)
-  expr_ranks <- apply(as.matrix(counts), 1, rank)
-  dist_rank  <- rank(dist_vec)
-  rho_vec    <- cor(expr_ranks, dist_rank)[, 1]
-  t_stat     <- rho_vec * sqrt((n - 2) / (1 - rho_vec^2))
-  pval_vec   <- 2 * pt(abs(t_stat), df = n - 2, lower.tail = FALSE)
-
-  tibble(gene = names(rho_vec), rho = rho_vec, pval = pval_vec) |>
-    mutate(
-      padj     = p.adjust(pval, method = "BH"),
-      rho_flip = -rho,
-      sig      = case_when(
-        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
-        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
-        TRUE                        ~ "ns"
-      )
-    )
-}
-```
 
 
 
@@ -242,9 +199,11 @@ To determine whether spatial programs are specifically associated with CAA, pare
 #| eval: false
 
 cor_caa   <- compute_gene_distance_correlation(
-  list(slide1, slide2), cell_distances_all, distance_col = "dist_caa")
+  list(slide1, slide2), cell_distances_all, distance_col = "dist_caa",
+  min_expressing_cells = 5)
 cor_paren <- compute_gene_distance_correlation(
-  list(slide1, slide2), cell_distances_all, distance_col = "dist_paren")
+  list(slide1, slide2), cell_distances_all, distance_col = "dist_paren",
+  min_expressing_cells = 5)
 
 write_csv(cor_caa,   "spatial/cor_caa.csv")
 write_csv(cor_paren, "spatial/cor_paren.csv")

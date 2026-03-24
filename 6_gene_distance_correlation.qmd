@@ -49,73 +49,6 @@ To make the results more intuitive,so that "plaque-enriched" genes appear at the
 - **ns** — not significant
 
 
-```{r}
-#| label: define-compute-correlation
-compute_gene_distance_correlation <- function(
-    seurat_list,
-    cell_distances,
-    distance_col = "dist_any",
-    min_expressing_cells = 100
-) {
-  # ── 1. Pool raw count matrices across slides ────────────────────────────────
-  # Use the RNA assay counts layer (Seurat v5 sparse matrices)
-  count_list <- map(seurat_list, \(obj) {
-    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
-  })
-
-  # Ensure same gene set, then column-bind
-  shared_genes <- Reduce(intersect, map(count_list, rownames))
-  counts <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
-
-  # ── 2. Align cells with distance table ──────────────────────────────────────
-  shared_cells <- intersect(colnames(counts), cell_distances$cell)
-  counts <- counts[, shared_cells]
-  dist_vec <- cell_distances |>
-    filter(cell %in% shared_cells) |>
-    arrange(match(cell, shared_cells)) |>
-    pull(!!sym(distance_col))
-
-  # ── 3. Filter low-expressed genes ───────────────────────────────────────────
-  n_expressing <- Matrix::rowSums(counts > 0)
-  keep <- n_expressing >= min_expressing_cells
-  counts <- counts[keep, ]
-  message(
-    sprintf(
-      "Kept %d / %d genes (≥%d expressing cells)",
-      sum(keep), length(keep), min_expressing_cells
-    )
-  )
-
-  # ── 4. Per-gene Spearman correlation ────────────────────────────────────────
-  # exact = FALSE to handle tied ranks from sparse zeros efficiently
-  results <- map(seq_len(nrow(counts)), \(i) {
-    gene_expr <- counts[i, ]
-    ct <- cor.test(as.numeric(gene_expr), dist_vec,
-                   method = "spearman", exact = FALSE)
-    tibble(
-      gene = rownames(counts)[i],
-      rho  = ct$estimate,
-      pval = ct$p.value
-    )
-  }, .progress = "Spearman correlations") |>
-    bind_rows()
-
-  # ── 5. BH-correct, flip sign, rank ─────────────────────────────────────────
-  # Flip rho so that genes enriched near plaques (negative rho) become positive
-  results |>
-    mutate(
-      padj      = p.adjust(pval, method = "BH"),
-      rho_flip  = -rho,
-      rank      = rank(-rho_flip, ties.method = "first"),
-      sig       = case_when(
-        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
-        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
-        TRUE                        ~ "ns"
-      )
-    ) |>
-    arrange(rank)
-}
-```
 
 ## `plot_gene_distance_correlation()`
 
@@ -210,7 +143,7 @@ cor_any <- compute_gene_distance_correlation(
 
 # qs2::qs_save(cor_caa, "data/cor_caa.qs2")
 # qs2::qs_save(cor_paren, "data/cor_paren.qs2")
-# qs2::qs_save(cor_any, "data/cor_any.qs2")
+# qs2::qs_save(cor_any, "spatial/cor_any.qs2")
 
 ```
 
@@ -221,7 +154,7 @@ cor_any <- compute_gene_distance_correlation(
 
 cor_caa <- qs2::qs_read("data/cor_caa.qs2")
 cor_paren <- qs2::qs_read("data/cor_paren.qs2")
-cor_any <- qs2::qs_read("data/cor_any.qs2")
+cor_any <- qs2::qs_read("spatial/cor_any.qs2")
 ```
 
 Three analyses are shown, each using a different distance metric: (1) distance to nearest **CAA** plaque only, (2) distance to nearest **parenchymal** plaque only, and (3) distance to nearest plaque of **any type**. Comparing across the three reveals whether certain genes are specifically associated with one plaque subtype or with amyloid deposits in general.

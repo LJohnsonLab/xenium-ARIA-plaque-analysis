@@ -130,3 +130,49 @@ load_slides_and_distances <- function(type = c("full", "microglia")) {
     distances_all = d_all
   )
 }
+
+# ── Gene-distance Spearman correlation ────────────────────────────────────────
+# Vectorised: ranks all genes in one BLAS cor() call, then applies the
+# t-approximation used internally by cor.test(exact = FALSE).
+# Default min_expressing_cells = 100 for all-cell-type notebooks (6, 10);
+# pass min_expressing_cells = 5 for module-level notebooks (10.2).
+compute_gene_distance_correlation <- function(
+    seurat_list,
+    cell_distances,
+    distance_col         = "dist_any",
+    min_expressing_cells = 100
+) {
+  count_list   <- map(seurat_list, \(obj) LayerData(obj, assay = DefaultAssay(obj), layer = "counts"))
+  shared_genes <- Reduce(intersect, map(count_list, rownames))
+  counts       <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
+
+  shared_cells <- intersect(colnames(counts), cell_distances$cell)
+  counts   <- counts[, shared_cells]
+  dist_vec <- cell_distances |>
+    filter(cell %in% shared_cells) |>
+    arrange(match(cell, shared_cells)) |>
+    pull(!!sym(distance_col))
+
+  keep   <- Matrix::rowSums(counts > 0) >= min_expressing_cells
+  counts <- counts[keep, ]
+
+  n          <- ncol(counts)
+  expr_ranks <- apply(as.matrix(counts), 1, rank)
+  dist_rank  <- rank(dist_vec)
+  rho_vec    <- cor(expr_ranks, dist_rank)[, 1]
+  t_stat     <- rho_vec * sqrt((n - 2) / (1 - rho_vec^2))
+  pval_vec   <- 2 * pt(abs(t_stat), df = n - 2, lower.tail = FALSE)
+
+  tibble(gene = names(rho_vec), rho = rho_vec, pval = pval_vec) |>
+    mutate(
+      padj     = p.adjust(pval, method = "BH"),
+      rho_flip = -rho,
+      rank     = rank(-rho_flip, ties.method = "first"),
+      sig      = case_when(
+        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
+        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
+        TRUE                        ~ "ns"
+      )
+    ) |>
+    arrange(rank)
+}
