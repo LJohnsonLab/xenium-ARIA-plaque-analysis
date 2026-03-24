@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-22">
+<meta name="dcterms.date" content="2026-03-24">
 
 <title>Spatial autocorrelation metrics – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -158,10 +158,21 @@ window.Quarto = {
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./2_coregistration_Akhil.html"> 
-<span class="menu-text">Co-registration</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-co-registration" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Co-registration</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-co-registration">    
+        <li>
+    <a class="dropdown-item" href="./2_coregistration_Akhil.html">
+ <span class="dropdown-text">HALO analysis</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./1_plaque_deduplication_diagnostics.html">
+ <span class="dropdown-text">Plaque deduplication diagnostics</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Expression-Distance correlations</span>
@@ -281,7 +292,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 22, 2026</p>
+      <p class="date">March 24, 2026</p>
     </div>
   </div>
   
@@ -644,65 +655,11 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>compute_gene_distance_correlation <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    seurat_list,</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    cell_distances,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">distance_col =</span> <span class="st">"dist_any"</span>,</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">min_expressing_cells =</span> <span class="dv">100</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>) {</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  count_list <span class="ot">&lt;-</span> <span class="fu">map</span>(seurat_list, \(obj) {</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">LayerData</span>(obj, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(obj), <span class="at">layer =</span> <span class="st">"counts"</span>)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  shared_genes <span class="ot">&lt;-</span> <span class="fu">Reduce</span>(intersect, <span class="fu">map</span>(count_list, rownames))</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">do.call</span>(cbind, <span class="fu">map</span>(count_list, \(m) m[shared_genes, ]))</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  shared_cells <span class="ot">&lt;-</span> <span class="fu">intersect</span>(<span class="fu">colnames</span>(counts), cell_distances<span class="sc">$</span>cell)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> counts[, shared_cells]</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  dist_vec <span class="ot">&lt;-</span> cell_distances <span class="sc">|&gt;</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(cell <span class="sc">%in%</span> shared_cells) <span class="sc">|&gt;</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(<span class="fu">match</span>(cell, shared_cells)) <span class="sc">|&gt;</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(<span class="sc">!!</span><span class="fu">sym</span>(distance_col))</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  n_expressing <span class="ot">&lt;-</span> Matrix<span class="sc">::</span><span class="fu">rowSums</span>(counts <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  keep <span class="ot">&lt;-</span> n_expressing <span class="sc">&gt;=</span> min_expressing_cells</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> counts[keep, ]</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">ncol</span>(counts)</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># apply() over matrix rows returns a matrix directly (n_cells × n_genes), which</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># is the structure cor() expects. map() would return a list and require an extra</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># bind step to reassemble the matrix — same CPU work, more overhead.</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  expr_ranks <span class="ot">&lt;-</span> <span class="fu">apply</span>(<span class="fu">as.matrix</span>(counts), <span class="dv">1</span>, rank)</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  dist_rank  <span class="ot">&lt;-</span> <span class="fu">rank</span>(dist_vec)</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># cor() operates on the full matrix in one BLAS call, avoiding the per-gene</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># cor.test() dispatch overhead that makes the loop slow at scale.</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>  rho_vec <span class="ot">&lt;-</span> <span class="fu">cor</span>(expr_ranks, dist_rank)[, <span class="dv">1</span>]</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># cor.test(..., exact = FALSE) uses this t-approximation internally; computing</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># it here keeps p-values identical while staying vectorized.</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  t_stat   <span class="ot">&lt;-</span> rho_vec <span class="sc">*</span> <span class="fu">sqrt</span>((n <span class="sc">-</span> <span class="dv">2</span>) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> rho_vec<span class="sc">^</span><span class="dv">2</span>))</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  pval_vec <span class="ot">&lt;-</span> <span class="dv">2</span> <span class="sc">*</span> <span class="fu">pt</span>(<span class="fu">abs</span>(t_stat), <span class="at">df =</span> n <span class="sc">-</span> <span class="dv">2</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>  results <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">gene =</span> <span class="fu">names</span>(rho_vec), <span class="at">rho =</span> rho_vec, <span class="at">pval =</span> pval_vec)</span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  results <span class="sc">|&gt;</span></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>      <span class="at">padj     =</span> <span class="fu">p.adjust</span>(pval, <span class="at">method =</span> <span class="st">"BH"</span>),</span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>      <span class="at">rho_flip =</span> <span class="sc">-</span>rho,</span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>      <span class="at">rank     =</span> <span class="fu">rank</span>(<span class="sc">-</span>rho_flip, <span class="at">ties.method =</span> <span class="st">"first"</span>),</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>      <span class="at">sig      =</span> <span class="fu">case_when</span>(</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&gt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_near"</span>,</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span> <span class="sc">&amp;</span> rho_flip <span class="sc">&lt;</span> <span class="dv">0</span> <span class="sc">~</span> <span class="st">"enriched_far"</span>,</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>                        <span class="sc">~</span> <span class="st">"ns"</span></span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span></span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(rank)</span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>cor_any <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1, slide2), cell_distances_all, <span class="at">distance_col =</span> <span class="st">"dist_any"</span></span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_any, "spatial/cor_any.qs2")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cor_any <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1, slide2), cell_distances_all, <span class="at">distance_col =</span> <span class="st">"dist_any"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_any, "spatial/cor_any.qs2")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">

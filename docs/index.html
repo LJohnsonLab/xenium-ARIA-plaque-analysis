@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-23">
+<meta name="dcterms.date" content="2026-03-24">
 
 <title>Project Overview – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -94,10 +94,21 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./2_coregistration_Akhil.html"> 
-<span class="menu-text">Co-registration</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-co-registration" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Co-registration</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-co-registration">    
+        <li>
+    <a class="dropdown-item" href="./2_coregistration_Akhil.html">
+ <span class="dropdown-text">HALO analysis</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./1_plaque_deduplication_diagnostics.html">
+ <span class="dropdown-text">Plaque deduplication diagnostics</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item dropdown ">
     <a class="nav-link dropdown-toggle" href="#" id="nav-menu-expression-distance-correlations" role="link" data-bs-toggle="dropdown" aria-expanded="false">
  <span class="menu-text">Expression-Distance correlations</span>
@@ -207,7 +218,7 @@ ul.task-list li input[type="checkbox"] {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 23, 2026</p>
+      <p class="date">March 24, 2026</p>
     </div>
   </div>
   
@@ -233,7 +244,7 @@ ul.task-list li input[type="checkbox"] {
 <li><p><strong>Attenuation of gene-distance correlations.</strong> The compressed distance ranks increase within-group variance without shifting the mean, attenuating Spearman rho toward zero. Reported enrichment signals (e.g.&nbsp;Module 6, DAM genes near parenchymal plaques) are therefore conservative underestimates of the true plaque-proximity effect.</p></li>
 <li><p><strong>Proximal-group contamination.</strong> The 50 µm proximity threshold admits cells that are biologically distal but within range of a fragment centroid, diluting the transcriptional contrast in pseudobulk DE comparisons.</p></li>
 </ol>
-<p>Permutation-based tests (where cell-type labels are shuffled against a fixed spatial graph) are not affected by these distance artefacts, because the null distribution inherits the same fragmentation structure as the real data. However, the absolute distance values, Spearman rho estimates, and proximal/distal group assignments used elsewhere should be interpreted with this caveat in mind. Potential mitigations — fragment merging via DBSCAN or complete-linkage clustering, or conversion to a continuous plaque-density covariate (C-SIDE approach) — are documented in <code>notebooklm/halo_plaque_fragmentation.md</code>.</p>
+<p>Permutation-based tests (where cell-type labels are shuffled against a fixed spatial graph) are not affected by these distance artefacts, because the null distribution inherits the same fragmentation structure as the real data. However, the absolute distance values, Spearman rho estimates, and proximal/distal group assignments used elsewhere should be interpreted with this caveat in mind.</p>
 
 
 </section>
