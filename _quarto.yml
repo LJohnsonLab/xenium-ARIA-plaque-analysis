@@ -12,7 +12,11 @@ website:
       - text: Home
         href: index.qmd
       - text: Co-registration
-        href: 2_coregistration_Akhil.qmd
+        menu:
+          - text: HALO analysis
+            href: 2_coregistration_Akhil.qmd
+          - text: Plaque deduplication diagnostics
+            href: 1_plaque_deduplication_diagnostics.qmd
       - text: Expression-Distance correlations
         menu:
           - text: All cell types
