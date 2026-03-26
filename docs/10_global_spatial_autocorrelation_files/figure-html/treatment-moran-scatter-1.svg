@@ -528,11 +528,11 @@
 <circle cx='219.15' cy='311.71' r='2.55' style='stroke-width: 0.84; stroke: #999999; stroke-opacity: 0.60; fill: #999999; fill-opacity: 0.60;' />
 <circle cx='121.48' cy='418.28' r='2.55' style='stroke-width: 0.84; stroke: #999999; stroke-opacity: 0.60; fill: #999999; fill-opacity: 0.60;' />
 <line x1='-348.25' y1='878.48' x2='887.81' y2='-357.58' style='stroke-width: 1.26; stroke: #FF0000; stroke-dasharray: 6.73,6.73; stroke-linecap: butt;' />
-<text x='360.45' y='119.52' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='34.83px' lengthAdjust='spacingAndGlyphs'>Car12</text>
-<text x='326.99' y='312.39' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='19.20px' lengthAdjust='spacingAndGlyphs'>Nts</text>
-<text x='310.71' y='277.66' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='27.27px' lengthAdjust='spacingAndGlyphs'>Tac1</text>
-<text x='188.08' y='395.03' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='29.14px' lengthAdjust='spacingAndGlyphs'>Tdo2</text>
-<text x='175.48' y='422.46' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='35.55px' lengthAdjust='spacingAndGlyphs'>Tpsb2</text>
+<text x='360.53' y='119.50' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='34.83px' lengthAdjust='spacingAndGlyphs'>Car12</text>
+<text x='327.03' y='312.43' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='19.20px' lengthAdjust='spacingAndGlyphs'>Nts</text>
+<text x='310.79' y='277.59' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='27.27px' lengthAdjust='spacingAndGlyphs'>Tac1</text>
+<text x='206.32' y='376.32' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='29.14px' lengthAdjust='spacingAndGlyphs'>Tdo2</text>
+<text x='157.51' y='440.90' text-anchor='middle' style='font-size: 12.80px; font-style: italic; font-family: "Arial";' textLength='35.55px' lengthAdjust='spacingAndGlyphs'>Tpsb2</text>
 </g>
 <g clip-path='url(#cpMC4wMHw1MDQuMDB8MC4wMHw1MDQuMDA=)'>
 <text x='57.94' y='451.20' text-anchor='end' style='font-size: 10.40px;fill: #4D4D4D; font-family: "Arial";' textLength='14.45px' lengthAdjust='spacingAndGlyphs'>0.0</text>
