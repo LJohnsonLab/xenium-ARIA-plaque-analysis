@@ -97,15 +97,31 @@ compute_cell_distances <- function(seurat_obj, caa_coords, paren_coords) {
 }
 
 # ── Load Seurat + compute distances ───────────────────────────────────────────
+
+###### new full object from Chloe after catchin a bug in slide assignation ######
+# aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
+# slide1 <- subset(aria, subset = sample_ID%in%unique(thios_1$sample))
+# slide2 <- subset(aria, subset = sample_ID%in%unique(thios_2$sample))
+# qs2::qs_save(slide1,file = paste0(seurat_path, "20260320_fullobj_correctedChloe_slide1.qs2"))
+# qs2::qs_save(slide2,file = paste0(seurat_path, "20260320_fullobj_correctedChloe_slide2.qs2"))
+
+###### new microglia object from Chloe after catchin a bug in slide assignation ######
+# mg <- qs2::qs_read(paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2"))
+# mg <- UpdateSeuratObject(mg)
+# slide1_mg <- subset(mg, subset = sample_ID%in%unique(thios_1$sample))
+# slide2_mg <- subset(mg, subset = sample_ID%in%unique(thios_2$sample))
+# qs2::qs_save(slide1_mg,file = paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2_slide1.qs2"))
+# qs2::qs_save(slide2_mg,file = paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2_slide2.qs2"))
+
 load_slides_and_distances <- function(type = c("full", "microglia")) {
   type <- match.arg(type)
 
   if (type == "full") {
-    s1 <- qs2::qs_read(paste0(seurat_path, "20260217_Part2_fullobj_slide1.qs2"))
-    s2 <- qs2::qs_read(paste0(seurat_path, "20260217_Part2_fullobj_slide2.qs2"))
+    s1 <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_slide1.qs2"))
+    s2 <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_slide2.qs2"))
   } else {
-    s1 <- qs2::qs_read(paste0(seurat_path, "20260225-mg_kai_slide1.qs2"))
-    s2 <- qs2::qs_read(paste0(seurat_path, "20260225-mg_kai_slide2.qs2"))
+    s1 <- qs2::qs_read(paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2_slide1.qs2"))
+    s2 <- qs2::qs_read(paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2_slide2.qs2"))
   }
 
   d1 <- compute_cell_distances(s1, caa_coords_1, paren_coords_1)
