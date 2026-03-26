@@ -3,12 +3,6 @@ title: "Gene-distance correlation — astrocytes and oligodendrocytes"
 date: last-modified
 ---
 
-# Rationale
-
-Notebook 7 established that microglia activate a DAM transcriptional programme near
-parenchymal plaques and a distinct cholesterol/lipid programme near CAA. This
-constitutes spatial evidence for **Layer 1 (Initiation)** of the proposed three-layer
-glial response model.
 
 Here we extend the same gene-distance correlation approach to **astrocytes** and
 **oligodendrocytes** to test whether Layers 2 and 3 also show plaque-proximity
@@ -17,9 +11,7 @@ gradients:
 - **Layer 2 — Amplification (Astrocytes)**: Ifitm3, Ccl2, Ccl12, Cxcl10, Tnf, Agt
 - **Layer 3 — Remodeling (Oligodendrocytes)**: Abca1, Abcg1, Apod, Srebf1, Got1↓, Ldhb↓
 
-By restricting the analysis to a single cell type at a time we remove the cell-type
-composition confound: any residual gene-distance relationship reflects transcriptional
-changes within that cell type rather than differential abundance near plaques.
+
 
 # Setup and data loading
 
@@ -39,7 +31,6 @@ cell_distances_all <- data$distances_all
 
 ct_astro <- "Astrocyte"
 ct_oligo <- "Oligodendrocyte"
-ct_opc   <- "OPC"
 ```
 
 
@@ -100,61 +91,50 @@ bind_rows(
 
 # Gene-distance correlation functions
 
-These functions are identical to notebook 7. For each gene we compute a Spearman rank
-correlation between per-cell raw expression counts and distance to the nearest plaque
-of the specified type. The sign is flipped so that positive `rho_flip` = enriched near
-plaques.
+`compute_gene_distance_correlation()` is centralised in `R/setup.R` (sourced in setup chunk). Cell-type-specific analyses use `min_expressing_cells = 50` (lower than the default of 100 to accommodate smaller cell populations).
 
 ```{r}
-#| label: define-compute-correlation
-compute_gene_distance_correlation <- function(
-    seurat_list,
-    cell_distances,
-    distance_col = "dist_any",
-    min_expressing_cells = 50
-) {
-  count_list <- map(seurat_list, \(obj) {
-    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
-  })
-
-  shared_genes <- Reduce(intersect, map(count_list, rownames))
-  counts <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
-
-  shared_cells <- intersect(colnames(counts), cell_distances$cell)
-  counts <- counts[, shared_cells]
-  dist_vec <- cell_distances |>
-    filter(cell %in% shared_cells) |>
-    arrange(match(cell, shared_cells)) |>
-    pull(!!sym(distance_col))
-
-  n_expressing <- Matrix::rowSums(counts > 0)
-  keep <- n_expressing >= min_expressing_cells
-  counts <- counts[keep, ]
-  message(sprintf(
-    "Kept %d / %d genes (>= %d expressing cells)",
-    sum(keep), length(keep), min_expressing_cells
-  ))
-
-  results <- map(seq_len(nrow(counts)), \(i) {
-    gene_expr <- counts[i, ]
-    ct <- cor.test(as.numeric(gene_expr), dist_vec,
-                   method = "spearman", exact = FALSE)
-    tibble(gene = rownames(counts)[i], rho = ct$estimate, pval = ct$p.value)
-  }, .progress = "Spearman correlations") |>
-    bind_rows()
-
-  results |>
+#| label: define-plot-treatment-scatter
+plot_treatment_scatter <- function(cor_adu, cor_igg, title) {
+  df <- inner_join(
+    cor_adu |> select(gene, rho_flip_adu = rho_flip, sig_adu = sig),
+    cor_igg |> select(gene, rho_flip_igg = rho_flip, sig_igg = sig),
+    by = "gene"
+  ) |>
     mutate(
-      padj     = p.adjust(pval, method = "BH"),
-      rho_flip = -rho,
-      rank     = rank(-rho_flip, ties.method = "first"),
-      sig      = case_when(
-        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
-        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
-        TRUE                        ~ "ns"
+      concordance = case_when(
+        sig_adu == "enriched_near" & sig_igg == "enriched_near" ~ "both near",
+        sig_adu == "enriched_far"  & sig_igg == "enriched_far"  ~ "both far",
+        sig_adu != "ns"            & sig_igg != "ns"            ~ "discordant",
+        sig_adu != "ns"            | sig_igg != "ns"            ~ "one sig",
+        TRUE                                                     ~ "ns"
       )
-    ) |>
-    arrange(rank)
+    )
+
+  colour_map <- c(
+    "both near"  = "#E07B39",
+    "both far"   = "#7B68AE",
+    "discordant" = "#C0392B",
+    "one sig"    = "#5DADE2",
+    "ns"         = "grey80"
+  )
+
+  label_df <- df |> filter(concordance %in% c("both near", "both far", "discordant"))
+
+  ggplot(df, aes(x = rho_flip_igg, y = rho_flip_adu)) +
+    geom_point(aes(colour = concordance), size = 1.8, alpha = 0.6) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") +
+    geom_hline(yintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_vline(xintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_text_repel(
+      data = label_df, aes(label = gene, colour = concordance),
+      size = 3.5, fontface = "italic", max.overlaps = 20, show.legend = FALSE
+    ) +
+    scale_colour_manual(values = colour_map) +
+    labs(title = title, x = "rho_flip — IgG", y = "rho_flip — Aducanumab", colour = NULL) +
+    theme_minimal(base_size = 13) +
+    theme(legend.position = "bottom", panel.grid.minor = element_blank(),
+          panel.grid.major = element_line(colour = "grey92"))
 }
 ```
 
@@ -225,18 +205,58 @@ Candidate genes from DEG_consolidated model (Layer 2 — Amplification):
 
 ```{r}
 #| label: run-astro-correlations
+#| eval: false
 astro_candidate_genes <- c(
   "Ifitm3", "Ccl2", "Ccl12", "Cxcl10", "Agt",
   "Gfap", "Vim", "S100b", "Apod", "Abca1", "Plin4"
 )
 
-cor_caa_astro <- compute_gene_distance_correlation(
-  slides_astro, dist_astro, distance_col = "dist_caa"
+cor_caa_astro   <- compute_gene_distance_correlation(
+  slides_astro, dist_astro, distance_col = "dist_caa",   min_expressing_cells = 50)
+cor_paren_astro <- compute_gene_distance_correlation(
+  slides_astro, dist_astro, distance_col = "dist_paren", min_expressing_cells = 50)
+cor_any_astro   <- compute_gene_distance_correlation(
+  slides_astro, dist_astro, distance_col = "dist_any",   min_expressing_cells = 50)
+
+# qs2::qs_save(cor_caa_astro,   "spatial/astro_cor_caa.qs2")
+# qs2::qs_save(cor_paren_astro, "spatial/astro_cor_paren.qs2")
+# qs2::qs_save(cor_any_astro,   "spatial/astro_cor_any.qs2")
+```
+
+```{r}
+#| label: run-astro-correlations-by-treatment
+#| eval: false
+dist_astro_adu <- dist_astro |> filter(Treatment.Group == "Adu")
+dist_astro_igg <- dist_astro |> filter(Treatment.Group == "IgG")
+
+for (trt in c("adu", "igg")) {
+  dist_trt <- if (trt == "adu") dist_astro_adu else dist_astro_igg
+  for (dcol in c("dist_caa", "dist_paren", "dist_any")) {
+    res    <- compute_gene_distance_correlation(slides_astro, dist_trt,
+                distance_col = dcol, min_expressing_cells = 50)
+    suffix <- sub("dist_", "", dcol)
+    qs2::qs_save(res, paste0("spatial/astro_cor_", suffix, "_", trt, ".qs2"))
+  }
+}
+```
+
+```{r}
+#| label: load-astro-correlations
+astro_candidate_genes <- c(
+  "Ifitm3", "Ccl2", "Ccl12", "Cxcl10", "Agt",
+  "Gfap", "Vim", "S100b", "Apod", "Abca1", "Plin4"
 )
 
-cor_paren_astro <- compute_gene_distance_correlation(
-  slides_astro, dist_astro, distance_col = "dist_paren"
-)
+cor_caa_astro   <- qs2::qs_read("spatial/astro_cor_caa.qs2")
+cor_paren_astro <- qs2::qs_read("spatial/astro_cor_paren.qs2")
+cor_any_astro   <- qs2::qs_read("spatial/astro_cor_any.qs2")
+
+astro_cor_caa_adu   <- qs2::qs_read("spatial/astro_cor_caa_adu.qs2")
+astro_cor_caa_igg   <- qs2::qs_read("spatial/astro_cor_caa_igg.qs2")
+astro_cor_paren_adu <- qs2::qs_read("spatial/astro_cor_paren_adu.qs2")
+astro_cor_paren_igg <- qs2::qs_read("spatial/astro_cor_paren_igg.qs2")
+astro_cor_any_adu   <- qs2::qs_read("spatial/astro_cor_any_adu.qs2")
+astro_cor_any_igg   <- qs2::qs_read("spatial/astro_cor_any_igg.qs2")
 ```
 
 ## Rank plots — astrocytes
@@ -288,6 +308,40 @@ show_top(cor_caa_astro,   "Top genes — astrocytes, distance to CAA")
 show_top(cor_paren_astro, "Top genes — astrocytes, distance to parenchymal")
 ```
 
+## Treatment-split rank plots — astrocytes
+
+```{r}
+#| label: plot-astro-caa-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(astro_cor_caa_adu,
+  title = "Astrocytes — CAA, Aducanumab", genes_to_label = astro_candidate_genes) |
+plot_gene_distance_correlation(astro_cor_caa_igg,
+  title = "Astrocytes — CAA, IgG",        genes_to_label = astro_candidate_genes)
+```
+
+```{r}
+#| label: plot-astro-paren-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(astro_cor_paren_adu,
+  title = "Astrocytes — Parenchymal, Aducanumab", genes_to_label = astro_candidate_genes) |
+plot_gene_distance_correlation(astro_cor_paren_igg,
+  title = "Astrocytes — Parenchymal, IgG",        genes_to_label = astro_candidate_genes)
+```
+
+```{r}
+#| label: plot-astro-scatter
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+plot_treatment_scatter(astro_cor_caa_adu,   astro_cor_caa_igg,   "Astrocytes — CAA, Adu vs IgG") |
+plot_treatment_scatter(astro_cor_paren_adu, astro_cor_paren_igg, "Astrocytes — Parenchymal, Adu vs IgG") |
+plot_treatment_scatter(astro_cor_any_adu,   astro_cor_any_igg,   "Astrocytes — Any plaque, Adu vs IgG")
+```
+
 ## Venn diagram — astrocyte enriched-near overlap
 
 ```{r}
@@ -319,18 +373,58 @@ Candidate genes from DEG_consolidated model (Layer 3 — Remodeling):
 
 ```{r}
 #| label: run-oligo-correlations
+#| eval: false
 oligo_candidate_genes <- c(
   "Abca1", "Abcg1", "Srebf1", "Apod", "Aspa",
   "Mbp", "Plp1", "Got1", "Ldhb", "Mdh2", "Hk1"
 )
 
-cor_caa_oligo <- compute_gene_distance_correlation(
-  slides_oligo, dist_oligo, distance_col = "dist_caa"
+cor_caa_oligo   <- compute_gene_distance_correlation(
+  slides_oligo, dist_oligo, distance_col = "dist_caa",   min_expressing_cells = 50)
+cor_paren_oligo <- compute_gene_distance_correlation(
+  slides_oligo, dist_oligo, distance_col = "dist_paren", min_expressing_cells = 50)
+cor_any_oligo   <- compute_gene_distance_correlation(
+  slides_oligo, dist_oligo, distance_col = "dist_any",   min_expressing_cells = 50)
+
+# qs2::qs_save(cor_caa_oligo,   "spatial/oligo_cor_caa.qs2")
+# qs2::qs_save(cor_paren_oligo, "spatial/oligo_cor_paren.qs2")
+# qs2::qs_save(cor_any_oligo,   "spatial/oligo_cor_any.qs2")
+```
+
+```{r}
+#| label: run-oligo-correlations-by-treatment
+#| eval: false
+dist_oligo_adu <- dist_oligo |> filter(Treatment.Group == "Adu")
+dist_oligo_igg <- dist_oligo |> filter(Treatment.Group == "IgG")
+
+for (trt in c("adu", "igg")) {
+  dist_trt <- if (trt == "adu") dist_oligo_adu else dist_oligo_igg
+  for (dcol in c("dist_caa", "dist_paren", "dist_any")) {
+    res    <- compute_gene_distance_correlation(slides_oligo, dist_trt,
+                distance_col = dcol, min_expressing_cells = 50)
+    suffix <- sub("dist_", "", dcol)
+    qs2::qs_save(res, paste0("spatial/oligo_cor_", suffix, "_", trt, ".qs2"))
+  }
+}
+```
+
+```{r}
+#| label: load-oligo-correlations
+oligo_candidate_genes <- c(
+  "Abca1", "Abcg1", "Srebf1", "Apod", "Aspa",
+  "Mbp", "Plp1", "Got1", "Ldhb", "Mdh2", "Hk1"
 )
 
-cor_paren_oligo <- compute_gene_distance_correlation(
-  slides_oligo, dist_oligo, distance_col = "dist_paren"
-)
+cor_caa_oligo   <- qs2::qs_read("spatial/oligo_cor_caa.qs2")
+cor_paren_oligo <- qs2::qs_read("spatial/oligo_cor_paren.qs2")
+cor_any_oligo   <- qs2::qs_read("spatial/oligo_cor_any.qs2")
+
+oligo_cor_caa_adu   <- qs2::qs_read("spatial/oligo_cor_caa_adu.qs2")
+oligo_cor_caa_igg   <- qs2::qs_read("spatial/oligo_cor_caa_igg.qs2")
+oligo_cor_paren_adu <- qs2::qs_read("spatial/oligo_cor_paren_adu.qs2")
+oligo_cor_paren_igg <- qs2::qs_read("spatial/oligo_cor_paren_igg.qs2")
+oligo_cor_any_adu   <- qs2::qs_read("spatial/oligo_cor_any_adu.qs2")
+oligo_cor_any_igg   <- qs2::qs_read("spatial/oligo_cor_any_igg.qs2")
 ```
 
 ## Rank plots — oligodendrocytes
@@ -366,6 +460,40 @@ p_paren_oligo <- plot_gene_distance_correlation(
 #| label: oligo-top-tables
 show_top(cor_caa_oligo,   "Top genes — oligodendrocytes, distance to CAA")
 show_top(cor_paren_oligo, "Top genes — oligodendrocytes, distance to parenchymal")
+```
+
+## Treatment-split rank plots — oligodendrocytes
+
+```{r}
+#| label: plot-oligo-caa-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(oligo_cor_caa_adu,
+  title = "Oligodendrocytes — CAA, Aducanumab", genes_to_label = oligo_candidate_genes) |
+plot_gene_distance_correlation(oligo_cor_caa_igg,
+  title = "Oligodendrocytes — CAA, IgG",        genes_to_label = oligo_candidate_genes)
+```
+
+```{r}
+#| label: plot-oligo-paren-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(oligo_cor_paren_adu,
+  title = "Oligodendrocytes — Parenchymal, Aducanumab", genes_to_label = oligo_candidate_genes) |
+plot_gene_distance_correlation(oligo_cor_paren_igg,
+  title = "Oligodendrocytes — Parenchymal, IgG",        genes_to_label = oligo_candidate_genes)
+```
+
+```{r}
+#| label: plot-oligo-scatter
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+plot_treatment_scatter(oligo_cor_caa_adu,   oligo_cor_caa_igg,   "Oligodendrocytes — CAA, Adu vs IgG") |
+plot_treatment_scatter(oligo_cor_paren_adu, oligo_cor_paren_igg, "Oligodendrocytes — Parenchymal, Adu vs IgG") |
+plot_treatment_scatter(oligo_cor_any_adu,   oligo_cor_any_igg,   "Oligodendrocytes — Any plaque, Adu vs IgG")
 ```
 
 ## Venn diagram — oligodendrocyte enriched-near overlap
