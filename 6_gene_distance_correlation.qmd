@@ -13,6 +13,7 @@ Load libraries, Seurat objects, and compute cell-to-plaque distances.
 #| label: setup
 source("R/setup.R")
 library(ggrepel)
+library(patchwork)
 
 data <- load_slides_and_distances("full")
 slide1 <- data$slide1; slide2 <- data$slide2
@@ -141,10 +142,28 @@ cor_paren <- compute_gene_distance_correlation(
 cor_any <- compute_gene_distance_correlation(
   seurat_list, cell_distances_all, distance_col = "dist_any")
 
-# qs2::qs_save(cor_caa, "data/cor_caa.qs2")
-# qs2::qs_save(cor_paren, "data/cor_paren.qs2")
+# qs2::qs_save(cor_caa, "spatial/cor_caa.qs2")
+# qs2::qs_save(cor_paren, "spatial/cor_paren.qs2")
 # qs2::qs_save(cor_any, "spatial/cor_any.qs2")
 
+```
+
+```{r}
+#| label: run-correlations-by-treatment
+#| eval: false
+seurat_list <- list(slide1, slide2)
+
+dist_adu <- cell_distances_all |> filter(Treatment.Group == "Adu")
+dist_igg <- cell_distances_all |> filter(Treatment.Group == "IgG")
+
+for (trt in c("adu", "igg")) {
+  dist_trt <- if (trt == "adu") dist_adu else dist_igg
+  for (dcol in c("dist_caa", "dist_paren", "dist_any")) {
+    res    <- compute_gene_distance_correlation(seurat_list, dist_trt, distance_col = dcol)
+    suffix <- sub("dist_", "", dcol)
+    qs2::qs_save(res, paste0("spatial/cor_", suffix, "_", trt, ".qs2"))
+  }
+}
 ```
 
 ## Rank plots
@@ -152,9 +171,9 @@ cor_any <- compute_gene_distance_correlation(
 ```{r}
 #| label: load-correlations
 
-cor_caa <- qs2::qs_read("data/cor_caa.qs2")
-cor_paren <- qs2::qs_read("data/cor_paren.qs2")
-cor_any <- qs2::qs_read("spatial/cor_any.qs2")
+cor_caa   <- qs2::qs_read("spatial/cor_caa.qs2")
+cor_paren <- qs2::qs_read("spatial/cor_paren.qs2")
+cor_any   <- qs2::qs_read("spatial/cor_any.qs2")
 ```
 
 Three analyses are shown, each using a different distance metric: (1) distance to nearest **CAA** plaque only, (2) distance to nearest **parenchymal** plaque only, and (3) distance to nearest plaque of **any type**. Comparing across the three reveals whether certain genes are specifically associated with one plaque subtype or with amyloid deposits in general.
@@ -202,5 +221,127 @@ show_top <- function(results, label) {
 show_top(cor_caa,   "Top genes — distance to CAA")
 show_top(cor_paren, "Top genes — distance to parenchymal")
 show_top(cor_any,   "Top genes — distance to any plaque")
+```
+
+
+# Rank plots by treatment
+
+```{r}
+#| label: load-correlations-by-treatment
+
+cor_caa_adu   <- qs2::qs_read("spatial/cor_caa_adu.qs2")
+cor_caa_igg   <- qs2::qs_read("spatial/cor_caa_igg.qs2")
+cor_paren_adu <- qs2::qs_read("spatial/cor_paren_adu.qs2")
+cor_paren_igg <- qs2::qs_read("spatial/cor_paren_igg.qs2")
+cor_any_adu   <- qs2::qs_read("spatial/cor_any_adu.qs2")
+cor_any_igg   <- qs2::qs_read("spatial/cor_any_igg.qs2")
+```
+
+
+```{r}
+#| label: plot-caa-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+
+p1 <- plot_gene_distance_correlation(cor_caa_adu, title = "CAA — Aducanumab")
+p2 <- plot_gene_distance_correlation(cor_caa_igg, title = "CAA — IgG")
+
+p1 + p2
+```
+
+```{r}
+#| label: plot-paren-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+
+pa <- plot_gene_distance_correlation(cor_paren_adu, title = "Parenchymal — Aducanumab")
+
+pi <- plot_gene_distance_correlation(cor_paren_igg, title = "Parenchymal — IgG")
+
+pa + pi
+```
+
+```{r}
+#| label: plot-any-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+
+a1 <- plot_gene_distance_correlation(cor_any_adu, title = "Any plaque — Aducanumab")
+
+a2 <- plot_gene_distance_correlation(cor_any_igg, title = "Any plaque — IgG")
+
+a1 + a2
+```
+
+## Adu vs IgG scatter
+
+Each point is a gene. X-axis = `rho_flip` in IgG; Y-axis = `rho_flip` in Aducanumab. Points are coloured by concordance of significance: both enriched near, both enriched far, discordant, or non-significant in both.
+
+```{r}
+#| label: plot-scatter-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+
+plot_treatment_scatter <- function(cor_adu, cor_igg, title) {
+  df <- inner_join(
+    cor_adu |> select(gene, rho_flip_adu = rho_flip, sig_adu = sig),
+    cor_igg |> select(gene, rho_flip_igg = rho_flip, sig_igg = sig),
+    by = "gene"
+  ) |>
+    mutate(
+      concordance = case_when(
+        sig_adu == "enriched_near" & sig_igg == "enriched_near" ~ "both near",
+        sig_adu == "enriched_far"  & sig_igg == "enriched_far"  ~ "both far",
+        sig_adu != "ns"            & sig_igg != "ns"            ~ "discordant",
+        sig_adu != "ns"            | sig_igg != "ns"            ~ "one sig",
+        TRUE                                                     ~ "ns"
+      )
+    )
+
+  colour_map <- c(
+    "both near"  = "#E07B39",
+    "both far"   = "#7B68AE",
+    "discordant" = "#C0392B",
+    "one sig"    = "#5DADE2",
+    "ns"         = "grey80"
+  )
+
+  label_df <- df |> filter(concordance %in% c("both near", "both far", "discordant"))
+
+  ggplot(df, aes(x = rho_flip_igg, y = rho_flip_adu)) +
+    geom_point(aes(colour = concordance), size = 1.8, alpha = 0.6) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") +
+    geom_hline(yintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_vline(xintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_text_repel(
+      data         = label_df,
+      aes(label = gene, colour = concordance),
+      size         = 3.5,
+      fontface     = "italic",
+      max.overlaps = 20,
+      show.legend  = FALSE
+    ) +
+    scale_colour_manual(values = colour_map) +
+    labs(
+      title  = title,
+      x      = "rho_flip — IgG",
+      y      = "rho_flip — Aducanumab",
+      colour = NULL
+    ) +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position    = "bottom",
+      panel.grid.minor   = element_blank(),
+      panel.grid.major   = element_line(colour = "grey92")
+    )
+}
+
+plot_treatment_scatter(cor_caa_adu,   cor_caa_igg,   "CAA — Adu vs IgG") |
+plot_treatment_scatter(cor_paren_adu, cor_paren_igg, "Parenchymal — Adu vs IgG") |
+plot_treatment_scatter(cor_any_adu,   cor_any_igg,   "Any plaque — Adu vs IgG")
 ```
 
