@@ -4,14 +4,6 @@ subtitle: "Microglia object provided by Kai Saito with  Akhil HALO annotations"
 date: last-modified
 ---
 
-# Gene-distance correlation functions
-
-**does a gene change systematically as the cell sits closer to (or farther from) a plaque?**
-
-# Rationale
-
- **Cell-type composition**: certain cell types cluster spatially near plaques, 
- so their marker genes appear "enriched near plaque" even if no single cell changed its transcription.
 
 By restricting the analysis to **microglia only**, we remove the composition
 confound. If a gene still correlates with distance within a single cell type,
@@ -27,8 +19,6 @@ source("R/setup.R")
 library(ggrepel)
 library(patchwork)
 library(ggVennDiagram)
-library(DESeq2)
-library(EnhancedVolcano)
 library(gridExtra)
 
 data <- load_slides_and_distances("microglia")
@@ -104,74 +94,8 @@ To make the results more intuitive,so that "plaque-enriched" genes appear at the
 - **enriched_near** — `padj < 0.05` and `rho_flip > 0` (upregulated close to plaques)
 - **enriched_far** — `padj < 0.05` and `rho_flip < 0` (upregulated far from plaques)
 - **ns** — not significant
-```{r}
 
-#| label: define-compute-correlation
-compute_gene_distance_correlation <- function(
-    seurat_list,
-    cell_distances,
-    distance_col = "dist_any",
-    min_expressing_cells = 100
-) {
-  # ── 1. Pool raw count matrices across slides ────────────────────────────────
-  # Use the RNA assay counts layer (Seurat v5 sparse matrices)
-  count_list <- map(seurat_list, \(obj) {
-    LayerData(obj, assay = DefaultAssay(obj), layer = "counts")
-  })
-
-  # Ensure same gene set, then column-bind
-  shared_genes <- Reduce(intersect, map(count_list, rownames))
-  counts <- do.call(cbind, map(count_list, \(m) m[shared_genes, ]))
-
-  # ── 2. Align cells with distance table ──────────────────────────────────────
-  shared_cells <- intersect(colnames(counts), cell_distances$cell)
-  counts <- counts[, shared_cells]
-  dist_vec <- cell_distances |>
-    filter(cell %in% shared_cells) |>
-    arrange(match(cell, shared_cells)) |>
-    pull(!!sym(distance_col))
-
-  # ── 3. Filter low-expressed genes ───────────────────────────────────────────
-  n_expressing <- Matrix::rowSums(counts > 0)
-  keep <- n_expressing >= min_expressing_cells
-  counts <- counts[keep, ]
-  message(
-    sprintf(
-      "Kept %d / %d genes (≥%d expressing cells)",
-      sum(keep), length(keep), min_expressing_cells
-    )
-  )
-
-  # ── 4. Per-gene Spearman correlation ────────────────────────────────────────
-  # exact = FALSE to handle tied ranks from sparse zeros efficiently
-  results <- map(seq_len(nrow(counts)), \(i) {
-    gene_expr <- counts[i, ]
-    ct <- cor.test(as.numeric(gene_expr), dist_vec,
-                   method = "spearman", exact = FALSE)
-    tibble(
-      gene = rownames(counts)[i],
-      rho  = ct$estimate,
-      pval = ct$p.value
-    )
-  }, .progress = "Spearman correlations") |>
-    bind_rows()
-
-  # ── 5. BH-correct, flip sign, rank ─────────────────────────────────────────
-  # Flip rho so that genes enriched near plaques (negative rho) become positive
-  results |>
-    mutate(
-      padj      = p.adjust(pval, method = "BH"),
-      rho_flip  = -rho,
-      rank      = rank(-rho_flip, ties.method = "first"),
-      sig       = case_when(
-        padj < 0.05 & rho_flip > 0 ~ "enriched_near",
-        padj < 0.05 & rho_flip < 0 ~ "enriched_far",
-        TRUE                        ~ "ns"
-      )
-    ) |>
-    arrange(rank)
-}
-```
+`compute_gene_distance_correlation()` is centralised in `R/setup.R` (sourced in setup chunk).
 
 ```{r}
 #| label: define-plot-correlation
@@ -235,19 +159,42 @@ plot_gene_distance_correlation <- function(
 
 ```{r}
 #| label: run-correlations
+#| eval: false
 seurat_list <- list(slide1_mg, slide2_mg)
 
-cor_caa <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_caa"
-)
+cor_caa   <- compute_gene_distance_correlation(seurat_list, cell_distances_all, distance_col = "dist_caa")
+cor_paren <- compute_gene_distance_correlation(seurat_list, cell_distances_all, distance_col = "dist_paren")
+cor_any   <- compute_gene_distance_correlation(seurat_list, cell_distances_all, distance_col = "dist_any")
 
-cor_paren <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_paren"
-)
+# qs2::qs_save(cor_caa,   "spatial/mg_cor_caa.qs2")
+# qs2::qs_save(cor_paren, "spatial/mg_cor_paren.qs2")
+# qs2::qs_save(cor_any,   "spatial/mg_cor_any.qs2")
+```
 
-cor_any <- compute_gene_distance_correlation(
-  seurat_list, cell_distances_all, distance_col = "dist_any"
-)
+```{r}
+#| label: run-correlations-by-treatment
+#| eval: false
+seurat_list <- list(slide1_mg, slide2_mg)
+
+dist_adu <- cell_distances_all |> filter(Treatment.Group == "Adu")
+dist_igg <- cell_distances_all |> filter(Treatment.Group == "IgG")
+
+for (trt in c("adu", "igg")) {
+  dist_trt <- if (trt == "adu") dist_adu else dist_igg
+  for (dcol in c("dist_caa", "dist_paren", "dist_any")) {
+    res    <- compute_gene_distance_correlation(seurat_list, dist_trt, distance_col = dcol)
+    suffix <- sub("dist_", "", dcol)
+    qs2::qs_save(res, paste0("spatial/mg_cor_", suffix, "_", trt, ".qs2"))
+  }
+}
+```
+
+```{r}
+#| label: load-correlations
+
+cor_caa   <- qs2::qs_read("spatial/mg_cor_caa.qs2")
+cor_paren <- qs2::qs_read("spatial/mg_cor_paren.qs2")
+cor_any   <- qs2::qs_read("spatial/mg_cor_any.qs2")
 ```
 
 ## Rank plots
@@ -354,5 +301,116 @@ show_top <- function(results, label) {
 show_top(cor_caa,   "Top genes — microglia, distance to CAA")
 show_top(cor_paren, "Top genes — microglia, distance to parenchymal")
 show_top(cor_any,   "Top genes — microglia, distance to any plaque")
+```
+
+# Treatment-split correlations
+
+Same analysis run separately in **Aducanumab** and **IgG** microglia.
+
+```{r}
+#| label: load-correlations-by-treatment
+
+cor_caa_adu   <- qs2::qs_read("spatial/mg_cor_caa_adu.qs2")
+cor_caa_igg   <- qs2::qs_read("spatial/mg_cor_caa_igg.qs2")
+cor_paren_adu <- qs2::qs_read("spatial/mg_cor_paren_adu.qs2")
+cor_paren_igg <- qs2::qs_read("spatial/mg_cor_paren_igg.qs2")
+cor_any_adu   <- qs2::qs_read("spatial/mg_cor_any_adu.qs2")
+cor_any_igg   <- qs2::qs_read("spatial/mg_cor_any_igg.qs2")
+```
+
+## Rank plots by treatment
+
+```{r}
+#| label: plot-caa-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(cor_caa_adu, title = "CAA — Aducanumab") |
+plot_gene_distance_correlation(cor_caa_igg, title = "CAA — IgG")
+```
+
+```{r}
+#| label: plot-paren-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(cor_paren_adu, title = "Parenchymal — Aducanumab") |
+plot_gene_distance_correlation(cor_paren_igg, title = "Parenchymal — IgG")
+```
+
+```{r}
+#| label: plot-any-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 10
+plot_gene_distance_correlation(cor_any_adu, title = "Any plaque — Aducanumab") |
+plot_gene_distance_correlation(cor_any_igg, title = "Any plaque — IgG")
+```
+
+## Adu vs IgG scatter
+
+```{r}
+#| label: plot-scatter-treatment
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+
+plot_treatment_scatter <- function(cor_adu, cor_igg, title) {
+  df <- inner_join(
+    cor_adu |> select(gene, rho_flip_adu = rho_flip, sig_adu = sig),
+    cor_igg |> select(gene, rho_flip_igg = rho_flip, sig_igg = sig),
+    by = "gene"
+  ) |>
+    mutate(
+      concordance = case_when(
+        sig_adu == "enriched_near" & sig_igg == "enriched_near" ~ "both near",
+        sig_adu == "enriched_far"  & sig_igg == "enriched_far"  ~ "both far",
+        sig_adu != "ns"            & sig_igg != "ns"            ~ "discordant",
+        sig_adu != "ns"            | sig_igg != "ns"            ~ "one sig",
+        TRUE                                                     ~ "ns"
+      )
+    )
+
+  colour_map <- c(
+    "both near"  = "#E07B39",
+    "both far"   = "#7B68AE",
+    "discordant" = "#C0392B",
+    "one sig"    = "#5DADE2",
+    "ns"         = "grey80"
+  )
+
+  label_df <- df |> filter(concordance %in% c("both near", "both far", "discordant"))
+
+  ggplot(df, aes(x = rho_flip_igg, y = rho_flip_adu)) +
+    geom_point(aes(colour = concordance), size = 1.8, alpha = 0.6) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", colour = "grey40") +
+    geom_hline(yintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_vline(xintercept = 0, colour = "grey70", linewidth = 0.3) +
+    geom_text_repel(
+      data         = label_df,
+      aes(label = gene, colour = concordance),
+      size         = 3.5,
+      fontface     = "italic",
+      max.overlaps = 20,
+      show.legend  = FALSE
+    ) +
+    scale_colour_manual(values = colour_map) +
+    labs(
+      title  = title,
+      x      = "rho_flip — IgG",
+      y      = "rho_flip — Aducanumab",
+      colour = NULL
+    ) +
+    theme_minimal(base_size = 13) +
+    theme(
+      legend.position  = "bottom",
+      panel.grid.minor = element_blank(),
+      panel.grid.major = element_line(colour = "grey92")
+    )
+}
+
+plot_treatment_scatter(cor_caa_adu,   cor_caa_igg,   "CAA — Adu vs IgG") |
+plot_treatment_scatter(cor_paren_adu, cor_paren_igg, "Parenchymal — Adu vs IgG") |
+plot_treatment_scatter(cor_any_adu,   cor_any_igg,   "Any plaque — Adu vs IgG")
 ```
 
