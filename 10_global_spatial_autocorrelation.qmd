@@ -95,6 +95,9 @@ kNN neighbourhoods are inherently directed/asymmetric: cell A can include cell B
 ```{r}
 #| label: create-spatial-networks
 #| eval: false
+# Note: tried paralleliaation with mclapply biu it does not work here: Giotto objects contain
+# C++ pointers and data.table internals that break fork()-based workers.
+# Sequential execution is required.
 giotto1 <- createSpatialNetwork(giotto1, method = "Delaunay", name = "delaunay")
 giotto1 <- createSpatialNetwork(giotto1, method = "kNN", k = 15, name = "knn15")
 
@@ -139,7 +142,7 @@ compute_moran_direct <- function(giotto_obj, network_name = "knn15") {
   )
   lw  <- spdep::mat2listw(wm, style = "W", zero.policy = TRUE)
 
-  expr_mat <- getExpression(giotto_obj, values = "normalized", output = "matrix")
+  expr_mat <- Giotto::getExpression(giotto_obj, values = "normalized", output = "matrix")
   gene_var  <- apply(expr_mat, 1, var)
   genes     <- names(gene_var[gene_var > 0])
   message(sprintf("Testing %d / %d genes (non-zero variance)", length(genes), nrow(expr_mat)))
@@ -169,7 +172,9 @@ moran_combined <- bind_rows(moran_1, moran_2)
 Moran's I measures whether nearby cells have similar expression values (I > 0: spatial clustering; I ≈ 0: spatial randomness; I < 0: spatial dispersion).   
 
 
-**Interpretation note**: The analytical p-values from `spdep::moran.test` rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and `spdep` explicitly recommends checking results using permutation-based alternatives (e.g., `moran.mc`) when inference is critical. For this reason, we interpret Moran's I primarily as an **effect size for ranking genes** by spatial structure, and treat p-values as secondary.
+**Interpretation note**: The analytical p-values from `spdep::moran.test` assume a symmetric weights matrix (e.g., if Cell A is connected to Cell B, then Cell B should be connected to Cell A). However, the K-Nearest Neighbor (kNN) networks used to map spatial data do not actually guarantee this symmetry.  
+Because this broken assumption makes the fast p-values unreliable,  `spdep` explicitly recommends checking results using permutation-based alternatives such as`moran.mc` (ultra-slow) when inference is critical.  
+For this reason, we interpret Moran's I primarily as an **effect size for ranking genes** by spatial structure, and treat p-values as secondary.
 
 ```{r}
 #| label: morans-i-rank-plot
@@ -331,22 +336,10 @@ To separate these effects, we combine Moran's I with an independent plaque-assoc
 - **Low Moran's I + high rho_flip**: plaque-associated but not broadly spatial (focal plaque response)
 - **Low Moran's I + low rho_flip**: neither spatial nor plaque-associated
 
-```{r}
-#| label: compute-distance-correlations
-#| eval: false
-
-cor_any <- compute_gene_distance_correlation(
-  list(slide1, slide2), cell_distances_all, distance_col = "dist_any"
-)
-
-# qs2::qs_save(cor_any, "spatial/cor_any.qs2")
-```
-
 
 
 ```{r}
 #| label: compare-moran-vs-distance-correlation
-#| fig-height: 7
 #| fig-width: 7
 
 cor_any <- qs2::qs_read("spatial/cor_any.qs2")
@@ -488,7 +481,7 @@ moran_treat_wide <- moran_by_treatment |>
 
 label_treat <- moran_treat_wide |>
   filter(
-    abs(Adu - IgG) > quantile(abs(moran_treat_wide$Adu - moran_treat_wide$IgG), 0.99, na.rm = TRUE)
+    abs(Adu - IgG) > quantile(abs(moran_treat_wide$Adu - moran_treat_wide$IgG), 0.98, na.rm = TRUE)
   )
 
 ggplot(moran_treat_wide, aes(x = IgG, y = Adu)) +
@@ -510,7 +503,15 @@ ggplot(moran_treat_wide, aes(x = IgG, y = Adu)) +
 
 Most genes clustered near the identity line $(I_{\mathrm{Adu}} \approx I_{\mathrm{IgG}})$, indicating that overall transcriptome-wide spatial organization is largely preserved between treatment groups.  
 
-To detect treatment-sensitive spatial changes, we ranked genes by $(|I_{\mathrm{Adu}} - I_{\mathrm{IgG}}|)$ and selected the top 1% most off-diagonal genes. Five genes met this threshold: *Car12, Fcer1a, Nts, Tac1, and Tdo2*.Together, these findings indicate that aducanumab is not associated with a global reconfiguration of tissue-scale transcriptomic architecture, but rather with selective, gene-specific changes in spatial coherence. Because Moran’s I quantifies global spatial dependence, these differences reflect altered spatial patterning rather than mean-expression shifts alone.
+To detect treatment-sensitive spatial changes, we ranked genes by $(|I_{\mathrm{Adu}} - I_{\mathrm{IgG}}|)$ and selected the top 2% most off-diagonal genes. 
+
+The genes that gain spatial structure in Adu (_Cxcl10, Plin5_) point to focal   inflammatory and lipid-metabolic responses around plaque-clearing sites, consistent with the treatment mechanism.  
+
+The genes losing spatial structure in Adu (_Nts, Tac1, Egr1_) suggest reduced spatially-organized neuronal activity patterns, which could reflect altered network activity after plaque burdenreduction, or conversely a mild perturbation from the immune response. The labelled set is small (top 2%), so these are exploratory signals rather than conclusions.
+
+_Tmem212_ is essentially a positive control for the assay. It is  is a cilia-associated gene expressed almost exclusively in ependymal cells, which line the ventricles in a thin, anatomically fixed sheet. Because ependymal cells are locked to the ventricular walls, their marker gene naturally has extreme spatial clustering.
+
+Because Moran’s I quantifies global spatial dependence, these differences reflect altered spatial patterning rather than mean-expression shifts alone.
 
 
 # Geary's C — complementary spatial measure
@@ -538,7 +539,7 @@ compute_geary_direct <- function(giotto_obj, network_name = "knn15") {
   )
   lw  <- spdep::mat2listw(wm, style = "W", zero.policy = TRUE)
 
-  expr_mat <- getExpression(giotto_obj, values = "normalized", output = "matrix")
+  expr_mat <- Giotto::getExpression(giotto_obj, values = "normalized", output = "matrix")
   gene_var  <- apply(expr_mat, 1, var)
   genes     <- names(gene_var[gene_var > 0])
 
