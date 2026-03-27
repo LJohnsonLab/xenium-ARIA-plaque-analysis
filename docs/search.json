@@ -747,5 +747,26 @@
     "title": "Microglia proximal vs distal to plaques",
     "section": "Parenchymal — treatment DE",
     "text": "Parenchymal — treatment DE\n\n\nCode\ntrt_paren_prox &lt;- run_treatment_de(\n  list(slide1_mg, slide2_mg), \"prox_paren\", \"proximal\",\n  \"Microglia proximal to parenchymal — Adu vs IgG\"\n)\n\nsig_tbl &lt;- if (nrow(trt_paren_prox$significant_results) &gt; 0) {\n  trt_paren_prox$significant_results |&gt;\n    dplyr::select(p_val, avg_log2FC, p_val_adj) |&gt;\n    mutate(across(where(is.numeric), \\(x) signif(x, 3))) |&gt;\n    arrange(p_val_adj) |&gt;\n    tableGrob(theme = ttheme_minimal(base_size = 14))\n} else {\n  tableGrob(data.frame(Result = \"No significant DEGs\"), theme = ttheme_minimal(base_size = 16))\n}\n\ntrt_paren_prox$volcano_plot + wrap_elements(sig_tbl) + plot_layout(widths = c(2, 1))\n\n\n\n\n\n\n\n\n\nAmong nominally significant genes (p &lt; 0.01, uncorrected; no genes passed BH correction at n = 3 vs 3), aducanumab-treated microglia near parenchymal plaques show exploratory signals of chemokine and inflammasome priming (Ccl12, Ifitm3, Nlrp3) and selective metabolic remodeling (Hk3↑, Pfkm↓, Ldhb↓), without engagement of the canonical Itgax⁺ DAM transcriptional program. These patterns are exploratory and require validation in larger cohorts."
+  },
+  {
+    "objectID": "20_banksy_tissue_domains.html",
+    "href": "20_banksy_tissue_domains.html",
+    "title": "Tissue domain characterization (I)",
+    "section": "",
+    "text": "BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick) augments each cell’s own transcriptome with the weighted mean expression of its spatial neighbours. At lambda = 0.8, neighbourhood context dominates, grouping cells into contiguous tissue domains rather than transcriptomic cell types — complementary to the annotatedclusters cell-type labels already in the object.\nReference: Singhal et al., Nature Genetics, 2024"
+  },
+  {
+    "objectID": "20_banksy_tissue_domains.html#staggered-overview-all-6-brains",
+    "href": "20_banksy_tissue_domains.html#staggered-overview-all-6-brains",
+    "title": "Tissue domain characterization (I)",
+    "section": "Staggered overview (all 6 brains)",
+    "text": "Staggered overview (all 6 brains)\n\n\nCode\nFeatureScatter(\n  aria_sct_split,\n  feature1 = \"staggered_sdimx\",\n  feature2 = \"staggered_sdimy\",\n  group.by = \"banksy_domain\",\n  pt.size  = 0.8\n) +\n  labs(title  = \"BANKSY domains — all brains (staggered)\",\n       x      = \"Staggered x (µm)\",\n       y      = \"Staggered y (µm)\",\n       colour = \"Domain\") +\n  theme_minimal(base_size = 12)"
+  },
+  {
+    "objectID": "20_banksy_tissue_domains.html#per-brain-spatial-maps",
+    "href": "20_banksy_tissue_domains.html#per-brain-spatial-maps",
+    "title": "Tissue domain characterization (I)",
+    "section": "Per-brain spatial maps",
+    "text": "Per-brain spatial maps\n\n\nCode\nmeta &lt;- aria_sct_split@meta.data |&gt; as_tibble(rownames = \"cell\")\n\n# Colour palette: one colour per domain\nn_domains   &lt;- length(unique(aria_sct_split$banksy_domain))\ndomain_cols &lt;- scales::hue_pal()(n_domains) |&gt; setNames(sort(unique(aria_sct_split$banksy_domain)))\n\nmap(sort(unique(meta$sample_ID)), \\(sid) {\n  df &lt;- meta |&gt; filter(sample_ID == sid)\n  ggplot(df, aes(x = x, y = y, colour = banksy_domain)) +\n    geom_point(size = 0.3, alpha = 0.7) +\n    scale_colour_manual(values = domain_cols) +\n    coord_equal() +\n    scale_y_reverse() +\n    labs(title = sid, colour = \"Domain\") +\n    theme_void(base_size = 10) +\n    theme(legend.position = \"none\")\n}) |&gt;\n  wrap_plots(nrow = 2) +\n  plot_annotation(title = \"BANKSY tissue domains per brain\") +\n  plot_layout(guides = \"collect\") &\n  theme(legend.position = \"right\")"
   }
 ]

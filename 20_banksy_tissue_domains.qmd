@@ -1,0 +1,279 @@
+---
+title: "Tissue domain characterization (I)"
+subtitle: "BANSKY segmentation (lambda = 0.8, SCT normalized data)"
+date: last-modified
+---
+
+**BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick)** augments each cell's own transcriptome with the weighted mean expression of its spatial neighbours. At `lambda = 0.8`, neighbourhood context dominates, grouping cells into contiguous **tissue domains** rather than transcriptomic cell types — complementary to the `annotatedclusters` cell-type labels already in the object.
+
+Reference: [Singhal et al., *Nature Genetics*, 2024](https://doi.org/10.1038/s41588-024-01664-3)
+
+# Setup and data loading
+
+`aria` is the full merged Seurat object (6 brains, 358 399 cells total). Assay `SCT_SPLIT` contains SPLIT-denoised, SCTransformed counts (474 features) for 346 928 cells that passed the SPLIT quality filter. BANKSY is run on this filtered cell set. Spatial coordinates are in metadata columns `x` and `y`.
+
+```{r}
+#| label: setup
+
+# BiocManager::install('Banksy')
+# remotes::install_github('satijalab/seurat-wrappers')
+
+source("R/setup.R")
+library(Banksy)
+library(SeuratWrappers)
+library(patchwork)
+
+aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
+DefaultAssay(aria) <- "SCT_SPLIT"
+```
+
+# Method: BANKSY at lambda = 0.8
+
+BANKSY constructs an augmented expression matrix by concatenating:
+
+1. The cell's own (normalised) gene expression.
+2. The **weighted neighbourhood mean**: average expression of the k nearest spatial neighbours, weighted by Euclidean distance (Gaussian envelope).
+
+The mixing parameter **`lambda = 0.8`** places 80 % weight on the neighbourhood context, activating **tissue domain segmentation mode**. Cells are embedded in this augmented space, dimensionality-reduced with PCA, and clustered with Leiden.
+
+The 6 brains are spread across **two slides**. Within each slide, the 3 brains are placed at different physical positions so their `x`/`y` coordinates are already non-overlapping. Between slides, however, each slide has its own coordinate system starting from (0, 0), so slide 1 and slide 2 coordinates do overlap. We therefore set `group = "Slide"` to stagger coordinates between slides only, preserving the real within-slide spatial layout. `split.scale = TRUE` applies within-slide z-scaling before concatenation, accounting for minor technical differences between imaging runs.
+
+> **Important**: do not call `ScaleData()` on the resulting BANKSY assay. `RunBanksy` already populates `scale.data` with the lambda-weighted features. Re-scaling would erase the neighbourhood weighting.
+
+# Run BANKSY
+
+```{r}
+#| label: run-banksy
+#| eval: false
+
+# SCT_SPLIT was built from SPLIT-filtered cells; subset to avoid dimension mismatch
+aria_sct_split <- subset(aria, cells = Cells(aria[["SCT_SPLIT"]]))
+
+aria_sct_split <- RunBanksy(
+  aria_sct_split,
+  lambda      = 0.8,
+  assay       = "SCT_SPLIT",
+  slot        = "data",        # SCT-normalised expression
+  features    = "all",    # 474 variable features from SCT_SPLIT
+  k_geom      = 15,            # spatial neighbours per cell
+  dimx        = "x",           # x coordinate in metadata
+  dimy        = "y",           # y coordinate in metadata
+  group       = "Slide",       # stagger coordinates between slides (overlap between slides, not within)
+  split.scale = TRUE           # within-slide z-scaling
+)
+
+# Active assay is now BANKSY; do NOT call ScaleData
+aria_sct_split <- RunPCA(aria_sct_split,
+               assay    = "BANKSY",
+               features = rownames(aria_sct_split),  # all BANKSY features
+               npcs     = 50)
+
+aria_sct_split <- RunUMAP(aria_sct_split, dims = 1:30, seed.use = 42,
+                reduction.name = "umap_banksy", reduction.key = "BKSYUMAP_")
+
+aria_sct_split <- FindNeighbors(aria_sct_split, dims = 1:30)
+aria_sct_split <- FindClusters(aria_sct_split, resolution = 0.5, random.seed = 42)
+
+# Store BANKSY domains in an explicit column (avoids confusion with pre-existing banksy_domain)
+aria_sct_split$banksy_domain <- aria_sct_split$BANKSY_snn_res.0.5
+Idents(aria_sct_split) <- "banksy_domain"
+
+qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_sct.qs2"))
+```
+
+```{r}
+#| label: load-banksy
+aria_sct_split <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_sct.qs2"))
+```
+
+# UMAP
+
+```{r}
+#| label: umap-domains
+DimPlot(aria_sct_split, reduction = "umap_banksy",
+        group.by  = "banksy_domain",
+        label     = TRUE,
+        label.size = 4,
+        pt.size   = 0.3) +
+  labs(title = "BANKSY tissue domains",
+        subtitle = "lambda = 0.8 / resolution = 0.5", colour = "Domain") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "right")
+```
+
+
+
+```{r}
+#| label: umap-treatment
+#| column: page
+#| fig-width: 10
+DimPlot(aria_sct_split, reduction = "umap_banksy",
+        split.by = "Treatment.Group",
+        pt.size  = 0.3) +
+  labs(title = "Treatment group on BANKSY UMAP") +
+  theme_minimal(base_size = 13)
+```
+
+# Spatial domain maps
+
+Domains plotted in tissue space using the `x`/`y` metadata coordinates, one panel per brain. The staggered-coordinate overview (all brains side-by-side) uses `staggered_x`/`staggered_y` written by `RunBanksy`.
+
+## Staggered overview (all 6 brains)
+
+```{r}
+#| label: spatial-staggered
+#| column: page
+#| fig-height: 8
+#| fig-width: 12
+FeatureScatter(
+  aria_sct_split,
+  feature1 = "staggered_sdimx",
+  feature2 = "staggered_sdimy",
+  group.by = "banksy_domain",
+  pt.size  = 0.8
+) +
+  labs(title  = "BANKSY domains — all brains (staggered)",
+       x      = "Staggered x (µm)",
+       y      = "Staggered y (µm)",
+       colour = "Domain") +
+  theme_minimal(base_size = 12)
+```
+
+## Per-brain spatial maps
+
+```{r}
+#| label: spatial-domains
+#| column: page
+#| fig-height: 8
+#| fig-width: 12
+
+meta <- aria_sct_split@meta.data |> as_tibble(rownames = "cell")
+
+# Colour palette: one colour per domain
+n_domains   <- length(unique(aria_sct_split$banksy_domain))
+domain_cols <- scales::hue_pal()(n_domains) |> setNames(sort(unique(aria_sct_split$banksy_domain)))
+
+map(sort(unique(meta$sample_ID)), \(sid) {
+  df <- meta |> filter(sample_ID == sid)
+  ggplot(df, aes(x = x, y = y, colour = banksy_domain)) +
+    geom_point(size = 0.3, alpha = 0.7) +
+    scale_colour_manual(values = domain_cols) +
+    coord_equal() +
+    scale_y_reverse() +
+    labs(title = sid, colour = "Domain") +
+    theme_void(base_size = 10) +
+    theme(legend.position = "none")
+}) |>
+  wrap_plots(nrow = 2) +
+  plot_annotation(title = "BANKSY tissue domains per brain") +
+  plot_layout(guides = "collect") &
+  theme(legend.position = "right")
+```
+
+# Domain composition
+
+Cell-type and treatment composition of each BANKSY domain.
+
+```{r}
+#| label: domain-composition
+#| column: page
+#| fig-height: 5
+#| fig-width: 12
+ct_frac <- meta |>
+  count(banksy_domain, annotatedclusters) |>
+  group_by(banksy_domain) |>
+  mutate(frac = n / sum(n)) |>
+  ungroup()
+
+ggplot(ct_frac, aes(x = banksy_domain, y = frac, fill = annotatedclusters)) +
+  geom_col() +
+  labs(title = "Cell-type composition per BANKSY domain",
+       x     = "Domain",
+       y     = "Fraction of cells",
+       fill  = "Cell type") +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "right",
+        axis.text.x     = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+#| label: treatment-composition
+#| fig-height: 3
+#| fig-width: 8
+trt_frac <- meta |>
+  count(banksy_domain, Treatment.Group) |>
+  group_by(banksy_domain) |>
+  mutate(frac = n / sum(n)) |>
+  ungroup()
+
+ggplot(trt_frac, aes(x = banksy_domain, y = frac, fill = Treatment.Group)) +
+  geom_col() +
+  scale_fill_manual(values = c(Adu = "#E07B39", IgG = "#7B68AE")) +
+  labs(title = "Treatment composition per BANKSY domain",
+       x     = "Domain",
+       y     = "Fraction of cells",
+       fill  = "Treatment") +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+# Domain marker genes
+
+```{r}
+#| label: domain-markers
+#| eval: false
+
+DefaultAssay(aria_sct_split) <- "SCT_SPLIT"
+Idents(aria_sct_split)       <- "banksy_domain"  # explicit BANKSY domains, not seurat_clusters
+markers <- FindAllMarkers(
+  aria_sct_split,
+  assay           = "SCT_SPLIT",
+  only.pos        = TRUE,
+  min.pct         = 0.1,
+  logfc.threshold = 0.25,
+  test.use        = "wilcox")
+  
+qs2::qs_save(markers, "spatial/banksy_domain_markers.qs2")
+```
+
+```{r}
+#| label: load-markers
+markers <- qs2::qs_read("spatial/banksy_domain_markers.qs2")
+```
+
+```{r}
+#| label: top-markers-table
+library(kableExtra)
+
+top_markers <- markers |>
+  group_by(cluster) |>
+  slice_min(p_val_adj, n = 5) |>
+  ungroup() |>
+  dplyr::select(cluster, gene, avg_log2FC, pct.1, pct.2, p_val_adj)
+
+top_markers |>
+  group_by(cluster) |>
+  slice_max(avg_log2FC, n = 5) |>
+  kbl(caption = "Top 5 marker genes per BANKSY domain") |>
+  kable_styling("striped", full_width = FALSE)
+```
+
+```{r}
+#| label: marker-heatmap
+#| fig-height: 12
+#| fig-width: 8
+top3 <- markers |>
+  group_by(cluster) |>
+  slice_max(avg_log2FC, n = 3) |>
+  pull(gene) |>
+  unique()
+
+DotPlot(aria_sct_split,
+          assay    = "SCT_SPLIT",
+          cols = c("#2f82db","#d84434"),
+          features = top3,
+          group.by = "banksy_domain") +
+  coord_flip()+
+  theme(axis.text.y = element_text(size = 10))
+```
+

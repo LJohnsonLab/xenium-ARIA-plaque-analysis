@@ -50,6 +50,10 @@ website:
             href: 11.1_niche_pseudobulk_treatment.qmd
           - text: Radial niche profile
             href: 15_radial_niche_profile.qmd
+      - text: Tissue domains
+        menu:
+          - text: Banksy (I)
+            href: 20_banksy_tissue_domains.qmd
 
 format:
   html:
