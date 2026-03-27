@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-24">
+<meta name="dcterms.date" content="2026-03-27">
 
 <title>Spatial autocorrelation metrics – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -292,7 +292,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 24, 2026</p>
+      <p class="date">March 27, 2026</p>
     </div>
   </div>
   
@@ -405,14 +405,17 @@ window.Quarto = {
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>giotto1 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto1, <span class="at">method =</span> <span class="st">"Delaunay"</span>, <span class="at">name =</span> <span class="st">"delaunay"</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>giotto1 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto1, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>giotto2 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto2, <span class="at">method =</span> <span class="st">"Delaunay"</span>, <span class="at">name =</span> <span class="st">"delaunay"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>giotto2 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto2, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: tried paralleliaation with mclapply biu it does not work here: Giotto objects contain</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># C++ pointers and data.table internals that break fork()-based workers.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Sequential execution is required.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>giotto1 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto1, <span class="at">method =</span> <span class="st">"Delaunay"</span>, <span class="at">name =</span> <span class="st">"delaunay"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>giotto1 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto1, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto1, <span class="st">"spatial/giotto1.qs2"</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto2, <span class="st">"spatial/giotto2.qs2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>giotto2 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto2, <span class="at">method =</span> <span class="st">"Delaunay"</span>, <span class="at">name =</span> <span class="st">"delaunay"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>giotto2 <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(giotto2, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto1, <span class="st">"spatial/giotto1.qs2"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(giotto2, <span class="st">"spatial/giotto2.qs2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
@@ -457,7 +460,7 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  lw  <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">mat2listw</span>(wm, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  expr_mat <span class="ot">&lt;-</span> <span class="fu">getExpression</span>(giotto_obj, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  expr_mat <span class="ot">&lt;-</span> Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto_obj, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  gene_var  <span class="ot">&lt;-</span> <span class="fu">apply</span>(expr_mat, <span class="dv">1</span>, var)</span>
 <span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  genes     <span class="ot">&lt;-</span> <span class="fu">names</span>(gene_var[gene_var <span class="sc">&gt;</span> <span class="dv">0</span>])</span>
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">message</span>(<span class="fu">sprintf</span>(<span class="st">"Testing %d / %d genes (non-zero variance)"</span>, <span class="fu">length</span>(genes), <span class="fu">nrow</span>(expr_mat)))</span>
@@ -484,7 +487,9 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <section id="morans-i-rank-plot" class="level2">
 <h2 class="anchored" data-anchor-id="morans-i-rank-plot">Moran’s I rank plot</h2>
 <p>Moran’s I measures whether nearby cells have similar expression values (I &gt; 0: spatial clustering; I ≈ 0: spatial randomness; I &lt; 0: spatial dispersion).</p>
-<p><strong>Interpretation note</strong>: The analytical p-values from <code>spdep::moran.test</code> rely on assumptions that can be sensitive to the neighbour graph and other factors. In particular, common derivations assume a symmetric weights matrix, which is not guaranteed for directed kNN graphs, and <code>spdep</code> explicitly recommends checking results using permutation-based alternatives (e.g., <code>moran.mc</code>) when inference is critical. For this reason, we interpret Moran’s I primarily as an <strong>effect size for ranking genes</strong> by spatial structure, and treat p-values as secondary.</p>
+<p><strong>Interpretation note</strong>: The analytical p-values from <code>spdep::moran.test</code> assume a symmetric weights matrix (e.g., if Cell A is connected to Cell B, then Cell B should be connected to Cell A). However, the K-Nearest Neighbor (kNN) networks used to map spatial data do not actually guarantee this symmetry.<br>
+Because this broken assumption makes the fast p-values unreliable, <code>spdep</code> explicitly recommends checking results using permutation-based alternatives such as<code>moran.mc</code> (ultra-slow) when inference is critical.<br>
+For this reason, we interpret Moran’s I primarily as an <strong>effect size for ranking genes</strong> by spatial structure, and treat p-values as secondary.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -655,52 +660,42 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cor_any <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(slide1, slide2), cell_distances_all, <span class="at">distance_col =</span> <span class="st">"dist_any"</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_any, "spatial/cor_any.qs2")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>cor_any <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/cor_any.qs2"</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>moran_vs_dist <span class="ot">&lt;-</span> moran_mean <span class="sc">|&gt;</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(cor_any <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(gene, rho_flip, sig), <span class="at">by =</span> <span class="st">"gene"</span>)</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>label_set <span class="ot">&lt;-</span> moran_vs_dist <span class="sc">|&gt;</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#gene %in% dam_genes |</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.99</span>)<span class="sc">|</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    rho_flip <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.99</span>) <span class="sc">|</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.90</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.9</span>)) <span class="sc">|</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.90</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&lt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.1</span>)) <span class="sc">|</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&lt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.25</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.9</span>)))</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(moran_vs_dist, <span class="fu">aes</span>(<span class="at">x =</span> rho_flip, <span class="at">y =</span> mean_moran)) <span class="sc">+</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> sig), <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> label_set,</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span>, <span class="at">max.overlaps =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"#E07B39"</span>, <span class="st">"enriched_far"</span> <span class="ot">=</span> <span class="st">"#7B68AE"</span>, <span class="st">"ns"</span> <span class="ot">=</span> <span class="st">"grey70"</span>),</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"Enriched near plaque"</span>, <span class="st">"enriched_far"</span> <span class="ot">=</span> <span class="st">"Enriched far"</span>, <span class="st">"ns"</span> <span class="ot">=</span> <span class="st">"NS"</span>)) <span class="sc">+</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I vs gene-distance correlation"</span>,</span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Top-right: spatially clustered AND plaque-associated"</span>,</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Spearman rho (flipped; + = near plaque)"</span>,</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Mean Moran's I"</span>,</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Distance sig."</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>cor_any <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/cor_any.qs2"</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>moran_vs_dist <span class="ot">&lt;-</span> moran_mean <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(cor_any <span class="sc">|&gt;</span> dplyr<span class="sc">::</span><span class="fu">select</span>(gene, rho_flip, sig), <span class="at">by =</span> <span class="st">"gene"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>label_set <span class="ot">&lt;-</span> moran_vs_dist <span class="sc">|&gt;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">#gene %in% dam_genes |</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.99</span>)<span class="sc">|</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    rho_flip <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.99</span>) <span class="sc">|</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.90</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.9</span>)) <span class="sc">|</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&gt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.90</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&lt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.1</span>)) <span class="sc">|</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    (mean_moran <span class="sc">&lt;</span> <span class="fu">quantile</span>(mean_moran, <span class="fl">0.25</span>) <span class="sc">&amp;</span> <span class="fu">abs</span>(rho_flip) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(rho_flip), <span class="fl">0.9</span>)))</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(moran_vs_dist, <span class="fu">aes</span>(<span class="at">x =</span> rho_flip, <span class="at">y =</span> mean_moran)) <span class="sc">+</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">colour =</span> sig), <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> label_set,</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span>, <span class="at">max.overlaps =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_manual</span>(</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"#E07B39"</span>, <span class="st">"enriched_far"</span> <span class="ot">=</span> <span class="st">"#7B68AE"</span>, <span class="st">"ns"</span> <span class="ot">=</span> <span class="st">"grey70"</span>),</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"enriched_near"</span> <span class="ot">=</span> <span class="st">"Enriched near plaque"</span>, <span class="st">"enriched_far"</span> <span class="ot">=</span> <span class="st">"Enriched far"</span>, <span class="st">"ns"</span> <span class="ot">=</span> <span class="st">"NS"</span>)) <span class="sc">+</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I vs gene-distance correlation"</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Top-right: spatially clustered AND plaque-associated"</span>,</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Spearman rho (flipped; + = near plaque)"</span>,</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Mean Moran's I"</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">colour =</span> <span class="st">"Distance sig."</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -739,87 +734,87 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Suppress Giotto's Python initialisation attempts — analysis is pure R.</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">giotto.py_path =</span> <span class="cn">NULL</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Uses spdepAutoCorr() (Giotto-native Moran's I wrapper) instead of the manual</span></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compute_moran_direct(). Pre-filter zero-variance genes before calling since</span></span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="co"># spdepAutoCorr() has no internal tryCatch.</span></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="co"># spdepAutoCorr() uses future.apply internally for gene-level iteration —</span></span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="co"># multisession lets each of the 4 group calls use all cores for its gene loop.</span></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># future.globals.maxSize raised here because each worker receives the full</span></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Giotto object; 8 GiB set in setup is for the main session, not per-worker.</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">12</span>)</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">future.globals.maxSize =</span> <span class="dv">4</span> <span class="sc">*</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">3</span>)  <span class="co"># 4 GiB per worker</span></span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>run_treatment_moran <span class="ot">&lt;-</span> <span class="cf">function</span>(seurat_subset, group_label) {</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter zero-variance genes on the Seurat object before Giotto conversion —</span></span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># avoids calling getExpression() on the giotto S4 class, which has dispatch</span></span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># issues in this Giotto version.</span></span>
-<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">LayerData</span>(seurat_subset, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(seurat_subset), <span class="at">layer =</span> <span class="st">"counts"</span>)</span>
-<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  keep   <span class="ot">&lt;-</span> <span class="fu">rownames</span>(counts)[<span class="fu">apply</span>(counts, <span class="dv">1</span>, var) <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
-<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  seurat_subset <span class="ot">&lt;-</span> seurat_subset[keep, ]</span>
-<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">seurat_to_giotto_manual</span>(seurat_subset)</span>
-<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(g, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
-<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spdepAutoCorr</span>(g, <span class="at">method =</span> <span class="st">"moran.test"</span>, <span class="at">spatial_network_to_use =</span> <span class="st">"knn15"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
-<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="at">gene =</span> feat_ID, <span class="at">moran_I =</span> value) <span class="sc">|&gt;</span></span>
-<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">group =</span> group_label)</span>
-<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>moran_adu <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide1, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>), <span class="st">"Adu_slide1"</span>),</span>
-<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide2, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>), <span class="st">"Adu_slide2"</span>)</span>
-<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>moran_igg <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide1, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>), <span class="st">"IgG_slide1"</span>),</span>
-<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide2, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>), <span class="st">"IgG_slide2"</span>)</span>
-<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>moran_by_treatment <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>  moran_adu <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"Adu"</span>),</span>
-<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a>  moran_igg <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"IgG"</span>)</span>
-<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gene, treatment) <span class="sc">|&gt;</span></span>
-<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_moran =</span> <span class="fu">mean</span>(moran_I, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
-<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(sequential)  <span class="co"># release worker processes before rest of session</span></span>
-<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(moran_by_treatment, "spatial/moran_by_treatment.csv")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Suppress Giotto's Python initialisation attempts — analysis is pure R.</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">giotto.py_path =</span> <span class="cn">NULL</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Uses spdepAutoCorr() (Giotto-native Moran's I wrapper) instead of the manual</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compute_moran_direct(). Pre-filter zero-variance genes before calling since</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># spdepAutoCorr() has no internal tryCatch.</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># spdepAutoCorr() uses future.apply internally for gene-level iteration —</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># multisession lets each of the 4 group calls use all cores for its gene loop.</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># future.globals.maxSize raised here because each worker receives the full</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Giotto object; 8 GiB set in setup is for the main session, not per-worker.</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(future)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(multisession, <span class="at">workers =</span> <span class="dv">12</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">future.globals.maxSize =</span> <span class="dv">4</span> <span class="sc">*</span> <span class="dv">1024</span><span class="sc">^</span><span class="dv">3</span>)  <span class="co"># 4 GiB per worker</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>run_treatment_moran <span class="ot">&lt;-</span> <span class="cf">function</span>(seurat_subset, group_label) {</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter zero-variance genes on the Seurat object before Giotto conversion —</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># avoids calling getExpression() on the giotto S4 class, which has dispatch</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># issues in this Giotto version.</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  counts <span class="ot">&lt;-</span> <span class="fu">LayerData</span>(seurat_subset, <span class="at">assay =</span> <span class="fu">DefaultAssay</span>(seurat_subset), <span class="at">layer =</span> <span class="st">"counts"</span>)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  keep   <span class="ot">&lt;-</span> <span class="fu">rownames</span>(counts)[<span class="fu">apply</span>(counts, <span class="dv">1</span>, var) <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  seurat_subset <span class="ot">&lt;-</span> seurat_subset[keep, ]</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">seurat_to_giotto_manual</span>(seurat_subset)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">createSpatialNetwork</span>(g, <span class="at">method =</span> <span class="st">"kNN"</span>, <span class="at">k =</span> <span class="dv">15</span>, <span class="at">name =</span> <span class="st">"knn15"</span>)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">spdepAutoCorr</span>(g, <span class="at">method =</span> <span class="st">"moran.test"</span>, <span class="at">spatial_network_to_use =</span> <span class="st">"knn15"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="at">gene =</span> feat_ID, <span class="at">moran_I =</span> value) <span class="sc">|&gt;</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">group =</span> group_label)</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>moran_adu <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide1, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>), <span class="st">"Adu_slide1"</span>),</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide2, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>), <span class="st">"Adu_slide2"</span>)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>moran_igg <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide1, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>), <span class="st">"IgG_slide1"</span>),</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">run_treatment_moran</span>(<span class="fu">subset</span>(slide2, <span class="at">subset =</span> Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>), <span class="st">"IgG_slide2"</span>)</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>moran_by_treatment <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>  moran_adu <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"Adu"</span>),</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>  moran_igg <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">treatment =</span> <span class="st">"IgG"</span>)</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gene, treatment) <span class="sc">|&gt;</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_moran =</span> <span class="fu">mean</span>(moran_I, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a><span class="fu">plan</span>(sequential)  <span class="co"># release worker processes before rest of session</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(moran_by_treatment, "spatial/moran_by_treatment.csv")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>moran_by_treatment <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/moran_by_treatment.csv"</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>moran_treat_wide <span class="ot">&lt;-</span> moran_by_treatment <span class="sc">|&gt;</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> treatment, <span class="at">values_from =</span> mean_moran)</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>label_treat <span class="ot">&lt;-</span> moran_treat_wide <span class="sc">|&gt;</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">abs</span>(Adu <span class="sc">-</span> IgG) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(moran_treat_wide<span class="sc">$</span>Adu <span class="sc">-</span> moran_treat_wide<span class="sc">$</span>IgG), <span class="fl">0.99</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(moran_treat_wide, <span class="fu">aes</span>(<span class="at">x =</span> IgG, <span class="at">y =</span> Adu)) <span class="sc">+</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> label_treat,</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">4.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span>, <span class="at">max.overlaps =</span> <span class="dv">15</span>,</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I: Adu vs IgG"</span>,</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Genes off-diagonal have treatment-dependent spatial structure"</span>,</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Mean Moran's I (IgG)"</span>, <span class="at">y =</span> <span class="st">"Mean Moran's I (Adu)"</span></span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>moran_by_treatment <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/moran_by_treatment.csv"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>moran_treat_wide <span class="ot">&lt;-</span> moran_by_treatment <span class="sc">|&gt;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> treatment, <span class="at">values_from =</span> mean_moran)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>label_treat <span class="ot">&lt;-</span> moran_treat_wide <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">abs</span>(Adu <span class="sc">-</span> IgG) <span class="sc">&gt;</span> <span class="fu">quantile</span>(<span class="fu">abs</span>(moran_treat_wide<span class="sc">$</span>Adu <span class="sc">-</span> moran_treat_wide<span class="sc">$</span>IgG), <span class="fl">0.98</span>, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(moran_treat_wide, <span class="fu">aes</span>(<span class="at">x =</span> IgG, <span class="at">y =</span> Adu)) <span class="sc">+</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>, <span class="at">size =</span> <span class="dv">2</span>, <span class="at">colour =</span> <span class="st">"grey60"</span>) <span class="sc">+</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">colour =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> label_treat,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">4.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span>, <span class="at">max.overlaps =</span> <span class="dv">15</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I: Adu vs IgG"</span>,</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"Genes off-diagonal have treatment-dependent spatial structure"</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Mean Moran's I (IgG)"</span>, <span class="at">y =</span> <span class="st">"Mean Moran's I (Adu)"</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_equal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
@@ -830,7 +825,11 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 </div>
 </div>
 <p>Most genes clustered near the identity line <span class="math inline">\((I_{\mathrm{Adu}} \approx I_{\mathrm{IgG}})\)</span>, indicating that overall transcriptome-wide spatial organization is largely preserved between treatment groups.</p>
-<p>To detect treatment-sensitive spatial changes, we ranked genes by <span class="math inline">\((|I_{\mathrm{Adu}} - I_{\mathrm{IgG}}|)\)</span> and selected the top 1% most off-diagonal genes. Five genes met this threshold: <em>Car12, Fcer1a, Nts, Tac1, and Tdo2</em>.Together, these findings indicate that aducanumab is not associated with a global reconfiguration of tissue-scale transcriptomic architecture, but rather with selective, gene-specific changes in spatial coherence. Because Moran’s I quantifies global spatial dependence, these differences reflect altered spatial patterning rather than mean-expression shifts alone.</p>
+<p>To detect treatment-sensitive spatial changes, we ranked genes by <span class="math inline">\((|I_{\mathrm{Adu}} - I_{\mathrm{IgG}}|)\)</span> and selected the top 2% most off-diagonal genes.</p>
+<p>The genes that gain spatial structure in Adu (<em>Cxcl10, Plin5</em>) point to focal inflammatory and lipid-metabolic responses around plaque-clearing sites, consistent with the treatment mechanism.</p>
+<p>The genes losing spatial structure in Adu (<em>Nts, Tac1, Egr1</em>) suggest reduced spatially-organized neuronal activity patterns, which could reflect altered network activity after plaque burdenreduction, or conversely a mild perturbation from the immune response. The labelled set is small (top 2%), so these are exploratory signals rather than conclusions.</p>
+<p><em>Tmem212</em> is essentially a positive control for the assay. It is is a cilia-associated gene expressed almost exclusively in ependymal cells, which line the ventricles in a thin, anatomically fixed sheet. Because ependymal cells are locked to the ventricular walls, their marker gene naturally has extreme spatial clustering.</p>
+<p>Because Moran’s I quantifies global spatial dependence, these differences reflect altered spatial patterning rather than mean-expression shifts alone.</p>
 </section>
 <section id="gearys-c-complementary-spatial-measure" class="level1">
 <h1>Geary’s C — complementary spatial measure</h1>
@@ -853,59 +852,59 @@ Intuitively, Moran’s I increases when cells tend to resemble their neighbours 
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>compute_geary_direct <span class="ot">&lt;-</span> <span class="cf">function</span>(giotto_obj, <span class="at">network_name =</span> <span class="st">"knn15"</span>) {</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  wm  <span class="ot">&lt;-</span> <span class="fu">createSpatialWeightMatrix</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    giotto_obj, <span class="at">spatial_network_to_use =</span> network_name,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">method =</span> <span class="st">"adjacency"</span>, <span class="at">return_gobject =</span> <span class="cn">FALSE</span>, <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  lw  <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">mat2listw</span>(wm, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  expr_mat <span class="ot">&lt;-</span> <span class="fu">getExpression</span>(giotto_obj, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  gene_var  <span class="ot">&lt;-</span> <span class="fu">apply</span>(expr_mat, <span class="dv">1</span>, var)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>  genes     <span class="ot">&lt;-</span> <span class="fu">names</span>(gene_var[gene_var <span class="sc">&gt;</span> <span class="dv">0</span>])</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">map</span>(genes, \(g) <span class="fu">tryCatch</span>(</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>      gt <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">geary.test</span>(<span class="fu">as.numeric</span>(expr_mat[g, ]), lw, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">gene =</span> g, <span class="at">geary_C =</span> gt<span class="sc">$</span>estimate[[<span class="st">"Geary C statistic"</span>]], <span class="at">pval =</span> gt<span class="sc">$</span>p.value)</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    },</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">error =</span> \(e) <span class="fu">tibble</span>(<span class="at">gene =</span> g, <span class="at">geary_C =</span> <span class="cn">NA_real_</span>, <span class="at">pval =</span> <span class="cn">NA_real_</span>)</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">.progress =</span> <span class="st">"Geary's C"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(geary_C))</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>geary_1 <span class="ot">&lt;-</span> <span class="fu">compute_geary_direct</span>(giotto1) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">slide =</span> <span class="st">"Slide 1"</span>)</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>geary_2 <span class="ot">&lt;-</span> <span class="fu">compute_geary_direct</span>(giotto2) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">slide =</span> <span class="st">"Slide 2"</span>)</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>geary_mean <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(geary_1, geary_2) <span class="sc">|&gt;</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gene) <span class="sc">|&gt;</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_geary =</span> <span class="fu">mean</span>(geary_C, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(geary_mean, "spatial/geary_mean.csv")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>compute_geary_direct <span class="ot">&lt;-</span> <span class="cf">function</span>(giotto_obj, <span class="at">network_name =</span> <span class="st">"knn15"</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  wm  <span class="ot">&lt;-</span> <span class="fu">createSpatialWeightMatrix</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    giotto_obj, <span class="at">spatial_network_to_use =</span> network_name,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">method =</span> <span class="st">"adjacency"</span>, <span class="at">return_gobject =</span> <span class="cn">FALSE</span>, <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  lw  <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">mat2listw</span>(wm, <span class="at">style =</span> <span class="st">"W"</span>, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  expr_mat <span class="ot">&lt;-</span> Giotto<span class="sc">::</span><span class="fu">getExpression</span>(giotto_obj, <span class="at">values =</span> <span class="st">"normalized"</span>, <span class="at">output =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  gene_var  <span class="ot">&lt;-</span> <span class="fu">apply</span>(expr_mat, <span class="dv">1</span>, var)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  genes     <span class="ot">&lt;-</span> <span class="fu">names</span>(gene_var[gene_var <span class="sc">&gt;</span> <span class="dv">0</span>])</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">map</span>(genes, \(g) <span class="fu">tryCatch</span>(</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>      gt <span class="ot">&lt;-</span> spdep<span class="sc">::</span><span class="fu">geary.test</span>(<span class="fu">as.numeric</span>(expr_mat[g, ]), lw, <span class="at">zero.policy =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">tibble</span>(<span class="at">gene =</span> g, <span class="at">geary_C =</span> gt<span class="sc">$</span>estimate[[<span class="st">"Geary C statistic"</span>]], <span class="at">pval =</span> gt<span class="sc">$</span>p.value)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">error =</span> \(e) <span class="fu">tibble</span>(<span class="at">gene =</span> g, <span class="at">geary_C =</span> <span class="cn">NA_real_</span>, <span class="at">pval =</span> <span class="cn">NA_real_</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  ), <span class="at">.progress =</span> <span class="st">"Geary's C"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(geary_C))</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>geary_1 <span class="ot">&lt;-</span> <span class="fu">compute_geary_direct</span>(giotto1) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">slide =</span> <span class="st">"Slide 1"</span>)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>geary_2 <span class="ot">&lt;-</span> <span class="fu">compute_geary_direct</span>(giotto2) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">slide =</span> <span class="st">"Slide 2"</span>)</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>geary_mean <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(geary_1, geary_2) <span class="sc">|&gt;</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gene) <span class="sc">|&gt;</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_geary =</span> <span class="fu">mean</span>(geary_C, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a><span class="co"># write_csv(geary_mean, "spatial/geary_mean.csv")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>geary_mean <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/geary_mean.csv"</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>geary_vs_moran <span class="ot">&lt;-</span> geary_mean <span class="sc">|&gt;</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(moran_mean, <span class="at">by =</span> <span class="st">"gene"</span>)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(geary_vs_moran, <span class="fu">aes</span>(<span class="at">x =</span> mean_moran, <span class="at">y =</span> mean_geary)) <span class="sc">+</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> geary_vs_moran <span class="sc">|&gt;</span> <span class="fu">filter</span>(gene <span class="sc">%in%</span> label_set<span class="sc">$</span>gene),</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I vs Geary's C"</span>,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"High Moran's I should correspond to low Geary's C"</span>,</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Mean Moran's I"</span>, <span class="at">y =</span> <span class="st">"Mean Geary's C"</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>geary_mean <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"spatial/geary_mean.csv"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>geary_vs_moran <span class="ot">&lt;-</span> geary_mean <span class="sc">|&gt;</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(moran_mean, <span class="at">by =</span> <span class="st">"gene"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(geary_vs_moran, <span class="fu">aes</span>(<span class="at">x =</span> mean_moran, <span class="at">y =</span> mean_geary)) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.4</span>, <span class="at">colour =</span> <span class="st">"grey50"</span>) <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text_repel</span>(</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> geary_vs_moran <span class="sc">|&gt;</span> <span class="fu">filter</span>(gene <span class="sc">%in%</span> label_set<span class="sc">$</span>gene),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">label =</span> gene),</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">fontface =</span> <span class="st">"italic"</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Moran's I vs Geary's C"</span>,</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"High Moran's I should correspond to low Geary's C"</span>,</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Mean Moran's I"</span>, <span class="at">y =</span> <span class="st">"Mean Geary's C"</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div>
