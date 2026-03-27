@@ -500,22 +500,22 @@
 <circle cx='407.48' cy='226.40' r='2.58' style='stroke-width: 0.90; stroke: #7B68AE; stroke-opacity: 0.50; fill: #7B68AE; fill-opacity: 0.50;' />
 <circle cx='408.22' cy='263.60' r='2.58' style='stroke-width: 0.90; stroke: #7B68AE; stroke-opacity: 0.50; fill: #7B68AE; fill-opacity: 0.50;' />
 <line x1='55.19' y1='154.06' x2='425.03' y2='154.06' style='stroke-width: 1.36; stroke: #666666; stroke-dasharray: 7.24,7.24; stroke-linecap: butt;' />
-<line x1='119.85' y1='39.35' x2='73.40' y2='40.62' style='stroke-width: 1.07; stroke: #E07B39;' />
-<line x1='97.07' y1='62.53' x2='74.83' y2='58.65' style='stroke-width: 1.07; stroke: #E07B39;' />
-<line x1='81.08' y1='91.89' x2='75.13' y2='63.62' style='stroke-width: 1.07; stroke: #E07B39;' />
-<line x1='405.70' y1='235.62' x2='407.30' y2='227.32' style='stroke-width: 1.07; stroke: #7B68AE;' />
-<line x1='382.37' y1='240.56' x2='405.71' y2='226.44' style='stroke-width: 1.07; stroke: #7B68AE;' />
-<line x1='386.77' y1='221.85' x2='404.62' y2='223.01' style='stroke-width: 1.07; stroke: #7B68AE;' />
-<text x='139.04' y='43.42' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='34.78px' lengthAdjust='spacingAndGlyphs'>Lamp5</text>
-<text x='93.57' y='47.10' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Stard8</text>
-<text x='119.43' y='66.75' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='41.12px' lengthAdjust='spacingAndGlyphs'>Slc17a7</text>
-<text x='74.23' y='77.54' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='26.56px' lengthAdjust='spacingAndGlyphs'>Cux2</text>
-<text x='103.76' y='97.07' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='41.77px' lengthAdjust='spacingAndGlyphs'>Bhlhe40</text>
-<text x='390.00' y='268.99' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='22.12px' lengthAdjust='spacingAndGlyphs'>Mbp</text>
-<text x='405.68' y='245.56' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='27.17px' lengthAdjust='spacingAndGlyphs'>Ermn</text>
-<text x='372.04' y='245.58' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='17.06px' lengthAdjust='spacingAndGlyphs'>Nts</text>
-<text x='370.11' y='225.92' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='29.72px' lengthAdjust='spacingAndGlyphs'>Prdx1</text>
-<text x='407.88' y='215.43' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='22.77px' lengthAdjust='spacingAndGlyphs'>Syt6</text>
+<line x1='119.45' y1='39.35' x2='73.40' y2='40.62' style='stroke-width: 1.07; stroke: #E07B39;' />
+<line x1='97.22' y1='62.50' x2='74.83' y2='58.65' style='stroke-width: 1.07; stroke: #E07B39;' />
+<line x1='81.22' y1='92.05' x2='75.13' y2='63.62' style='stroke-width: 1.07; stroke: #E07B39;' />
+<line x1='405.69' y1='236.09' x2='407.31' y2='227.32' style='stroke-width: 1.07; stroke: #7B68AE;' />
+<line x1='382.42' y1='241.03' x2='405.73' y2='226.45' style='stroke-width: 1.07; stroke: #7B68AE;' />
+<line x1='386.87' y1='222.30' x2='404.61' y2='223.04' style='stroke-width: 1.07; stroke: #7B68AE;' />
+<text x='138.64' y='43.42' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='34.78px' lengthAdjust='spacingAndGlyphs'>Lamp5</text>
+<text x='92.99' y='47.06' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='33.52px' lengthAdjust='spacingAndGlyphs'>Stard8</text>
+<text x='119.59' y='66.72' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='41.12px' lengthAdjust='spacingAndGlyphs'>Slc17a7</text>
+<text x='74.23' y='77.58' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='26.56px' lengthAdjust='spacingAndGlyphs'>Cux2</text>
+<text x='103.90' y='97.23' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #E07B39; font-family: "Arial";' textLength='41.77px' lengthAdjust='spacingAndGlyphs'>Bhlhe40</text>
+<text x='389.95' y='268.99' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='22.12px' lengthAdjust='spacingAndGlyphs'>Mbp</text>
+<text x='405.68' y='246.04' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='27.17px' lengthAdjust='spacingAndGlyphs'>Ermn</text>
+<text x='372.09' y='246.06' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='17.06px' lengthAdjust='spacingAndGlyphs'>Nts</text>
+<text x='370.21' y='226.37' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='29.72px' lengthAdjust='spacingAndGlyphs'>Prdx1</text>
+<text x='407.88' y='215.51' text-anchor='middle' style='font-size: 11.38px; font-style: italic;fill: #7B68AE; font-family: "Arial";' textLength='22.77px' lengthAdjust='spacingAndGlyphs'>Syt6</text>
 </g>
 <g clip-path='url(#cpMC4wMHw0MzIuMDB8MC4wMHwzNjAuMDA=)'>
 <text x='48.91' y='238.83' text-anchor='end' style='font-size: 11.20px;fill: #4D4D4D; font-family: "Arial";' textLength='25.48px' lengthAdjust='spacingAndGlyphs'>-0.10</text>

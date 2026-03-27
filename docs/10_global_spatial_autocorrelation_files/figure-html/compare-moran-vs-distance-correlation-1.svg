@@ -512,21 +512,21 @@
 <circle cx='206.40' cy='267.85' r='2.31' style='stroke-width: 0.84; stroke: #7B68AE; stroke-opacity: 0.50; fill: #7B68AE; fill-opacity: 0.50;' />
 <circle cx='208.95' cy='267.90' r='2.31' style='stroke-width: 0.84; stroke: #B3B3B3; stroke-opacity: 0.50; fill: #B3B3B3; fill-opacity: 0.50;' />
 <circle cx='214.65' cy='268.19' r='2.31' style='stroke-width: 0.84; stroke: #E07B39; stroke-opacity: 0.50; fill: #E07B39; fill-opacity: 0.50;' />
-<line x1='436.53' y1='220.72' x2='406.69' y2='244.94' style='stroke-width: 1.07;' />
+<line x1='436.47' y1='220.62' x2='406.69' y2='244.94' style='stroke-width: 1.07;' />
 <text x='208.58' y='68.04' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='35.97px' lengthAdjust='spacingAndGlyphs'>Slc17a7</text>
-<text x='303.63' y='125.71' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='19.36px' lengthAdjust='spacingAndGlyphs'>Mbp</text>
-<text x='155.57' y='112.43' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='30.42px' lengthAdjust='spacingAndGlyphs'>Lamp5</text>
-<text x='82.28' y='124.75' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='27.09px' lengthAdjust='spacingAndGlyphs'>Car12</text>
-<text x='136.25' y='133.31' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='12.16px' lengthAdjust='spacingAndGlyphs'>Ttr</text>
-<text x='109.88' y='147.16' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='26.00px' lengthAdjust='spacingAndGlyphs'>Calb1</text>
-<text x='57.29' y='173.02' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='13.28px' lengthAdjust='spacingAndGlyphs'>Ids</text>
-<text x='113.62' y='177.20' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='26.00px' lengthAdjust='spacingAndGlyphs'>Chst1</text>
-<text x='71.55' y='206.01' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='22.67px' lengthAdjust='spacingAndGlyphs'>Fdft1</text>
-<text x='483.65' y='239.24' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='20.47px' lengthAdjust='spacingAndGlyphs'>Cst7</text>
-<text x='424.50' y='237.77' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='20.84px' lengthAdjust='spacingAndGlyphs'>Lyz2</text>
-<text x='452.34' y='223.49' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='28.02px' lengthAdjust='spacingAndGlyphs'>Trem2</text>
-<text x='409.87' y='260.34' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='35.97px' lengthAdjust='spacingAndGlyphs'>Bcl2a1b</text>
-<text x='374.23' y='244.45' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='23.78px' lengthAdjust='spacingAndGlyphs'>Cd68</text>
+<text x='332.87' y='110.71' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='19.36px' lengthAdjust='spacingAndGlyphs'>Mbp</text>
+<text x='124.65' y='112.41' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='30.42px' lengthAdjust='spacingAndGlyphs'>Lamp5</text>
+<text x='82.18' y='124.71' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='27.09px' lengthAdjust='spacingAndGlyphs'>Car12</text>
+<text x='136.31' y='133.30' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='12.16px' lengthAdjust='spacingAndGlyphs'>Ttr</text>
+<text x='109.95' y='147.17' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='26.00px' lengthAdjust='spacingAndGlyphs'>Calb1</text>
+<text x='57.24' y='173.05' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='13.28px' lengthAdjust='spacingAndGlyphs'>Ids</text>
+<text x='113.55' y='177.17' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='26.00px' lengthAdjust='spacingAndGlyphs'>Chst1</text>
+<text x='71.58' y='206.02' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='22.67px' lengthAdjust='spacingAndGlyphs'>Fdft1</text>
+<text x='483.69' y='223.40' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='20.47px' lengthAdjust='spacingAndGlyphs'>Cst7</text>
+<text x='424.50' y='237.78' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='20.84px' lengthAdjust='spacingAndGlyphs'>Lyz2</text>
+<text x='452.28' y='223.40' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='28.02px' lengthAdjust='spacingAndGlyphs'>Trem2</text>
+<text x='409.91' y='260.37' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='35.97px' lengthAdjust='spacingAndGlyphs'>Bcl2a1b</text>
+<text x='374.39' y='244.51' text-anchor='middle' style='font-size: 9.96px; font-style: italic; font-family: "Arial";' textLength='23.78px' lengthAdjust='spacingAndGlyphs'>Cd68</text>
 <line x1='42.04' y1='268.98' x2='497.52' y2='268.98' style='stroke-width: 1.26; stroke: #999999; stroke-dasharray: 6.73,6.73; stroke-linecap: butt;' />
 <line x1='211.33' y1='279.60' x2='211.33' y2='45.92' style='stroke-width: 1.26; stroke: #999999; stroke-dasharray: 6.73,6.73; stroke-linecap: butt;' />
 </g>
