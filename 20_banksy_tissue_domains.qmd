@@ -4,13 +4,13 @@ subtitle: "BANSKY segmentation (lambda = 0.8, SCT normalized data)"
 date: last-modified
 ---
 
-**BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick)** augments each cell's own transcriptome with the weighted mean expression of its spatial neighbours. At `lambda = 0.8`, neighbourhood context dominates, grouping cells into contiguous **tissue domains** rather than transcriptomic cell types — complementary to the `annotatedclusters` cell-type labels already in the object.
+**BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick)** augments each cell's own transcriptome with the weighted mean expression of its spatial neighbours. At `lambda = 0.8`, neighbourhood context dominates, grouping cells into contiguous **tissue domains** rather than transcriptomic cell types.
 
 Reference: [Singhal et al., *Nature Genetics*, 2024](https://doi.org/10.1038/s41588-024-01664-3)
 
 # Setup and data loading
 
-`aria` is the full merged Seurat object (6 brains, 358 399 cells total). Assay `SCT_SPLIT` contains SPLIT-denoised, SCTransformed counts (474 features) for 346 928 cells that passed the SPLIT quality filter. BANKSY is run on this filtered cell set. Spatial coordinates are in metadata columns `x` and `y`.
+`aria` is the full merged Seurat object (6 brains, 358 399 cells total) after Chloe correction. Assay `SCT_SPLIT` contains SPLIT-denoised, SCTransformed counts (474 features) for 346 928 cells that passed the SPLIT quality filter. BANKSY is run on this filtered cell set. Spatial coordinates are in metadata columns `x` and `y`.
 
 ```{r}
 #| label: setup
@@ -22,17 +22,20 @@ source("R/setup.R")
 library(Banksy)
 library(SeuratWrappers)
 library(patchwork)
+library(Polychrome)
 
 aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
 DefaultAssay(aria) <- "SCT_SPLIT"
 ```
 
-# Method: BANKSY at lambda = 0.8
+# Method: BANKSY at lambda = 0.8, use_agf = TRUE
 
 BANKSY constructs an augmented expression matrix by concatenating:
 
 1. The cell's own (normalised) gene expression.
-2. The **weighted neighbourhood mean**: average expression of the k nearest spatial neighbours, weighted by Euclidean distance (Gaussian envelope).
+2. Two spatial kernels:
+  - **Weighted Neighborhood Mean**: average gene expression of physical neighbors, weighted by distance (Gaussian envelope)
+  - **Azimuthal Gabor Filter (AGF)**: estimates the "spatial texture" or gradient of gene expression within the cellular neighborhood (_not used by default !!??_)
 
 The mixing parameter **`lambda = 0.8`** places 80 % weight on the neighbourhood context, activating **tissue domain segmentation mode**. Cells are embedded in this augmented space, dimensionality-reduced with PCA, and clustered with Leiden.
 
@@ -58,9 +61,9 @@ aria_sct_split <- RunBanksy(
   k_geom      = 15,            # spatial neighbours per cell
   dimx        = "x",           # x coordinate in metadata
   dimy        = "y",           # y coordinate in metadata
+  use_agf     = TRUE,          # use AGF (false by default)
   group       = "Slide",       # stagger coordinates between slides (overlap between slides, not within)
-  split.scale = TRUE           # within-slide z-scaling
-)
+  split.scale = TRUE)           # within-slide z-scaling)
 
 # Active assay is now BANKSY; do NOT call ScaleData
 aria_sct_split <- RunPCA(aria_sct_split,
@@ -78,12 +81,12 @@ aria_sct_split <- FindClusters(aria_sct_split, resolution = 0.5, random.seed = 4
 aria_sct_split$banksy_domain <- aria_sct_split$BANKSY_snn_res.0.5
 Idents(aria_sct_split) <- "banksy_domain"
 
-qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_sct.qs2"))
+qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"))
 ```
 
 ```{r}
 #| label: load-banksy
-aria_sct_split <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_sct.qs2"))
+aria_sct_split <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"))
 ```
 
 # UMAP
@@ -94,11 +97,11 @@ DimPlot(aria_sct_split, reduction = "umap_banksy",
         group.by  = "banksy_domain",
         label     = TRUE,
         label.size = 4,
-        pt.size   = 0.3) +
+        pt.size   = 0.3) + 
   labs(title = "BANKSY tissue domains",
         subtitle = "lambda = 0.8 / resolution = 0.5", colour = "Domain") +
-  theme_minimal(base_size = 13) +
-  theme(legend.position = "right")
+  theme_minimal(base_size = 13)+
+  theme(legend.position = "none")
 ```
 
 
@@ -109,7 +112,8 @@ DimPlot(aria_sct_split, reduction = "umap_banksy",
 #| fig-width: 10
 DimPlot(aria_sct_split, reduction = "umap_banksy",
         split.by = "Treatment.Group",
-        pt.size  = 0.3) +
+        pt.size  = 0.3) 
+
   labs(title = "Treatment group on BANKSY UMAP") +
   theme_minimal(base_size = 13)
 ```
@@ -151,23 +155,29 @@ meta <- aria_sct_split@meta.data |> as_tibble(rownames = "cell")
 
 # Colour palette: one colour per domain
 n_domains   <- length(unique(aria_sct_split$banksy_domain))
-domain_cols <- scales::hue_pal()(n_domains) |> setNames(sort(unique(aria_sct_split$banksy_domain)))
+domain_cols <- kelly.colors(n_domains) |> setNames(sort(unique(aria_sct_split$banksy_domain)))
 
-map(sort(unique(meta$sample_ID)), \(sid) {
+sample_ids <- sort(unique(meta$sample_ID))
+
+plots <- map2(sample_ids, seq_along(sample_ids), \(sid, i) {
   df <- meta |> filter(sample_ID == sid)
   ggplot(df, aes(x = x, y = y, colour = banksy_domain)) +
-    geom_point(size = 0.3, alpha = 0.7) +
-    scale_colour_manual(values = domain_cols) +
+    geom_point(size = 0.2, alpha = 0.7, show.legend = (i == 1)) +
+    scale_colour_manual(
+      values = domain_cols,
+      limits = names(domain_cols),
+      drop = FALSE
+    ) +
     coord_equal() +
     scale_y_reverse() +
     labs(title = sid, colour = "Domain") +
     theme_void(base_size = 10) +
-    theme(legend.position = "none")
-}) |>
-  wrap_plots(nrow = 2) +
-  plot_annotation(title = "BANKSY tissue domains per brain") +
-  plot_layout(guides = "collect") &
-  theme(legend.position = "right")
+    theme(legend.position = if (i == 1) "left" else "none")
+})
+
+wrap_plots(plots, nrow = 2) +
+  plot_annotation(title = "BANKSY tissue domains per brain") &
+  guides(colour = guide_legend(override.aes = list(size = 4)))
 ```
 
 # Domain composition
@@ -233,12 +243,12 @@ markers <- FindAllMarkers(
   logfc.threshold = 0.25,
   test.use        = "wilcox")
   
-qs2::qs_save(markers, "spatial/banksy_domain_markers.qs2")
+write_csv(markers, "spatial/banksy_domain_markers.csv")
 ```
 
 ```{r}
 #| label: load-markers
-markers <- qs2::qs_read("spatial/banksy_domain_markers.qs2")
+markers <- read_csv("spatial/banksy_domain_markers.csv")
 ```
 
 ```{r}
@@ -276,4 +286,3 @@ DotPlot(aria_sct_split,
   coord_flip()+
   theme(axis.text.y = element_text(size = 10))
 ```
-
