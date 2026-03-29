@@ -753,7 +753,7 @@
     "href": "20_banksy_tissue_domains.html",
     "title": "Tissue domain characterization (I)",
     "section": "",
-    "text": "BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick) augments each cell’s own transcriptome with the weighted mean expression of its spatial neighbours. At lambda = 0.8, neighbourhood context dominates, grouping cells into contiguous tissue domains rather than transcriptomic cell types — complementary to the annotatedclusters cell-type labels already in the object.\nReference: Singhal et al., Nature Genetics, 2024"
+    "text": "BANKSY (Building Aggregates with a Neighborhood Kernel and Spatial Yardstick) augments each cell’s own transcriptome with the weighted mean expression of its spatial neighbours. At lambda = 0.8, neighbourhood context dominates, grouping cells into contiguous tissue domains rather than transcriptomic cell types.\nReference: Singhal et al., Nature Genetics, 2024"
   },
   {
     "objectID": "20_banksy_tissue_domains.html#staggered-overview-all-6-brains",
@@ -767,6 +767,6 @@
     "href": "20_banksy_tissue_domains.html#per-brain-spatial-maps",
     "title": "Tissue domain characterization (I)",
     "section": "Per-brain spatial maps",
-    "text": "Per-brain spatial maps\n\n\nCode\nmeta &lt;- aria_sct_split@meta.data |&gt; as_tibble(rownames = \"cell\")\n\n# Colour palette: one colour per domain\nn_domains   &lt;- length(unique(aria_sct_split$banksy_domain))\ndomain_cols &lt;- scales::hue_pal()(n_domains) |&gt; setNames(sort(unique(aria_sct_split$banksy_domain)))\n\nmap(sort(unique(meta$sample_ID)), \\(sid) {\n  df &lt;- meta |&gt; filter(sample_ID == sid)\n  ggplot(df, aes(x = x, y = y, colour = banksy_domain)) +\n    geom_point(size = 0.3, alpha = 0.7) +\n    scale_colour_manual(values = domain_cols) +\n    coord_equal() +\n    scale_y_reverse() +\n    labs(title = sid, colour = \"Domain\") +\n    theme_void(base_size = 10) +\n    theme(legend.position = \"none\")\n}) |&gt;\n  wrap_plots(nrow = 2) +\n  plot_annotation(title = \"BANKSY tissue domains per brain\") +\n  plot_layout(guides = \"collect\") &\n  theme(legend.position = \"right\")"
+    "text": "Per-brain spatial maps\n\n\nCode\nmeta &lt;- aria_sct_split@meta.data |&gt; as_tibble(rownames = \"cell\")\n\n# Colour palette: one colour per domain\nn_domains   &lt;- length(unique(aria_sct_split$banksy_domain))\ndomain_cols &lt;- kelly.colors(n_domains) |&gt; setNames(sort(unique(aria_sct_split$banksy_domain)))\n\nsample_ids &lt;- sort(unique(meta$sample_ID))\n\nplots &lt;- map2(sample_ids, seq_along(sample_ids), \\(sid, i) {\n  df &lt;- meta |&gt; filter(sample_ID == sid)\n  ggplot(df, aes(x = x, y = y, colour = banksy_domain)) +\n    geom_point(size = 0.2, alpha = 0.7, show.legend = (i == 1)) +\n    scale_colour_manual(\n      values = domain_cols,\n      limits = names(domain_cols),\n      drop = FALSE\n    ) +\n    coord_equal() +\n    scale_y_reverse() +\n    labs(title = sid, colour = \"Domain\") +\n    theme_void(base_size = 10) +\n    theme(legend.position = if (i == 1) \"left\" else \"none\")\n})\n\nwrap_plots(plots, nrow = 2) +\n  plot_annotation(title = \"BANKSY tissue domains per brain\") &\n  guides(colour = guide_legend(override.aes = list(size = 4)))"
   }
 ]
