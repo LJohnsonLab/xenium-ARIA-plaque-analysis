@@ -24,8 +24,7 @@ library(SeuratWrappers)
 library(patchwork)
 library(Polychrome)
 
-aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
-DefaultAssay(aria) <- "SCT_SPLIT"
+
 ```
 
 # Method: BANKSY at lambda = 0.8, use_agf = TRUE
@@ -49,8 +48,12 @@ The 6 brains are spread across **two slides**. Within each slide, the 3 brains a
 #| label: run-banksy
 #| eval: false
 
+aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
+DefaultAssay(aria) <- "SCT_SPLIT"
 # SCT_SPLIT was built from SPLIT-filtered cells; subset to avoid dimension mismatch
 aria_sct_split <- subset(aria, cells = Cells(aria[["SCT_SPLIT"]]))
+
+# qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_sct_SPLIT.qs2"))
 
 aria_sct_split <- RunBanksy(
   aria_sct_split,
