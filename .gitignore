@@ -43,3 +43,6 @@ notebooklm/*
 **/*.quarto_ipynb
 
 giotto_setup.md
+
+# make all hpc_mcc content visible
+!hpc_mcc/**
