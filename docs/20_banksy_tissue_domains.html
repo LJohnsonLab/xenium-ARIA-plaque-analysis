@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-29">
+<meta name="dcterms.date" content="2026-03-30">
 
 <title>Tissue domain characterization (I) – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -276,7 +276,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 29, 2026</p>
+      <p class="date">March 30, 2026</p>
     </div>
   </div>
   
@@ -303,10 +303,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Banksy)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SeuratWrappers)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Polychrome)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>aria <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="fu">paste0</span>(seurat_path, <span class="st">"20260320_fullobj_correctedChloe.qs2"</span>))</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">DefaultAssay</span>(aria) <span class="ot">&lt;-</span> <span class="st">"SCT_SPLIT"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(Polychrome)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
@@ -332,39 +329,43 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># SCT_SPLIT was built from SPLIT-filtered cells; subset to avoid dimension mismatch</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">subset</span>(aria, <span class="at">cells =</span> <span class="fu">Cells</span>(aria[[<span class="st">"SCT_SPLIT"</span>]]))</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunBanksy</span>(</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  aria_sct_split,</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda      =</span> <span class="fl">0.8</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">assay       =</span> <span class="st">"SCT_SPLIT"</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">slot        =</span> <span class="st">"data"</span>,        <span class="co"># SCT-normalised expression</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">features    =</span> <span class="st">"all"</span>,    <span class="co"># 474 variable features from SCT_SPLIT</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">k_geom      =</span> <span class="dv">15</span>,            <span class="co"># spatial neighbours per cell</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimx        =</span> <span class="st">"x"</span>,           <span class="co"># x coordinate in metadata</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimy        =</span> <span class="st">"y"</span>,           <span class="co"># y coordinate in metadata</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">use_agf     =</span> <span class="cn">TRUE</span>,          <span class="co"># use AGF (false by default)</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">group       =</span> <span class="st">"Slide"</span>,       <span class="co"># stagger coordinates between slides (overlap between slides, not within)</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">split.scale =</span> <span class="cn">TRUE</span>)           <span class="co"># within-slide z-scaling)</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay is now BANKSY; do NOT call ScaleData</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(aria_sct_split,</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>               <span class="at">assay    =</span> <span class="st">"BANKSY"</span>,</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>               <span class="at">features =</span> <span class="fu">rownames</span>(aria_sct_split),  <span class="co"># all BANKSY features</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>               <span class="at">npcs     =</span> <span class="dv">50</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(aria_sct_split, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>, <span class="at">seed.use =</span> <span class="dv">42</span>,</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">reduction.name =</span> <span class="st">"umap_banksy"</span>, <span class="at">reduction.key =</span> <span class="st">"BKSYUMAP_"</span>)</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(aria_sct_split, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(aria_sct_split, <span class="at">resolution =</span> <span class="fl">0.5</span>, <span class="at">random.seed =</span> <span class="dv">42</span>)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Store BANKSY domains in an explicit column (avoids confusion with pre-existing banksy_domain)</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>aria_sct_split<span class="sc">$</span>banksy_domain <span class="ot">&lt;-</span> aria_sct_split<span class="sc">$</span>BANKSY_snn_res.<span class="fl">0.5</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fu">Idents</span>(aria_sct_split) <span class="ot">&lt;-</span> <span class="st">"banksy_domain"</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>aria <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="fu">paste0</span>(seurat_path, <span class="st">"20260320_fullobj_correctedChloe.qs2"</span>))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">DefaultAssay</span>(aria) <span class="ot">&lt;-</span> <span class="st">"SCT_SPLIT"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># SCT_SPLIT was built from SPLIT-filtered cells; subset to avoid dimension mismatch</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">subset</span>(aria, <span class="at">cells =</span> <span class="fu">Cells</span>(aria[[<span class="st">"SCT_SPLIT"</span>]]))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_sct_SPLIT.qs2"))</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunBanksy</span>(</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  aria_sct_split,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">lambda      =</span> <span class="fl">0.8</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">assay       =</span> <span class="st">"SCT_SPLIT"</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">slot        =</span> <span class="st">"data"</span>,        <span class="co"># SCT-normalised expression</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">features    =</span> <span class="st">"all"</span>,    <span class="co"># 474 variable features from SCT_SPLIT</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">k_geom      =</span> <span class="dv">15</span>,            <span class="co"># spatial neighbours per cell</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimx        =</span> <span class="st">"x"</span>,           <span class="co"># x coordinate in metadata</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimy        =</span> <span class="st">"y"</span>,           <span class="co"># y coordinate in metadata</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">use_agf     =</span> <span class="cn">TRUE</span>,          <span class="co"># use AGF (false by default)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">group       =</span> <span class="st">"Slide"</span>,       <span class="co"># stagger coordinates between slides (overlap between slides, not within)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">split.scale =</span> <span class="cn">TRUE</span>)           <span class="co"># within-slide z-scaling)</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Active assay is now BANKSY; do NOT call ScaleData</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunPCA</span>(aria_sct_split,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>               <span class="at">assay    =</span> <span class="st">"BANKSY"</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>               <span class="at">features =</span> <span class="fu">rownames</span>(aria_sct_split),  <span class="co"># all BANKSY features</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>               <span class="at">npcs     =</span> <span class="dv">50</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">RunUMAP</span>(aria_sct_split, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>, <span class="at">seed.use =</span> <span class="dv">42</span>,</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>                <span class="at">reduction.name =</span> <span class="st">"umap_banksy"</span>, <span class="at">reduction.key =</span> <span class="st">"BKSYUMAP_"</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">FindNeighbors</span>(aria_sct_split, <span class="at">dims =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">30</span>)</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>aria_sct_split <span class="ot">&lt;-</span> <span class="fu">FindClusters</span>(aria_sct_split, <span class="at">resolution =</span> <span class="fl">0.5</span>, <span class="at">random.seed =</span> <span class="dv">42</span>)</span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(aria_sct_split, <span class="fu">paste0</span>(seurat_path, <span class="st">"20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Store BANKSY domains in an explicit column (avoids confusion with pre-existing banksy_domain)</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>aria_sct_split<span class="sc">$</span>banksy_domain <span class="ot">&lt;-</span> aria_sct_split<span class="sc">$</span>BANKSY_snn_res.<span class="fl">0.5</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="fu">Idents</span>(aria_sct_split) <span class="ot">&lt;-</span> <span class="st">"banksy_domain"</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>qs2<span class="sc">::</span><span class="fu">qs_save</span>(aria_sct_split, <span class="fu">paste0</span>(seurat_path, <span class="st">"20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
