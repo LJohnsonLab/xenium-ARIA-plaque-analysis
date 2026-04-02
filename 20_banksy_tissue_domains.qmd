@@ -48,12 +48,45 @@ The 6 brains are spread across **two slides**. Within each slide, the 3 brains a
 #| label: run-banksy
 #| eval: false
 
+# Load full object
 aria <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe.qs2"))
+
+# Load cleaned microglia object
+microglia <- qs2::qs_read(paste0(seurat_path, "20260323_updated_mg_kai_correctedChloe.qs2"))
+
+# Keep only the microglia subtype labels from the metadata of the cleaned microglia-only object.
+mg_subcluster <- microglia@meta.data |> 
+  select(sub.cluster)
+
+
 DefaultAssay(aria) <- "SCT_SPLIT"
-# SCT_SPLIT was built from SPLIT-filtered cells; subset to avoid dimension mismatch
+
+## Subset cells in the SCT_SPLIT assay of the full object
+# SCT_SPLIT exists only for SPLIT-passing cells.
+# Why: BANKSY uses assay matrices directly; restricting to Cells(SCT_SPLIT) prevents
+# downstream failures from trying to run spatial modeling on cells without SCT_SPLIT data.
 aria_sct_split <- subset(aria, cells = Cells(aria[["SCT_SPLIT"]]))
 
-# qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_sct_SPLIT.qs2"))
+# Transfer subtype labels from cleaned microglia object into full object.
+aria_sct_split$microglia_sub.cluster <- mg_subcluster[colnames(aria_sct_split), "sub.cluster"]
+
+
+aria_sct_split$annotatedclusters_finer <- if_else(is.na(aria_sct_split$microglia_sub.cluster), aria_sct_split$annotatedclusters, aria_sct_split$microglia_sub.cluster)
+
+
+
+# create new variable "annotatedclusters_finer" in the metadata including major cell type and microglia subtype
+aria_sct_split$annotatedclusters_finer <- ifelse(
+  is.na(aria_sct_split$microglia_sub.cluster),
+  as.character(aria_sct_split$annotatedclusters),
+  as.character(aria_sct_split$microglia_sub.cluster))
+# Cells not present in cleaned microglia return "Microglia" in "annotatedclusters_finer".
+# This is expected because 11,796 microglia were removed during microglia QC cleaning.
+
+# Drop cells still labeled exactly "Microglia" (i.e., no refined subtype assigned).
+aria_sct_split <-subset(aria_sct_split, subset = annotatedclusters_finer != "Microglia")
+
+# qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260402_fullobj_correctedChloe_sct_SPLIT_microglia_cleaned.qs2"))
 
 aria_sct_split <- RunBanksy(
   aria_sct_split,
@@ -84,12 +117,16 @@ aria_sct_split <- FindClusters(aria_sct_split, resolution = 0.5, random.seed = 4
 aria_sct_split$banksy_domain <- aria_sct_split$BANKSY_snn_res.0.5
 Idents(aria_sct_split) <- "banksy_domain"
 
-qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"))
+qs2::qs_save(aria_sct_split, paste0(seurat_path, "20260402_fullobj_correctedChloe_sct_SPLIT_microglia_cleaned.qs2_banksy_agf=TRUE_sct.qs2"))
 ```
 
 ```{r}
 #| label: load-banksy
-aria_sct_split <- qs2::qs_read(paste0(seurat_path, "20260320_fullobj_correctedChloe_banksy_agf=TRUE_sct.qs2"))
+
+
+aria_sct_split <- qs2::qs_read(paste0(seurat_path, "20260402_fullobj_correctedChloe_sct_SPLIT_microglia_cleaned.qs2_banksy_agf=TRUE_sct.qs2"))
+
+
 ```
 
 # UMAP
@@ -193,12 +230,12 @@ Cell-type and treatment composition of each BANKSY domain.
 #| fig-height: 5
 #| fig-width: 12
 ct_frac <- meta |>
-  count(banksy_domain, annotatedclusters) |>
+  count(banksy_domain, annotatedclusters_finer) |>
   group_by(banksy_domain) |>
   mutate(frac = n / sum(n)) |>
   ungroup()
 
-ggplot(ct_frac, aes(x = banksy_domain, y = frac, fill = annotatedclusters)) +
+ggplot(ct_frac, aes(x = banksy_domain, y = frac, fill = annotatedclusters_finer)) +
   geom_col() +
   labs(title = "Cell-type composition per BANKSY domain",
        x     = "Domain",
