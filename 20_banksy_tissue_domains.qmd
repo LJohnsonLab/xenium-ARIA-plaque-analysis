@@ -222,50 +222,50 @@ wrap_plots(plots, nrow = 2) +
 
 # Domain composition
 
-Cell-type and treatment composition of each BANKSY domain.
+Each dot represents one cell type (Y) in one BANKSY domain (X).  
+
+ **Dot size** encodes the percentage of cells in that domain belonging to that cell type. **Dot colour** encodes the treatment balance for that specific cell type within that domain: the fraction of cells originating from Aducanumab-treated brains (out of the 3 Adu + 3 IgG brains). A white dot means the cell type is equally contributed by both treatment groups (~50 % Adu); red means it is disproportionately from Adu brains; blue means it is disproportionately from IgG brains. Dots are grey when the domain × cell-type combination contains fewer than 50 cells in total, as the Adu fraction would be unreliable at that sample size.
+
+
 
 ```{r}
 #| label: domain-composition
 #| column: page
-#| fig-height: 5
-#| fig-width: 12
+#| fig-height: 8
+
 ct_frac <- meta |>
   count(banksy_domain, annotatedclusters_finer) |>
   group_by(banksy_domain) |>
-  mutate(frac = n / sum(n)) |>
+  mutate(pct = n / sum(n) * 100) |>
   ungroup()
 
-ggplot(ct_frac, aes(x = banksy_domain, y = frac, fill = annotatedclusters_finer)) +
-  geom_col() +
+adu_frac <- meta |>
+  count(banksy_domain, annotatedclusters_finer, Treatment.Group) |>
+  group_by(banksy_domain, annotatedclusters_finer) |>
+  mutate(total = sum(n), trt_frac = n / total) |>
+  ungroup() |>
+  filter(Treatment.Group == "Adu", total >= 50) |>
+  select(banksy_domain, annotatedclusters_finer, adu_frac = trt_frac)
+
+dot_df <- ct_frac |>
+  left_join(adu_frac, by = c("banksy_domain", "annotatedclusters_finer"))
+
+ggplot(dot_df, aes(x = banksy_domain, y = annotatedclusters_finer,
+                   size = pct, colour = adu_frac)) +
+  geom_point() +
+  scale_size_area(max_size = 10, limits = c(0, 100), name = "% cells") +
+  scale_colour_gradient2(low = "#2166AC", mid = "white", high = "#B2182B",
+                         midpoint = 0.5, limits = c(0, 1), na.value = "grey80",
+                         name = "Adu fraction") +
   labs(title = "Cell-type composition per BANKSY domain",
-       x     = "Domain",
-       y     = "Fraction of cells",
-       fill  = "Cell type") +
+       subtitle = "Dot size = % of cells in domain\ncolour = fraction Aducanumab (red) vs IgG (blue)",
+       x = "Domain", y = NULL) +
   theme_minimal(base_size = 13) +
-  theme(legend.position = "right",
-        axis.text.x     = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x     = element_text(angle = 45, hjust = 1),
+        panel.grid.major = element_line(colour = "grey92"))
 ```
 
-```{r}
-#| label: treatment-composition
-#| fig-height: 3
-#| fig-width: 8
-trt_frac <- meta |>
-  count(banksy_domain, Treatment.Group) |>
-  group_by(banksy_domain) |>
-  mutate(frac = n / sum(n)) |>
-  ungroup()
-
-ggplot(trt_frac, aes(x = banksy_domain, y = frac, fill = Treatment.Group)) +
-  geom_col() +
-  scale_fill_manual(values = c(Adu = "#E07B39", IgG = "#7B68AE")) +
-  labs(title = "Treatment composition per BANKSY domain",
-       x     = "Domain",
-       y     = "Fraction of cells",
-       fill  = "Treatment") +
-  theme_minimal(base_size = 13) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
+Note that colour can vary between cell types within the same domain: each cell type has its own Adu/IgG balance depending on how evenly it is distributed across the six brains. A cell type that is rare or spatially patchy may happen to be better represented in one treatment group simply because of sampling, whereas an abundant and ubiquitous cell type will reliably track close to 0.5 in every domain. Consistent red or blue across an entire domain (column) would indicate a global treatment imbalance in that tissue region; isolated red or blue dots within an otherwise white column point to cell-type-specific enrichment.
 
 # Domain marker genes
 
