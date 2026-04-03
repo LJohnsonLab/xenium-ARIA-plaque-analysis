@@ -220,17 +220,47 @@ wrap_plots(plots, nrow = 2) +
   guides(colour = guide_legend(override.aes = list(size = 4)))
 ```
 
+```{r}
+#| label: dimplot-per-domain
+#| column: page
+#| fig-height: 10
+#| fig-width: 10
+
+domains <- sort(unique(aria_sct_split$banksy_domain))
+
+bg   <- meta |> slice_sample(prop = 0.01)  # 1 % of cells for grey background
+
+domain_plots <- map(domains, \(d) {
+  fg <- meta |> filter(banksy_domain == d)|> slice_sample(prop = 0.02)
+  ggplot(mapping = aes(x = staggered_sdimx, y = staggered_sdimy)) +
+    geom_point(data = bg, colour = "grey90", size = 0.05, alpha = 0.5) +
+    geom_point(data = fg, colour = domain_cols[[as.character(d)]], size = 1e-300, alpha = 0.6) +
+    coord_equal() +
+    labs(title = paste("Domain", d)) +
+    theme_void(base_size = 10) +
+    theme(legend.position = "none",
+          panel.border = element_rect(colour = "grey70", fill = NA, linewidth = 0.5))
+})
+
+wrap_plots(domain_plots, ncol = 3)
+```
+
 # Domain composition
 
 Each dot represents one cell type (Y) in one BANKSY domain (X).  
 
- **Dot size** encodes the percentage of cells in that domain belonging to that cell type. **Dot colour** encodes the treatment balance for that specific cell type within that domain: the fraction of cells originating from Aducanumab-treated brains (out of the 3 Adu + 3 IgG brains). A white dot means the cell type is equally contributed by both treatment groups (~50 % Adu); red means it is disproportionately from Adu brains; blue means it is disproportionately from IgG brains. Dots are grey when the domain × cell-type combination contains fewer than 50 cells in total, as the Adu fraction would be unreliable at that sample size.
+ **Dot size** encodes the percentage of cells in that domain belonging to that cell type. **Dot colour** encodes the treatment balance for that specific cell type within that domain: the fraction of cells originating from Aducanumab-treated brains (out of the 3 Adu + 3 IgG brains). A white dot means the cell type is equally contributed by both treatment groups (~50 % Adu); red means it is disproportionately from Adu brains; blue means it is disproportionately from IgG brains.  
+ 
+Dots are grey when the domain × cell-type combination contains fewer than 50 cells in total, as the Adu fraction would be unreliable at that sample size.  
+
+Cell type × domain combinations representing less than 1 % of cells in that domain are not shown.
 
 
 
 ```{r}
 #| label: domain-composition
 #| column: page
+#| fig-width: 8
 #| fig-height: 8
 
 ct_frac <- meta |>
@@ -250,8 +280,9 @@ adu_frac <- meta |>
 dot_df <- ct_frac |>
   left_join(adu_frac, by = c("banksy_domain", "annotatedclusters_finer"))
 
-ggplot(dot_df, aes(x = banksy_domain, y = annotatedclusters_finer,
+ggplot(dot_df |> filter(pct >= 1), aes(x = banksy_domain, y = annotatedclusters_finer,
                    size = pct, colour = adu_frac)) +
+  geom_point(colour = "grey20") +
   geom_point() +
   scale_size_area(max_size = 10, limits = c(0, 100), name = "% cells") +
   scale_colour_gradient2(low = "#2166AC", mid = "white", high = "#B2182B",
