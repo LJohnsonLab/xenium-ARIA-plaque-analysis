@@ -414,3 +414,59 @@ plot_treatment_scatter(cor_paren_adu, cor_paren_igg, "Parenchymal — Adu vs IgG
 plot_treatment_scatter(cor_any_adu,   cor_any_igg,   "Any plaque — Adu vs IgG")
 ```
 
+# Candidate gene heatmap
+
+The rank plots above identified two biologically distinct distance-dependent programmes. To compare their effect sizes and significance side by side across both plaque types, we visualise the rho_flip values for the named genes in a single heatmap. Candidates were drawn directly from the labelled genes in the rank plots:
+
+- **DAM / phagocytic programme** (near parenchymal plaque): Cst7, Ctsb, Cd63, Lyz2, Lpl — the top-ranked enriched-near genes for parenchymal distance.
+- **Vascular-lipid programme** (near CAA): Srebf2, Hmgcs1, Acsl6, Glul, Abhd17a — the top-ranked enriched-near genes for CAA distance.
+- **Homeostatic programme** (far from parenchymal plaque): P2ry12, Tmem119, Maf, Ptgs1, Lpcat2 — the top-ranked enriched-far genes for parenchymal distance.
+- **Cholesterol efflux / iron** (far from CAA): Abca1, Abcg1, Lgals3bp, Ftl1 — the top-ranked enriched-far genes for CAA distance.
+
+The heatmap is intended to show whether genes that are strongly associated with one plaque type also show a weaker or opposing signal for the other.
+
+```{r}
+#| label: candidate-gene-heatmap
+#| fig-height: 7
+#| fig-width: 6
+#| fig-cap: "Spearman rho_flip for microglia candidate genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj < 0.05, ** padj < 0.01, *** padj < 0.001)."
+
+mg_candidate_genes <- c(
+  "Cst7", "Ctsb", "Cd63", "Lyz2", "Lpl",
+  "Srebf2", "Hmgcs1", "Acsl6", "Glul", "Abhd17a",
+  "P2ry12", "Tmem119", "Maf", "Ptgs1", "Lpcat2",
+  "Abca1", "Abcg1", "Lgals3bp", "Ftl1"
+)
+
+heatmap_df <- bind_rows(
+  cor_caa   |> mutate(plaque = "CAA"),
+  cor_paren |> mutate(plaque = "Parenchymal")
+) |>
+  filter(gene %in% mg_candidate_genes) |>
+  mutate(
+    sig_label = case_when(
+      padj < 0.001 ~ "***",
+      padj < 0.01  ~ "**",
+      padj < 0.05  ~ "*",
+      TRUE         ~ ""
+    ),
+    gene = factor(gene, levels = rev(mg_candidate_genes))
+  )
+
+ggplot(heatmap_df, aes(x = plaque, y = gene, fill = rho_flip)) +
+  geom_tile(colour = "white", linewidth = 0.5) +
+  geom_text(aes(label = sig_label), size = 4, vjust = 0.75) +
+  scale_fill_gradient2(
+    low  = "#7B68AE", mid = "white", high = "#E07B39",
+    midpoint = 0,
+    name = "rho_flip\n(+ = near plaque)"
+  ) +
+  labs(
+    title    = "Microglia candidate gene-distance correlations",
+    subtitle = "* padj < 0.05  ** padj < 0.01  *** padj < 0.001",
+    x = NULL, y = NULL
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
