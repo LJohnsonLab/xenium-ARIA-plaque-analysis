@@ -13,11 +13,18 @@ Co-registration of HALO ThioS plaque annotations with 10x Xenium spatial transcr
 | `2_coregistration_Akhil.qmd` | HALO co-registration and plaque classification |
 | `6_gene_distance_correlation.qmd` | Gene–distance Spearman correlations (all cell types) |
 | `6.1_cell_type_distance_ridges.qmd` | Cell-to-plaque distance ridge plots |
-| `7_gene_distance_correlation_microglia.qmd` | Microglia-specific correlations |
+| `7_gene_distance_correlation_microglia.qmd` | Microglia-specific correlations + candidate gene heatmap (DAM, homeostatic, vascular-lipid programmes) |
 | `8_microglia_proximal_treatment_DE.qmd` | Pseudobulk DESeq2: Adu vs IgG in proximal microglia |
 | `9_multi_plaque_neighbourhood.qmd` | Multi-plaque neighbourhood and density effects |
 | `10_global_spatial_autocorrelation.qmd` | Global Moran's I and spatial gene structure |
+| `10.2_spatial_coexpression_modules.qmd` | Spatial co-expression modules |
 | `11_neighborhood_enrichment.qmd` | Cell-type proximity enrichment and niche composition |
+| `11.1_niche_pseudobulk_treatment.qmd` | Pseudobulk DESeq2: Adu vs IgG per niche |
+| `11.5_bivariate_lee_relay.qmd` | Bivariate Lee's L spatial co-expression |
+| `12_gene_distance_correlation_astrocytes_oligos.qmd` | Astrocyte and oligodendrocyte gene-distance correlations + candidate gene heatmap |
+| `13_astro-oligo_proximal_treatment_DE.qmd` | Pseudobulk DESeq2: Adu vs IgG in proximal astrocytes and oligodendrocytes |
+| `15_radial_niche_profile.qmd` | Radial cell-type composition profiles around plaques |
+| `20_banksy_tissue_domains.qmd` | BANKSY spatial domain annotation |
 
 ## Data
 
