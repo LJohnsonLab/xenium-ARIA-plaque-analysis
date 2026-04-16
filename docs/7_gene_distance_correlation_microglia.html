@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-26">
+<meta name="dcterms.date" content="2026-04-16">
 
 <title>Gene-to-distance-to-plaque correlation — microglia only – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -260,6 +260,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#rank-plots-by-treatment" id="toc-rank-plots-by-treatment" class="nav-link" data-scroll-target="#rank-plots-by-treatment">Rank plots by treatment</a></li>
   <li><a href="#adu-vs-igg-scatter" id="toc-adu-vs-igg-scatter" class="nav-link" data-scroll-target="#adu-vs-igg-scatter">Adu vs IgG scatter</a></li>
   </ul></li>
+  <li><a href="#candidate-gene-heatmap" id="toc-candidate-gene-heatmap" class="nav-link" data-scroll-target="#candidate-gene-heatmap">Candidate gene heatmap</a></li>
   </ul>
 </nav>
     </div>
@@ -280,7 +281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 26, 2026</p>
+      <p class="date">April 16, 2026</p>
     </div>
   </div>
   
@@ -1389,9 +1390,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-
-
 </section>
+</section>
+<section id="candidate-gene-heatmap" class="level1">
+<h1>Candidate gene heatmap</h1>
+<p>The rank plots above identified two biologically distinct distance-dependent programmes. To compare their effect sizes and significance side by side across both plaque types, we visualise the rho_flip values for the named genes in a single heatmap. Candidates were drawn directly from the labelled genes in the rank plots:</p>
+<ul>
+<li><strong>DAM / phagocytic programme</strong> (near parenchymal plaque): Cst7, Ctsb, Cd63, Lyz2, Lpl — the top-ranked enriched-near genes for parenchymal distance.</li>
+<li><strong>Vascular-lipid programme</strong> (near CAA): Srebf2, Hmgcs1, Acsl6, Glul, Abhd17a — the top-ranked enriched-near genes for CAA distance.</li>
+<li><strong>Homeostatic programme</strong> (far from parenchymal plaque): P2ry12, Tmem119, Maf, Ptgs1, Lpcat2 — the top-ranked enriched-far genes for parenchymal distance.</li>
+<li><strong>Cholesterol efflux / iron</strong> (far from CAA): Abca1, Abcg1, Lgals3bp, Ftl1 — the top-ranked enriched-far genes for CAA distance.</li>
+</ul>
+<p>The heatmap is intended to show whether genes that are strongly associated with one plaque type also show a weaker or opposing signal for the other.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>mg_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Cst7"</span>, <span class="st">"Ctsb"</span>, <span class="st">"Cd63"</span>, <span class="st">"Lyz2"</span>, <span class="st">"Lpl"</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Srebf2"</span>, <span class="st">"Hmgcs1"</span>, <span class="st">"Acsl6"</span>, <span class="st">"Glul"</span>, <span class="st">"Abhd17a"</span>,</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"P2ry12"</span>, <span class="st">"Tmem119"</span>, <span class="st">"Maf"</span>, <span class="st">"Ptgs1"</span>, <span class="st">"Lpcat2"</span>,</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Lgals3bp"</span>, <span class="st">"Ftl1"</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>heatmap_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  cor_caa   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  cor_paren <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gene <span class="sc">%in%</span> mg_candidate_genes) <span class="sc">|&gt;</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sig_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span>,</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">gene =</span> <span class="fu">factor</span>(gene, <span class="at">levels =</span> <span class="fu">rev</span>(mg_candidate_genes))</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(heatmap_df, <span class="fu">aes</span>(<span class="at">x =</span> plaque, <span class="at">y =</span> gene, <span class="at">fill =</span> rho_flip)) <span class="sc">+</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sig_label), <span class="at">size =</span> <span class="dv">4</span>, <span class="at">vjust =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(</span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">low  =</span> <span class="st">"#7B68AE"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#E07B39"</span>,</span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">midpoint =</span> <span class="dv">0</span>,</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"rho_flip</span><span class="sc">\n</span><span class="st">(+ = near plaque)"</span></span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">title    =</span> <span class="st">"Microglia candidate gene-distance correlations"</span>,</span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"* padj &lt; 0.05  ** padj &lt; 0.01  *** padj &lt; 0.001"</span>,</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="7_gene_distance_correlation_microglia_files/figure-html/candidate-gene-heatmap-1.svg" class="img-fluid figure-img" width="576"></p>
+<figcaption>Spearman rho_flip for microglia candidate genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj &lt; 0.05, ** padj &lt; 0.01, *** padj &lt; 0.001).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+
+
 </section>
 
 </main> <!-- /main -->
