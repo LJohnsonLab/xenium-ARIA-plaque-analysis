@@ -427,9 +427,9 @@ The heatmap is intended to show whether genes that are strongly associated with 
 
 ```{r}
 #| label: candidate-gene-heatmap
-#| fig-height: 7
-#| fig-width: 6
-#| fig-cap: "Spearman rho_flip for microglia candidate genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj < 0.05, ** padj < 0.01, *** padj < 0.001)."
+#| fig-height: 10
+#| fig-width: 8
+#| fig-cap: "Spearman rho_flip for microglia candidate genes. Top: pooled across treatments, columns = plaque type. Bottom: split by treatment, columns = plaque type x treatment. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj < 0.05, ** padj < 0.01, *** padj < 0.001) computed per column."
 
 mg_candidate_genes <- c(
   "Cst7", "Ctsb", "Cd63", "Lyz2", "Lpl",
@@ -438,35 +438,60 @@ mg_candidate_genes <- c(
   "Abca1", "Abcg1", "Lgals3bp", "Ftl1"
 )
 
-heatmap_df <- bind_rows(
+add_sig_and_gene_factor <- function(df) {
+  df |>
+    filter(gene %in% mg_candidate_genes) |>
+    mutate(
+      sig_label = case_when(
+        padj < 0.001 ~ "***",
+        padj < 0.01  ~ "**",
+        padj < 0.05  ~ "*",
+        TRUE         ~ ""
+      ),
+      gene = factor(gene, levels = rev(mg_candidate_genes))
+    )
+}
+
+build_heatmap <- function(df, x_col, title) {
+  ggplot(df, aes(x = .data[[x_col]], y = gene, fill = rho_flip)) +
+    geom_tile(colour = "white", linewidth = 0.5) +
+    geom_text(aes(label = sig_label), size = 4, vjust = 0.75) +
+    scale_fill_gradient2(
+      low  = "#7B68AE", mid = "white", high = "#E07B39",
+      midpoint = 0,
+      name = "rho_flip\n(+ = near plaque)"
+    ) +
+    labs(title = title, x = NULL, y = NULL) +
+    theme_minimal(base_size = 13) +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))
+}
+
+overall_df <- bind_rows(
   cor_caa   |> mutate(plaque = "CAA"),
   cor_paren |> mutate(plaque = "Parenchymal")
 ) |>
-  filter(gene %in% mg_candidate_genes) |>
-  mutate(
-    sig_label = case_when(
-      padj < 0.001 ~ "***",
-      padj < 0.01  ~ "**",
-      padj < 0.05  ~ "*",
-      TRUE         ~ ""
-    ),
-    gene = factor(gene, levels = rev(mg_candidate_genes))
-  )
+  add_sig_and_gene_factor() |>
+  mutate(plaque = factor(plaque, levels = c("CAA", "Parenchymal")))
 
-ggplot(heatmap_df, aes(x = plaque, y = gene, fill = rho_flip)) +
-  geom_tile(colour = "white", linewidth = 0.5) +
-  geom_text(aes(label = sig_label), size = 4, vjust = 0.75) +
-  scale_fill_gradient2(
-    low  = "#7B68AE", mid = "white", high = "#E07B39",
-    midpoint = 0,
-    name = "rho_flip\n(+ = near plaque)"
-  ) +
-  labs(
+by_trt_df <- bind_rows(
+  cor_caa_adu   |> mutate(column = "CAA-Adu"),
+  cor_caa_igg   |> mutate(column = "CAA-IgG"),
+  cor_paren_adu |> mutate(column = "Paren-Adu"),
+  cor_paren_igg |> mutate(column = "Paren-IgG")
+) |>
+  add_sig_and_gene_factor() |>
+  mutate(column = factor(column, levels = c("CAA-Adu", "CAA-IgG",
+                                            "Paren-Adu", "Paren-IgG")))
+
+p_overall <- build_heatmap(overall_df, "plaque", "Overall (Adu + IgG)")
+p_by_trt  <- build_heatmap(by_trt_df,  "column", "Split by treatment")
+
+(p_overall / p_by_trt) +
+  plot_annotation(
     title    = "Microglia candidate gene-distance correlations",
-    subtitle = "* padj < 0.05  ** padj < 0.01  *** padj < 0.001",
-    x = NULL, y = NULL
+    subtitle = "* padj < 0.05  ** padj < 0.01  *** padj < 0.001"
   ) +
-  theme_minimal(base_size = 13) +
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  plot_layout(guides = "collect", heights = c(1, 1)) &
+  theme(legend.position = "right")
 ```
 
