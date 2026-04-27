@@ -365,6 +365,98 @@ cat("Common enriched-near astrocyte genes (CAA and parenchymal):\n",
     paste(intersect(near_caa_astro, near_paren_astro), collapse = ", "))
 ```
 
+## Astrocyte top-ranked gene heatmap
+
+To avoid an arbitrary hand-picked gene list, the genes shown here are selected **directly from the rank plots above** using the same rule as the microglia heatmap in notebook 7:
+
+- top 5 `enriched_near` (smallest rank) and top 5 `enriched_far` (largest rank) genes from `cor_caa_astro`,
+- top 5 `enriched_near` and top 5 `enriched_far` genes from `cor_paren_astro`,
+- union, deduplicated (≤ 20 genes).
+
+Selection uses only the **pooled-treatment** correlations, so the by-treatment panel does not bias which genes appear. The top panel shows the pooled Spearman `rho_flip` per plaque type; the bottom panel splits by treatment so any Adu vs IgG difference in plaque-proximity enrichment is visible per gene per plaque type. Stars are computed per column (per-column `padj`).
+
+```{r}
+#| label: astro-candidate-gene-heatmap
+#| fig-height: 10
+#| fig-width: 5
+#| fig-cap: "Spearman rho_flip for astrocyte top-ranked plaque-proximity genes (top-5 enriched_near and top-5 enriched_far per plaque type, union from cor_caa_astro and cor_paren_astro). Top: pooled across treatments, columns = plaque type. Bottom: split by treatment, columns = plaque type x treatment. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj < 0.05, ** padj < 0.01, *** padj < 0.001) computed per column."
+
+top_n_each_dir <- function(cor_df, n = 5) {
+  bind_rows(
+    cor_df |> filter(sig == "enriched_near") |> slice_min(rank, n = n) |>
+      mutate(direction = "near"),
+    cor_df |> filter(sig == "enriched_far")  |> slice_max(rank, n = n) |>
+      mutate(direction = "far")
+  ) |>
+    select(gene, direction)
+}
+
+astro_heatmap_genes <- bind_rows(
+  top_n_each_dir(cor_caa_astro, 5),
+  top_n_each_dir(cor_paren_astro, 5)
+) |>
+  distinct(gene, .keep_all = TRUE) |>
+  mutate(direction = factor(direction, levels = c("near", "far"))) |>
+  arrange(direction) |>
+  pull(gene)
+
+add_astro_sig_and_gene_factor <- function(df) {
+  df |>
+    filter(gene %in% astro_heatmap_genes) |>
+    mutate(
+      sig_label = case_when(
+        padj < 0.001 ~ "***",
+        padj < 0.01  ~ "**",
+        padj < 0.05  ~ "*",
+        TRUE         ~ ""
+      ),
+      gene = factor(gene, levels = rev(astro_heatmap_genes))
+    )
+}
+
+build_astro_heatmap <- function(df, x_col, title) {
+  ggplot(df, aes(x = .data[[x_col]], y = gene, fill = rho_flip)) +
+    geom_tile(colour = "white", linewidth = 0.5) +
+    geom_text(aes(label = sig_label), size = 4, vjust = 0.75) +
+    scale_fill_gradient2(
+      low  = "#7B68AE", mid = "white", high = "#E07B39",
+      midpoint = 0,
+      name = "rho_flip\n(+ = near plaque)"
+    ) +
+    labs(title = title, x = NULL, y = NULL) +
+    theme_minimal(base_size = 13) +
+    theme(axis.text.x = element_text(angle = 30, hjust = 1))
+}
+
+astro_overall_df <- bind_rows(
+  cor_caa_astro   |> mutate(plaque = "CAA"),
+  cor_paren_astro |> mutate(plaque = "Parenchymal")
+) |>
+  add_astro_sig_and_gene_factor() |>
+  mutate(plaque = factor(plaque, levels = c("CAA", "Parenchymal")))
+
+astro_by_trt_df <- bind_rows(
+  astro_cor_caa_adu   |> mutate(column = "CAA-Adu"),
+  astro_cor_caa_igg   |> mutate(column = "CAA-IgG"),
+  astro_cor_paren_adu |> mutate(column = "Paren-Adu"),
+  astro_cor_paren_igg |> mutate(column = "Paren-IgG")
+) |>
+  add_astro_sig_and_gene_factor() |>
+  mutate(column = factor(column, levels = c("CAA-Adu", "CAA-IgG",
+                                            "Paren-Adu", "Paren-IgG")))
+
+p_astro_overall <- build_astro_heatmap(astro_overall_df, "plaque", "Overall (Adu + IgG)")
+p_astro_by_trt  <- build_astro_heatmap(astro_by_trt_df,  "column", "Split by treatment")
+
+(p_astro_overall / p_astro_by_trt) +
+  plot_annotation(
+    title    = "Astrocyte top-ranked gene-distance correlations",
+    subtitle = "* padj < 0.05  ** padj < 0.01  *** padj < 0.001"
+  ) +
+  plot_layout(guides = "collect", heights = c(1, 1)) &
+  theme(legend.position = "right")
+```
+
 # Oligodendrocyte gene-distance correlations
 
 Candidate genes from DEG_consolidated model (Layer 3 — Remodeling):
@@ -521,7 +613,7 @@ cat("Common enriched-near oligodendrocyte genes (CAA and parenchymal):\n",
 
 # Cross-cell-type comparison
 
-## Astrocytes vs oligodendrocytes — candidate gene heatmap
+## Astrocytes vs oligodendrocytes: candidate gene heatmap
 
 Visualise the rho_flip values for all DEG_consolidated candidate genes across both
 cell types and both plaque types in a single heatmap.
@@ -529,7 +621,7 @@ cell types and both plaque types in a single heatmap.
 ```{r}
 #| label: candidate-gene-heatmap
 #| fig-height: 6
-#| fig-width: 8
+#| fig-width: 5
 #| fig-cap: "Spearman rho_flip for candidate Layer 2 (astrocyte) and Layer 3 (oligodendrocyte) genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Grey fill = gene not tested (< 50 expressing cells)."
 
 all_candidates <- union(astro_candidate_genes, oligo_candidate_genes)
