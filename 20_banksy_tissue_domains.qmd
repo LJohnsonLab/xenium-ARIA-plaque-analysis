@@ -280,20 +280,25 @@ adu_frac <- meta |>
 dot_df <- ct_frac |>
   left_join(adu_frac, by = c("banksy_domain", "annotatedclusters_finer"))
 
-ggplot(dot_df |> filter(pct >= 1), aes(x = banksy_domain, y = annotatedclusters_finer,
-                   size = pct, colour = adu_frac)) +
-  geom_point(colour = "grey20") +
-  geom_point() +
+dot_plot_df <- dot_df |> filter(pct >= 1)
+adu_range  <- range(dot_plot_df$adu_frac, na.rm = TRUE)
+adu_mid    <- 0.5 #mean(adu_range)
+
+ggplot(dot_plot_df, aes(x = banksy_domain, y = annotatedclusters_finer,
+                        size = pct, fill = adu_frac)) +
+  geom_point(shape = 21, colour = "grey30", stroke = 0.3) +
   scale_size_area(max_size = 10, limits = c(0, 100), name = "% cells") +
-  scale_colour_gradient2(low = "#2166AC", mid = "white", high = "#B2182B",
-                         midpoint = 0.5, limits = c(0, 1), na.value = "grey80",
-                         name = "Adu fraction") +
+  scale_fill_gradient2(low = "#2166AC", mid = "white", high = "#B2182B",
+                       midpoint = adu_mid, limits = adu_range,
+                       na.value = "grey80", name = "Adu fraction",
+                       breaks = c(0.2, adu_mid, round(adu_range[2],1))) +
   labs(title = "Cell-type composition per BANKSY domain",
        subtitle = "Dot size = % of cells in domain\ncolour = fraction Aducanumab (red) vs IgG (blue)",
-       x = "Domain", y = NULL) +
+       x = "\nDomain", y = NULL) +
   theme_minimal(base_size = 13) +
-  theme(axis.text.x     = element_text(angle = 45, hjust = 1),
-        panel.grid.major = element_line(colour = "grey92"))
+  theme(axis.text.x      = element_text(angle = 45, hjust = 1),
+        panel.grid.major = element_line(colour = "grey85", linewidth = 0.25),
+        panel.grid.minor = element_blank())
 ```
 
 Note that colour can vary between cell types within the same domain: each cell type has its own Adu/IgG balance depending on how evenly it is distributed across the six brains. A cell type that is rare or spatially patchy may happen to be better represented in one treatment group simply because of sampling, whereas an abundant and ubiquitous cell type will reliably track close to 0.5 in every domain. Consistent red or blue across an entire domain (column) would indicate a global treatment imbalance in that tissue region; isolated red or blue dots within an otherwise white column point to cell-type-specific enrichment.
