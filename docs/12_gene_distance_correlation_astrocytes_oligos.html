@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2026-03-26">
+<meta name="dcterms.date" content="2026-04-27">
 
 <title>Gene-distance correlation — astrocytes and oligodendrocytes – ThioS Plaque Spatial Analysis</title>
 <style>
@@ -257,6 +257,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#top-astrocyte-genes" id="toc-top-astrocyte-genes" class="nav-link" data-scroll-target="#top-astrocyte-genes">Top astrocyte genes</a></li>
   <li><a href="#treatment-split-rank-plots-astrocytes" id="toc-treatment-split-rank-plots-astrocytes" class="nav-link" data-scroll-target="#treatment-split-rank-plots-astrocytes">Treatment-split rank plots — astrocytes</a></li>
   <li><a href="#venn-diagram-astrocyte-enriched-near-overlap" id="toc-venn-diagram-astrocyte-enriched-near-overlap" class="nav-link" data-scroll-target="#venn-diagram-astrocyte-enriched-near-overlap">Venn diagram — astrocyte enriched-near overlap</a></li>
+  <li><a href="#astrocyte-top-ranked-gene-heatmap" id="toc-astrocyte-top-ranked-gene-heatmap" class="nav-link" data-scroll-target="#astrocyte-top-ranked-gene-heatmap">Astrocyte top-ranked gene heatmap</a></li>
   </ul></li>
   <li><a href="#oligodendrocyte-gene-distance-correlations" id="toc-oligodendrocyte-gene-distance-correlations" class="nav-link" data-scroll-target="#oligodendrocyte-gene-distance-correlations">Oligodendrocyte gene-distance correlations</a>
   <ul class="collapse">
@@ -267,7 +268,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#cross-cell-type-comparison" id="toc-cross-cell-type-comparison" class="nav-link" data-scroll-target="#cross-cell-type-comparison">Cross-cell-type comparison</a>
   <ul class="collapse">
-  <li><a href="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" id="toc-astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" class="nav-link" data-scroll-target="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes — candidate gene heatmap</a></li>
+  <li><a href="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" id="toc-astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" class="nav-link" data-scroll-target="#astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes: candidate gene heatmap</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -288,7 +289,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 26, 2026</p>
+      <p class="date">April 27, 2026</p>
     </div>
   </div>
   
@@ -1208,6 +1209,103 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
+<section id="astrocyte-top-ranked-gene-heatmap" class="level2">
+<h2 class="anchored" data-anchor-id="astrocyte-top-ranked-gene-heatmap">Astrocyte top-ranked gene heatmap</h2>
+<p>To avoid an arbitrary hand-picked gene list, the genes shown here are selected <strong>directly from the rank plots above</strong> using the same rule as the microglia heatmap in notebook 7:</p>
+<ul>
+<li>top 5 <code>enriched_near</code> (smallest rank) and top 5 <code>enriched_far</code> (largest rank) genes from <code>cor_caa_astro</code>,</li>
+<li>top 5 <code>enriched_near</code> and top 5 <code>enriched_far</code> genes from <code>cor_paren_astro</code>,</li>
+<li>union, deduplicated (≤ 20 genes).</li>
+</ul>
+<p>Selection uses only the <strong>pooled-treatment</strong> correlations, so the by-treatment panel does not bias which genes appear. The top panel shows the pooled Spearman <code>rho_flip</code> per plaque type; the bottom panel splits by treatment so any Adu vs IgG difference in plaque-proximity enrichment is visible per gene per plaque type. Stars are computed per column (per-column <code>padj</code>).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>top_n_each_dir <span class="ot">&lt;-</span> <span class="cf">function</span>(cor_df, <span class="at">n =</span> <span class="dv">5</span>) {</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    cor_df <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_near"</span>) <span class="sc">|&gt;</span> <span class="fu">slice_min</span>(rank, <span class="at">n =</span> n) <span class="sc">|&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"near"</span>),</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    cor_df <span class="sc">|&gt;</span> <span class="fu">filter</span>(sig <span class="sc">==</span> <span class="st">"enriched_far"</span>)  <span class="sc">|&gt;</span> <span class="fu">slice_max</span>(rank, <span class="at">n =</span> n) <span class="sc">|&gt;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"far"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(gene, direction)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>astro_heatmap_genes <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n_each_dir</span>(cor_caa_astro, <span class="dv">5</span>),</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">top_n_each_dir</span>(cor_paren_astro, <span class="dv">5</span>)</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(gene, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="fu">factor</span>(direction, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"near"</span>, <span class="st">"far"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(direction) <span class="sc">|&gt;</span></span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(gene)</span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>add_astro_sig_and_gene_factor <span class="ot">&lt;-</span> <span class="cf">function</span>(df) {</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">|&gt;</span></span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(gene <span class="sc">%in%</span> astro_heatmap_genes) <span class="sc">|&gt;</span></span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>      <span class="at">sig_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span>,</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>        padj <span class="sc">&lt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>        <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb18-29"><a href="#cb18-29" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb18-30"><a href="#cb18-30" aria-hidden="true" tabindex="-1"></a>      <span class="at">gene =</span> <span class="fu">factor</span>(gene, <span class="at">levels =</span> <span class="fu">rev</span>(astro_heatmap_genes))</span>
+<span id="cb18-31"><a href="#cb18-31" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb18-32"><a href="#cb18-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-33"><a href="#cb18-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-34"><a href="#cb18-34" aria-hidden="true" tabindex="-1"></a>build_astro_heatmap <span class="ot">&lt;-</span> <span class="cf">function</span>(df, x_col, title) {</span>
+<span id="cb18-35"><a href="#cb18-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(df, <span class="fu">aes</span>(<span class="at">x =</span> .data[[x_col]], <span class="at">y =</span> gene, <span class="at">fill =</span> rho_flip)) <span class="sc">+</span></span>
+<span id="cb18-36"><a href="#cb18-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb18-37"><a href="#cb18-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sig_label), <span class="at">size =</span> <span class="dv">4</span>, <span class="at">vjust =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb18-38"><a href="#cb18-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_gradient2</span>(</span>
+<span id="cb18-39"><a href="#cb18-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">low  =</span> <span class="st">"#7B68AE"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#E07B39"</span>,</span>
+<span id="cb18-40"><a href="#cb18-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">midpoint =</span> <span class="dv">0</span>,</span>
+<span id="cb18-41"><a href="#cb18-41" aria-hidden="true" tabindex="-1"></a>      <span class="at">name =</span> <span class="st">"rho_flip</span><span class="sc">\n</span><span class="st">(+ = near plaque)"</span></span>
+<span id="cb18-42"><a href="#cb18-42" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb18-43"><a href="#cb18-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> title, <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb18-44"><a href="#cb18-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb18-45"><a href="#cb18-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span>
+<span id="cb18-46"><a href="#cb18-46" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb18-47"><a href="#cb18-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-48"><a href="#cb18-48" aria-hidden="true" tabindex="-1"></a>astro_overall_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb18-49"><a href="#cb18-49" aria-hidden="true" tabindex="-1"></a>  cor_caa_astro   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb18-50"><a href="#cb18-50" aria-hidden="true" tabindex="-1"></a>  cor_paren_astro <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
+<span id="cb18-51"><a href="#cb18-51" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb18-52"><a href="#cb18-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_astro_sig_and_gene_factor</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-53"><a href="#cb18-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">plaque =</span> <span class="fu">factor</span>(plaque, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"CAA"</span>, <span class="st">"Parenchymal"</span>)))</span>
+<span id="cb18-54"><a href="#cb18-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-55"><a href="#cb18-55" aria-hidden="true" tabindex="-1"></a>astro_by_trt_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb18-56"><a href="#cb18-56" aria-hidden="true" tabindex="-1"></a>  astro_cor_caa_adu   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">column =</span> <span class="st">"CAA-Adu"</span>),</span>
+<span id="cb18-57"><a href="#cb18-57" aria-hidden="true" tabindex="-1"></a>  astro_cor_caa_igg   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">column =</span> <span class="st">"CAA-IgG"</span>),</span>
+<span id="cb18-58"><a href="#cb18-58" aria-hidden="true" tabindex="-1"></a>  astro_cor_paren_adu <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">column =</span> <span class="st">"Paren-Adu"</span>),</span>
+<span id="cb18-59"><a href="#cb18-59" aria-hidden="true" tabindex="-1"></a>  astro_cor_paren_igg <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">column =</span> <span class="st">"Paren-IgG"</span>)</span>
+<span id="cb18-60"><a href="#cb18-60" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb18-61"><a href="#cb18-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_astro_sig_and_gene_factor</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-62"><a href="#cb18-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">column =</span> <span class="fu">factor</span>(column, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"CAA-Adu"</span>, <span class="st">"CAA-IgG"</span>,</span>
+<span id="cb18-63"><a href="#cb18-63" aria-hidden="true" tabindex="-1"></a>                                            <span class="st">"Paren-Adu"</span>, <span class="st">"Paren-IgG"</span>)))</span>
+<span id="cb18-64"><a href="#cb18-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-65"><a href="#cb18-65" aria-hidden="true" tabindex="-1"></a>p_astro_overall <span class="ot">&lt;-</span> <span class="fu">build_astro_heatmap</span>(astro_overall_df, <span class="st">"plaque"</span>, <span class="st">"Overall (Adu + IgG)"</span>)</span>
+<span id="cb18-66"><a href="#cb18-66" aria-hidden="true" tabindex="-1"></a>p_astro_by_trt  <span class="ot">&lt;-</span> <span class="fu">build_astro_heatmap</span>(astro_by_trt_df,  <span class="st">"column"</span>, <span class="st">"Split by treatment"</span>)</span>
+<span id="cb18-67"><a href="#cb18-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-68"><a href="#cb18-68" aria-hidden="true" tabindex="-1"></a>(p_astro_overall <span class="sc">/</span> p_astro_by_trt) <span class="sc">+</span></span>
+<span id="cb18-69"><a href="#cb18-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(</span>
+<span id="cb18-70"><a href="#cb18-70" aria-hidden="true" tabindex="-1"></a>    <span class="at">title    =</span> <span class="st">"Astrocyte top-ranked gene-distance correlations"</span>,</span>
+<span id="cb18-71"><a href="#cb18-71" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"* padj &lt; 0.05  ** padj &lt; 0.01  *** padj &lt; 0.001"</span></span>
+<span id="cb18-72"><a href="#cb18-72" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb18-73"><a href="#cb18-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">&amp;</span></span>
+<span id="cb18-74"><a href="#cb18-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"right"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/astro-candidate-gene-heatmap-1.svg" class="img-fluid figure-img" width="480"></p>
+<figcaption>Spearman rho_flip for astrocyte top-ranked plaque-proximity genes (top-5 enriched_near and top-5 enriched_far per plaque type, union from cor_caa_astro and cor_paren_astro). Top: pooled across treatments, columns = plaque type. Bottom: split by treatment, columns = plaque type x treatment. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Stars indicate significance (* padj &lt; 0.05, ** padj &lt; 0.01, *** padj &lt; 0.001) computed per column.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
 </section>
 <section id="oligodendrocyte-gene-distance-correlations" class="level1 page-columns page-full">
 <h1>Oligodendrocyte gene-distance correlations</h1>
@@ -1215,58 +1313,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>oligo_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Srebf1"</span>, <span class="st">"Apod"</span>, <span class="st">"Aspa"</span>,</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Mbp"</span>, <span class="st">"Plp1"</span>, <span class="st">"Got1"</span>, <span class="st">"Ldhb"</span>, <span class="st">"Mdh2"</span>, <span class="st">"Hk1"</span></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>cor_caa_oligo   <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_caa"</span>,   <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>cor_paren_oligo <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
-<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_paren"</span>, <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
-<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>cor_any_oligo   <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
-<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_any"</span>,   <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
-<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_caa_oligo,   "spatial/oligo_cor_caa.qs2")</span></span>
-<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_paren_oligo, "spatial/oligo_cor_paren.qs2")</span></span>
-<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_any_oligo,   "spatial/oligo_cor_any.qs2")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>oligo_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Srebf1"</span>, <span class="st">"Apod"</span>, <span class="st">"Aspa"</span>,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Mbp"</span>, <span class="st">"Plp1"</span>, <span class="st">"Got1"</span>, <span class="st">"Ldhb"</span>, <span class="st">"Mdh2"</span>, <span class="st">"Hk1"</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>cor_caa_oligo   <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_caa"</span>,   <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>cor_paren_oligo <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_paren"</span>, <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>cor_any_oligo   <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  slides_oligo, dist_oligo, <span class="at">distance_col =</span> <span class="st">"dist_any"</span>,   <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_caa_oligo,   "spatial/oligo_cor_caa.qs2")</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_paren_oligo, "spatial/oligo_cor_paren.qs2")</span></span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a><span class="co"># qs2::qs_save(cor_any_oligo,   "spatial/oligo_cor_any.qs2")</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dist_oligo_adu <span class="ot">&lt;-</span> dist_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>)</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>dist_oligo_igg <span class="ot">&lt;-</span> dist_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (trt <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"adu"</span>, <span class="st">"igg"</span>)) {</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  dist_trt <span class="ot">&lt;-</span> <span class="cf">if</span> (trt <span class="sc">==</span> <span class="st">"adu"</span>) dist_oligo_adu <span class="cf">else</span> dist_oligo_igg</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (dcol <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"dist_caa"</span>, <span class="st">"dist_paren"</span>, <span class="st">"dist_any"</span>)) {</span>
-<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    res    <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(slides_oligo, dist_trt,</span>
-<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">distance_col =</span> dcol, <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
-<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    suffix <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">"dist_"</span>, <span class="st">""</span>, dcol)</span>
-<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    qs2<span class="sc">::</span><span class="fu">qs_save</span>(res, <span class="fu">paste0</span>(<span class="st">"spatial/oligo_cor_"</span>, suffix, <span class="st">"_"</span>, trt, <span class="st">".qs2"</span>))</span>
-<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>dist_oligo_adu <span class="ot">&lt;-</span> dist_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"Adu"</span>)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>dist_oligo_igg <span class="ot">&lt;-</span> dist_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(Treatment.Group <span class="sc">==</span> <span class="st">"IgG"</span>)</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (trt <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"adu"</span>, <span class="st">"igg"</span>)) {</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  dist_trt <span class="ot">&lt;-</span> <span class="cf">if</span> (trt <span class="sc">==</span> <span class="st">"adu"</span>) dist_oligo_adu <span class="cf">else</span> dist_oligo_igg</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (dcol <span class="cf">in</span> <span class="fu">c</span>(<span class="st">"dist_caa"</span>, <span class="st">"dist_paren"</span>, <span class="st">"dist_any"</span>)) {</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    res    <span class="ot">&lt;-</span> <span class="fu">compute_gene_distance_correlation</span>(slides_oligo, dist_trt,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">distance_col =</span> dcol, <span class="at">min_expressing_cells =</span> <span class="dv">50</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>    suffix <span class="ot">&lt;-</span> <span class="fu">sub</span>(<span class="st">"dist_"</span>, <span class="st">""</span>, dcol)</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    qs2<span class="sc">::</span><span class="fu">qs_save</span>(res, <span class="fu">paste0</span>(<span class="st">"spatial/oligo_cor_"</span>, suffix, <span class="st">"_"</span>, trt, <span class="st">".qs2"</span>))</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>oligo_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Srebf1"</span>, <span class="st">"Apod"</span>, <span class="st">"Aspa"</span>,</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Mbp"</span>, <span class="st">"Plp1"</span>, <span class="st">"Got1"</span>, <span class="st">"Ldhb"</span>, <span class="st">"Mdh2"</span>, <span class="st">"Hk1"</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>cor_caa_oligo   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa.qs2"</span>)</span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>cor_paren_oligo <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren.qs2"</span>)</span>
-<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>cor_any_oligo   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any.qs2"</span>)</span>
-<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>oligo_cor_caa_adu   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa_adu.qs2"</span>)</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>oligo_cor_caa_igg   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa_igg.qs2"</span>)</span>
-<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>oligo_cor_paren_adu <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren_adu.qs2"</span>)</span>
-<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>oligo_cor_paren_igg <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren_igg.qs2"</span>)</span>
-<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>oligo_cor_any_adu   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any_adu.qs2"</span>)</span>
-<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>oligo_cor_any_igg   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any_igg.qs2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>oligo_candidate_genes <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Abca1"</span>, <span class="st">"Abcg1"</span>, <span class="st">"Srebf1"</span>, <span class="st">"Apod"</span>, <span class="st">"Aspa"</span>,</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Mbp"</span>, <span class="st">"Plp1"</span>, <span class="st">"Got1"</span>, <span class="st">"Ldhb"</span>, <span class="st">"Mdh2"</span>, <span class="st">"Hk1"</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>cor_caa_oligo   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa.qs2"</span>)</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>cor_paren_oligo <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren.qs2"</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>cor_any_oligo   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any.qs2"</span>)</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>oligo_cor_caa_adu   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa_adu.qs2"</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>oligo_cor_caa_igg   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_caa_igg.qs2"</span>)</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>oligo_cor_paren_adu <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren_adu.qs2"</span>)</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>oligo_cor_paren_igg <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_paren_igg.qs2"</span>)</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>oligo_cor_any_adu   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any_adu.qs2"</span>)</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>oligo_cor_any_igg   <span class="ot">&lt;-</span> qs2<span class="sc">::</span><span class="fu">qs_read</span>(<span class="st">"spatial/oligo_cor_any_igg.qs2"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="rank-plots-oligodendrocytes" class="level2 page-columns page-full">
@@ -1274,22 +1372,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>p_caa_oligo   <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo,</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — CAA"</span>,</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>p_paren_oligo <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo,</span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — Parenchymal"</span>,</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>(p_caa_oligo <span class="sc">|</span> p_paren_oligo) <span class="sc">+</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="st">"Oligodendrocyte gene-distance correlation"</span>) <span class="sc">+</span></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>) <span class="sc">&amp;</span></span>
-<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>p_caa_oligo   <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — CAA"</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>p_paren_oligo <span class="ot">&lt;-</span> <span class="fu">plot_gene_distance_correlation</span>(</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">title          =</span> <span class="st">"Oligodendrocytes — Parenchymal"</span>,</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes_to_label =</span> oligo_candidate_genes</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>(p_caa_oligo <span class="sc">|</span> p_paren_oligo) <span class="sc">+</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="st">"Oligodendrocyte gene-distance correlation"</span>) <span class="sc">+</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_layout</span>(<span class="at">guides =</span> <span class="st">"collect"</span>) <span class="sc">&amp;</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div class="quarto-figure quarto-figure-center page-columns page-full">
@@ -1306,7 +1404,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_caa_oligo,   <span class="st">"Top genes — oligodendrocytes, distance to CAA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_caa_oligo,   <span class="st">"Top genes — oligodendrocytes, distance to CAA"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="table table-striped caption-top table-sm small">
@@ -1508,7 +1606,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_paren_oligo, <span class="st">"Top genes — oligodendrocytes, distance to parenchymal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">show_top</span>(cor_paren_oligo, <span class="st">"Top genes — oligodendrocytes, distance to parenchymal"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <table class="table table-striped caption-top table-sm small">
@@ -1715,10 +1813,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_caa_adu,</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — CAA, Aducanumab"</span>, <span class="at">genes_to_label =</span> oligo_candidate_genes) <span class="sc">|</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_caa_igg,</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — CAA, IgG"</span>,        <span class="at">genes_to_label =</span> oligo_candidate_genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_caa_adu,</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — CAA, Aducanumab"</span>, <span class="at">genes_to_label =</span> oligo_candidate_genes) <span class="sc">|</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_caa_igg,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — CAA, IgG"</span>,        <span class="at">genes_to_label =</span> oligo_candidate_genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div class="page-columns page-full">
@@ -1731,10 +1829,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_paren_adu,</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — Parenchymal, Aducanumab"</span>, <span class="at">genes_to_label =</span> oligo_candidate_genes) <span class="sc">|</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_paren_igg,</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — Parenchymal, IgG"</span>,        <span class="at">genes_to_label =</span> oligo_candidate_genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_paren_adu,</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — Parenchymal, Aducanumab"</span>, <span class="at">genes_to_label =</span> oligo_candidate_genes) <span class="sc">|</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_gene_distance_correlation</span>(oligo_cor_paren_igg,</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">"Oligodendrocytes — Parenchymal, IgG"</span>,        <span class="at">genes_to_label =</span> oligo_candidate_genes)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div class="page-columns page-full">
@@ -1747,9 +1845,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_caa_adu,   oligo_cor_caa_igg,   <span class="st">"Oligodendrocytes — CAA, Adu vs IgG"</span>) <span class="sc">|</span></span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_paren_adu, oligo_cor_paren_igg, <span class="st">"Oligodendrocytes — Parenchymal, Adu vs IgG"</span>) <span class="sc">|</span></span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_any_adu,   oligo_cor_any_igg,   <span class="st">"Oligodendrocytes — Any plaque, Adu vs IgG"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_caa_adu,   oligo_cor_caa_igg,   <span class="st">"Oligodendrocytes — CAA, Adu vs IgG"</span>) <span class="sc">|</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_paren_adu, oligo_cor_paren_igg, <span class="st">"Oligodendrocytes — Parenchymal, Adu vs IgG"</span>) <span class="sc">|</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_treatment_scatter</span>(oligo_cor_any_adu,   oligo_cor_any_igg,   <span class="st">"Oligodendrocytes — Any plaque, Adu vs IgG"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div class="page-columns page-full">
@@ -1765,16 +1863,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>near_caa_oligo   <span class="ot">&lt;-</span> cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>near_paren_oligo <span class="ot">&lt;-</span> cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggVennDiagram</span>(</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">CAA =</span> near_caa_oligo, <span class="at">Parenchymal =</span> near_paren_oligo),</span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_alpha =</span> <span class="dv">0</span>, <span class="at">label =</span> <span class="st">"count"</span>, <span class="at">shape_id =</span> <span class="st">"201"</span></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Oligodendrocytes — enriched-near genes (padj &lt; 0.05)"</span>) <span class="sc">+</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_distiller</span>(<span class="at">palette =</span> <span class="st">"RdBu"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>near_caa_oligo   <span class="ot">&lt;-</span> cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>near_paren_oligo <span class="ot">&lt;-</span> cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">filter</span>(padj <span class="sc">&lt;</span> <span class="fl">0.05</span>, rho_flip <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(gene)</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggVennDiagram</span>(</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">CAA =</span> near_caa_oligo, <span class="at">Parenchymal =</span> near_paren_oligo),</span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">label_alpha =</span> <span class="dv">0</span>, <span class="at">label =</span> <span class="st">"count"</span>, <span class="at">shape_id =</span> <span class="st">"201"</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Oligodendrocytes — enriched-near genes (padj &lt; 0.05)"</span>) <span class="sc">+</span></span>
+<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_distiller</span>(<span class="at">palette =</span> <span class="st">"RdBu"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
@@ -1786,8 +1884,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Common enriched-near oligodendrocyte genes (CAA and parenchymal):</span><span class="sc">\n</span><span class="st">"</span>,</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">intersect</span>(near_caa_oligo, near_paren_oligo), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Common enriched-near oligodendrocyte genes (CAA and parenchymal):</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">paste</span>(<span class="fu">intersect</span>(near_caa_oligo, near_paren_oligo), <span class="at">collapse =</span> <span class="st">", "</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Common enriched-near oligodendrocyte genes (CAA and parenchymal):
@@ -1799,50 +1897,50 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="cross-cell-type-comparison" class="level1">
 <h1>Cross-cell-type comparison</h1>
 <section id="astrocytes-vs-oligodendrocytes-candidate-gene-heatmap" class="level2">
-<h2 class="anchored" data-anchor-id="astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes — candidate gene heatmap</h2>
+<h2 class="anchored" data-anchor-id="astrocytes-vs-oligodendrocytes-candidate-gene-heatmap">Astrocytes vs oligodendrocytes: candidate gene heatmap</h2>
 <p>Visualise the rho_flip values for all DEG_consolidated candidate genes across both cell types and both plaque types in a single heatmap.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>all_candidates <span class="ot">&lt;-</span> <span class="fu">union</span>(astro_candidate_genes, oligo_candidate_genes)</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>heatmap_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  cor_caa_astro   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>  cor_paren_astro <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>),</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
-<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gene <span class="sc">%in%</span> all_candidates) <span class="sc">|&gt;</span></span>
-<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">facet =</span> <span class="fu">paste</span>(cell_type, plaque, <span class="at">sep =</span> <span class="st">" — "</span>),</span>
-<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">sig_label =</span> <span class="fu">case_when</span>(</span>
-<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span>,</span>
-<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="sc">~</span> <span class="st">"**"</span>,</span>
-<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"*"</span>,</span>
-<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">""</span></span>
-<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(heatmap_df, <span class="fu">aes</span>(<span class="at">x =</span> facet, <span class="at">y =</span> gene, <span class="at">fill =</span> rho_flip)) <span class="sc">+</span></span>
-<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sig_label), <span class="at">size =</span> <span class="dv">4</span>, <span class="at">vjust =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
-<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(</span>
-<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">low  =</span> <span class="st">"#7B68AE"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#E07B39"</span>,</span>
-<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">midpoint =</span> <span class="dv">0</span>,</span>
-<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"rho_flip</span><span class="sc">\n</span><span class="st">(+ = near plaque)"</span></span>
-<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Candidate gene-distance correlations"</span>,</span>
-<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"* padj &lt; 0.05  ** padj &lt; 0.01  *** padj &lt; 0.001"</span>,</span>
-<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span></span>
-<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
-<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>all_candidates <span class="ot">&lt;-</span> <span class="fu">union</span>(astro_candidate_genes, oligo_candidate_genes)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>heatmap_df <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  cor_caa_astro   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  cor_paren_astro <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Astrocytes"</span>,      <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>),</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  cor_caa_oligo   <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"CAA"</span>),</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  cor_paren_oligo <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">cell_type =</span> <span class="st">"Oligodendrocytes"</span>, <span class="at">plaque =</span> <span class="st">"Parenchymal"</span>)</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gene <span class="sc">%in%</span> all_candidates) <span class="sc">|&gt;</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">facet =</span> <span class="fu">paste</span>(cell_type, plaque, <span class="at">sep =</span> <span class="st">" — "</span>),</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">sig_label =</span> <span class="fu">case_when</span>(</span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.001</span> <span class="sc">~</span> <span class="st">"***"</span>,</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.01</span>  <span class="sc">~</span> <span class="st">"**"</span>,</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>      padj <span class="sc">&lt;</span> <span class="fl">0.05</span>  <span class="sc">~</span> <span class="st">"*"</span>,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>         <span class="sc">~</span> <span class="st">""</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(heatmap_df, <span class="fu">aes</span>(<span class="at">x =</span> facet, <span class="at">y =</span> gene, <span class="at">fill =</span> rho_flip)) <span class="sc">+</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_tile</span>(<span class="at">colour =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> sig_label), <span class="at">size =</span> <span class="dv">4</span>, <span class="at">vjust =</span> <span class="fl">0.75</span>) <span class="sc">+</span></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_gradient2</span>(</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">low  =</span> <span class="st">"#7B68AE"</span>, <span class="at">mid =</span> <span class="st">"white"</span>, <span class="at">high =</span> <span class="st">"#E07B39"</span>,</span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">midpoint =</span> <span class="dv">0</span>,</span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"rho_flip</span><span class="sc">\n</span><span class="st">(+ = near plaque)"</span></span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Candidate gene-distance correlations"</span>,</span>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"* padj &lt; 0.05  ** padj &lt; 0.01  *** padj &lt; 0.001"</span>,</span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">30</span>, <span class="at">hjust =</span> <span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/candidate-gene-heatmap-1.svg" class="img-fluid figure-img" width="768"></p>
+<p><img src="12_gene_distance_correlation_astrocytes_oligos_files/figure-html/candidate-gene-heatmap-1.svg" class="img-fluid figure-img" width="480"></p>
 <figcaption>Spearman rho_flip for candidate Layer 2 (astrocyte) and Layer 3 (oligodendrocyte) genes across CAA and parenchymal distance. Positive (orange) = enriched near plaque; negative (purple) = enriched far from plaque. Grey fill = gene not tested (&lt; 50 expressing cells).</figcaption>
 </figure>
 </div>
